@@ -15,7 +15,7 @@ export default function Login() {
   // Redirect if already logged in
   useEffect(() => {
     if (isAuthenticated) {
-      window.location.href = '/home';
+      window.location.href = '/';
     }
   }, [isAuthenticated]);
 
@@ -42,7 +42,7 @@ export default function Login() {
         toast.error('Erro ao fazer login: ' + error.message);
       } else {
         toast.success('Login realizado com sucesso!');
-        window.location.href = '/home';
+        window.location.href = '/';
       }
     } catch (error) {
       toast.error('Erro ao fazer login');
@@ -73,7 +73,7 @@ export default function Login() {
         toast.error('Erro ao criar conta: ' + error.message);
       } else {
         toast.success('Conta criada com sucesso! Você já pode fazer login.');
-        window.location.href = '/home';
+        window.location.href = '/';
       }
     } catch (error) {
       toast.error('Erro ao criar conta');

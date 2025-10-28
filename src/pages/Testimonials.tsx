@@ -1,9 +1,15 @@
 import { useAuth } from '@/hooks/useAuth';
 import { useTestimonials } from '@/hooks/useTestimonials';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Sparkles, Loader2 } from 'lucide-react';
+import { Sparkles, Loader2, MoreVertical } from 'lucide-react';
+import { CreateTestimonialDialog } from '@/components/testimonials/CreateTestimonialDialog';
+import { EditTestimonialDialog } from '@/components/testimonials/EditTestimonialDialog';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 export default function Testimonials() {
   const { hasRole } = useAuth();
@@ -23,10 +29,9 @@ export default function Testimonials() {
       </div>
 
       {canManageTestimonials && (
-        <Button className="w-full mb-6 h-14 btn-accent text-base">
-          <Plus className="w-5 h-5 mr-2" />
-          Adicionar Testemunho
-        </Button>
+        <div className="mb-6">
+          <CreateTestimonialDialog />
+        </div>
       )}
 
       {isLoading ? (
@@ -49,14 +54,30 @@ export default function Testimonials() {
             <Card key={testimonial.id} className="card-elevated">
               <CardHeader>
                 <div className="flex items-start justify-between">
-                  <CardTitle className="text-xl">{testimonial.title}</CardTitle>
-                  {canManageTestimonials && (
-                    <Badge variant={testimonial.status === 'published' ? 'default' : 'secondary'}>
-                      {testimonial.status === 'published' ? 'Publicado' : 'Rascunho'}
-                    </Badge>
-                  )}
+                  <div className="flex-1">
+                    <CardTitle className="text-xl">{testimonial.title}</CardTitle>
+                    <p className="text-sm font-semibold text-primary mt-1">{testimonial.author_name}</p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {canManageTestimonials && (
+                      <Badge variant={testimonial.status === 'published' ? 'default' : 'secondary'}>
+                        {testimonial.status === 'published' ? 'Publicado' : 'Rascunho'}
+                      </Badge>
+                    )}
+                    {canManageTestimonials && (
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <button className="p-2 hover:bg-secondary rounded-lg transition-colors">
+                            <MoreVertical className="w-4 h-4" />
+                          </button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <EditTestimonialDialog testimonial={testimonial} />
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    )}
+                  </div>
                 </div>
-                <p className="text-sm font-semibold text-primary">{testimonial.author_name}</p>
               </CardHeader>
               <CardContent>
                 <p className="text-foreground leading-relaxed">{testimonial.content}</p>

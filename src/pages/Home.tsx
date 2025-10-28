@@ -1,10 +1,16 @@
 import { useAuth } from '@/hooks/useAuth';
 import { usePosts } from '@/hooks/usePosts';
 import { useVerseOfTheDay } from '@/hooks/useVerseOfTheDay';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Heart, MessageCircle, Plus, BookOpen, Loader2 } from 'lucide-react';
+import { Heart, MessageCircle, BookOpen, Loader2, MoreVertical } from 'lucide-react';
 import castleLogo from '@/assets/castle-logo.png';
+import { CreatePostDialog } from '@/components/posts/CreatePostDialog';
+import { EditPostDialog } from '@/components/posts/EditPostDialog';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 export default function Home() {
   const { hasRole } = useAuth();
@@ -63,10 +69,9 @@ export default function Home() {
 
       {/* New Post Button */}
       {canManagePosts && (
-        <Button className="w-full mb-6 h-14 btn-gradient text-base">
-          <Plus className="w-5 h-5 mr-2" />
-          Criar Nova Postagem
-        </Button>
+        <div className="mb-6">
+          <CreatePostDialog />
+        </div>
       )}
 
       {/* Posts Feed */}
@@ -88,10 +93,26 @@ export default function Home() {
           {posts.map((post) => (
             <Card key={post.id} className="card-elevated">
               <CardHeader>
-                <CardTitle className="text-xl">{post.title}</CardTitle>
-                <p className="text-sm text-muted-foreground">
-                  Por {post.author_name} • {new Date(post.created_at).toLocaleDateString('pt-BR')}
-                </p>
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <CardTitle className="text-xl">{post.title}</CardTitle>
+                    <p className="text-sm text-muted-foreground">
+                      Por {post.author_name} • {new Date(post.created_at).toLocaleDateString('pt-BR')}
+                    </p>
+                  </div>
+                  {canManagePosts && (
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <button className="p-2 hover:bg-secondary rounded-lg transition-colors">
+                          <MoreVertical className="w-4 h-4" />
+                        </button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <EditPostDialog post={post} />
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  )}
+                </div>
               </CardHeader>
               <CardContent className="space-y-4">
                 {post.image_url && (
