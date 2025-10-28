@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Plus, Folder, Calendar } from 'lucide-react';
@@ -24,7 +25,18 @@ const mockFolders: GalleryFolder[] = [
 ];
 
 export default function Gallery() {
+  const { hasRole } = useAuth();
   const [folders] = useState<GalleryFolder[]>(mockFolders);
+
+  useEffect(() => {
+    if (!hasRole(['admin', 'social_media'])) {
+      window.location.href = '/';
+    }
+  }, [hasRole]);
+
+  if (!hasRole(['admin', 'social_media'])) {
+    return null;
+  }
 
   return (
     <div className="container mx-auto px-4 py-6 max-w-6xl md:ml-64">

@@ -22,7 +22,7 @@ export default function Login() {
     try {
       await login(email, password);
       toast.success('Login realizado com sucesso!');
-      navigate('/');
+      window.location.href = '/';
     } catch (error) {
       toast.error('Email ou senha inválidos');
     } finally {

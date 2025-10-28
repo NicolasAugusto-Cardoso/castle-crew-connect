@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -47,7 +48,18 @@ const roleColors: Record<string, string> = {
 };
 
 export default function Users() {
+  const { hasRole } = useAuth();
   const [users] = useState<User[]>(mockUsers);
+
+  useEffect(() => {
+    if (!hasRole(['admin'])) {
+      window.location.href = '/';
+    }
+  }, [hasRole]);
+
+  if (!hasRole(['admin'])) {
+    return null;
+  }
 
   return (
     <div className="container mx-auto px-4 py-6 max-w-4xl md:ml-64">

@@ -10,7 +10,7 @@ export const Layout = () => {
 
   const handleLogout = () => {
     logout();
-    navigate('/login');
+    window.location.href = '/login';
   };
 
   const navItems = [

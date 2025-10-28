@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -62,9 +62,19 @@ const statusLabels: Record<string, string> = {
 };
 
 export default function Discipleship() {
-  const { hasRole, user } = useAuth();
+  const { hasRole } = useAuth();
   const [contacts] = useState<DiscipleshipContact[]>(mockContacts);
   const [profile] = useState<CollaboratorProfile>(mockCollaborator);
+
+  useEffect(() => {
+    if (!hasRole(['admin', 'social_media', 'collaborator'])) {
+      window.location.href = '/';
+    }
+  }, [hasRole]);
+
+  if (!hasRole(['admin', 'social_media', 'collaborator'])) {
+    return null;
+  }
 
   const isCollaborator = hasRole(['collaborator']);
   const canRegister = hasRole(['admin', 'social_media']);
