@@ -1,50 +1,38 @@
 import { useState } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/hooks/useAuth';
+import { useContactMessages, ContactMessage } from '@/hooks/useContactMessages';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { toast } from 'sonner';
-import { Mail, Phone, Send } from 'lucide-react';
-import { ContactMessage } from '@/types';
-
-const mockMessages: ContactMessage[] = [
-  {
-    id: '1',
-    name: 'Pedro Oliveira',
-    phone: '(14) 99999-0001',
-    email: 'pedro@email.com',
-    message: 'Gostaria de participar do próximo culto jovem. Como faço?',
-    status: 'new',
-    createdAt: new Date(Date.now() - 3600000).toISOString(),
-  },
-  {
-    id: '2',
-    name: 'Ana Paula',
-    phone: '(14) 99999-0002',
-    message: 'Preciso de oração pela minha família.',
-    status: 'in_progress',
-    createdAt: new Date(Date.now() - 7200000).toISOString(),
-  },
-];
+import { Mail, Phone, Loader2 } from 'lucide-react';
 
 export default function Contact() {
   const { hasRole } = useAuth();
+  const { messages, isLoading, createMessage, updateMessageStatus } = useContactMessages();
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
+  const [email, setEmail] = useState('');
   const [message, setMessage] = useState('');
-  const [messages] = useState<ContactMessage[]>(mockMessages);
+  const [submitting, setSubmitting] = useState(false);
 
   const canManageMessages = hasRole(['admin', 'social_media']);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    toast.success('Mensagem enviada! Entraremos em contato em breve.');
-    setName('');
-    setPhone('');
-    setMessage('');
+    setSubmitting(true);
+    
+    try {
+      await createMessage.mutateAsync({ name, phone, email, message });
+      setName('');
+      setPhone('');
+      setEmail('');
+      setMessage('');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const getStatusColor = (status: ContactMessage['status']) => {
@@ -103,6 +91,19 @@ export default function Contact() {
                   onChange={(e) => setPhone(e.target.value)}
                   placeholder="(00) 00000-0000"
                   required
+                  disabled={submitting}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="email">E-mail (opcional)</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="seu@email.com"
+                  disabled={submitting}
                 />
               </div>
 
@@ -115,12 +116,12 @@ export default function Contact() {
                   placeholder="Escreva sua mensagem..."
                   rows={5}
                   required
+                  disabled={submitting}
                 />
               </div>
 
-              <Button type="submit" className="w-full h-12 btn-gradient">
-                <Send className="w-5 h-5 mr-2" />
-                Enviar Mensagem
+              <Button type="submit" className="w-full h-12 btn-gradient" disabled={submitting}>
+                {submitting ? 'Enviando...' : 'Enviar Mensagem'}
               </Button>
             </form>
           </CardContent>
@@ -130,7 +131,19 @@ export default function Contact() {
       {canManageMessages && (
         <div className="space-y-4">
           <h2 className="text-xl font-bold">Mensagens Recebidas</h2>
-          {messages.map((msg) => (
+          {isLoading ? (
+            <div className="flex justify-center py-12">
+              <Loader2 className="w-8 h-8 animate-spin text-primary" />
+            </div>
+          ) : messages.length === 0 ? (
+            <Card className="card-elevated">
+              <CardContent className="py-12 text-center text-muted-foreground">
+                <Mail className="w-12 h-12 mx-auto mb-3" />
+                <p>Nenhuma mensagem recebida ainda</p>
+              </CardContent>
+            </Card>
+          ) : (
+            messages.map((msg) => (
             <Card key={msg.id} className="card-elevated">
               <CardHeader>
                 <div className="flex items-start justify-between">
@@ -157,16 +170,21 @@ export default function Contact() {
               <CardContent>
                 <p className="text-foreground leading-relaxed mb-4">{msg.message}</p>
                 <p className="text-xs text-muted-foreground">
-                  Recebida em {new Date(msg.createdAt).toLocaleString('pt-BR')}
+                  Recebida em {new Date(msg.created_at).toLocaleString('pt-BR')}
                 </p>
                 {msg.status !== 'answered' && (
-                  <Button className="mt-4 btn-accent" size="sm">
+                  <Button
+                    className="mt-4 btn-accent"
+                    size="sm"
+                    onClick={() => updateMessageStatus.mutate({ id: msg.id, status: 'answered' })}
+                    disabled={updateMessageStatus.isPending}
+                  >
                     Responder
                   </Button>
                 )}
               </CardContent>
             </Card>
-          ))}
+          )))}
         </div>
       )}
     </div>
