@@ -1,12 +1,31 @@
 import { useAuth } from '@/hooks/useAuth';
 import { useGallery } from '@/hooks/useGallery';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Folder, Calendar, Loader2, Image } from 'lucide-react';
+import { Folder, Calendar, Loader2, Image, AlertCircle } from 'lucide-react';
 import { CreateFolderDialog } from '@/components/gallery/CreateFolderDialog';
+import { UploadMediaDialog } from '@/components/gallery/UploadMediaDialog';
 
 export default function Gallery() {
   const { hasRole } = useAuth();
   const { folders, isLoading } = useGallery();
+
+  const canManage = hasRole(['admin', 'social_media']);
+
+  if (!canManage) {
+    return (
+      <div className="container mx-auto px-4 py-6 max-w-4xl md:ml-64">
+        <Card className="card-elevated">
+          <CardContent className="py-12 text-center">
+            <AlertCircle className="w-12 h-12 mx-auto mb-3 text-destructive" />
+            <h2 className="text-xl font-bold mb-2">Acesso Restrito</h2>
+            <p className="text-muted-foreground">
+              Apenas administradores e social media podem acessar a galeria.
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto px-4 py-6 max-w-6xl md:ml-64">
@@ -54,10 +73,15 @@ export default function Gallery() {
                 )}
               </div>
               <CardHeader>
-                <CardTitle className="text-lg">{folder.name}</CardTitle>
-                {folder.description && (
-                  <p className="text-sm text-muted-foreground">{folder.description}</p>
-                )}
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="text-lg">{folder.name}</CardTitle>
+                    {folder.description && (
+                      <p className="text-sm text-muted-foreground">{folder.description}</p>
+                    )}
+                  </div>
+                  <UploadMediaDialog folderId={folder.id} />
+                </div>
               </CardHeader>
               <CardContent>
                 {folder.event_date && (

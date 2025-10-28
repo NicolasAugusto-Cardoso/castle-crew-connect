@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useUsers, UserWithRoles } from '@/hooks/useUsers';
 import { Button } from '@/components/ui/button';
@@ -29,14 +29,22 @@ export default function Users() {
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<UserWithRoles | null>(null);
 
-  useEffect(() => {
-    if (!hasRole(['admin'])) {
-      window.location.href = '/';
-    }
-  }, [hasRole]);
+  const isAdmin = hasRole(['admin']);
 
-  if (!hasRole(['admin'])) {
-    return null;
+  if (!isAdmin) {
+    return (
+      <div className="container mx-auto px-4 py-6 max-w-4xl md:ml-64">
+        <Card className="card-elevated">
+          <CardContent className="py-12 text-center">
+            <UserCircle className="w-12 h-12 mx-auto mb-3 text-destructive" />
+            <h2 className="text-xl font-bold mb-2">Acesso Restrito</h2>
+            <p className="text-muted-foreground">
+              Apenas administradores podem visualizar esta seção.
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    );
   }
 
   const handleCreateUser = (data: {
