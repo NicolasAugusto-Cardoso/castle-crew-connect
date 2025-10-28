@@ -36,6 +36,8 @@ export function UploadMediaDialog({ folderId }: UploadMediaDialogProps) {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Não autenticado');
 
+      let uploadedCount = 0;
+
       for (const file of Array.from(files)) {
         // Validar tipo de arquivo
         const validTypes = ['image/jpeg', 'image/jpg', 'video/mp4'];
@@ -44,27 +46,56 @@ export function UploadMediaDialog({ folderId }: UploadMediaDialogProps) {
           continue;
         }
 
-        // Upload para storage (simulado - você precisaria criar bucket primeiro)
-        const fileName = `${Date.now()}_${file.name}`;
-        const mediaType = file.type.startsWith('image/') ? 'image' : 'video';
+        // Upload para storage bucket 'gallery'
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${folderId}/${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
         
-        // Inserir registro no banco com URL simulada
-        const { error } = await supabase
+        const { error: uploadError } = await supabase.storage
+          .from('gallery')
+          .upload(fileName, file, {
+            cacheControl: '3600',
+            upsert: false
+          });
+
+        if (uploadError) {
+          console.error('Upload error:', uploadError);
+          toast.error(`Erro ao enviar ${file.name}`);
+          continue;
+        }
+
+        // Obter URL pública
+        const { data: { publicUrl } } = supabase.storage
+          .from('gallery')
+          .getPublicUrl(fileName);
+
+        // Inserir registro no banco
+        const mediaType = file.type.startsWith('image/') ? 'image' : 'video';
+        const { error: dbError } = await supabase
           .from('gallery_media')
           .insert({
             folder_id: folderId,
-            url: `https://placeholder.com/${fileName}`, // Substituir por storage real
+            url: publicUrl,
             type: mediaType,
             created_by: user.id
           });
 
-        if (error) throw error;
+        if (dbError) {
+          console.error('Database error:', dbError);
+          toast.error(`Erro ao registrar ${file.name}`);
+          continue;
+        }
+
+        uploadedCount++;
       }
 
-      queryClient.invalidateQueries({ queryKey: ['gallery-media', folderId] });
-      toast.success(`${files.length} arquivo(s) enviado(s) com sucesso!`);
-      setFiles(null);
-      setOpen(false);
+      if (uploadedCount > 0) {
+        queryClient.invalidateQueries({ queryKey: ['gallery-media', folderId] });
+        toast.success(`${uploadedCount} arquivo(s) enviado(s) com sucesso!`);
+        setFiles(null);
+        setOpen(false);
+      } else {
+        toast.error('Nenhum arquivo foi enviado com sucesso');
+      }
     } catch (error: any) {
       toast.error('Erro ao enviar arquivos');
       console.error(error);
