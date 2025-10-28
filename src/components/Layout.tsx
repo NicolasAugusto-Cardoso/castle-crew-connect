@@ -1,16 +1,16 @@
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { Home, MessageSquare, Users, FolderOpen, BookOpen, LogOut, UserCircle, Settings } from 'lucide-react';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/hooks/useAuth';
 import castleLogo from '@/assets/castle-logo.jpeg';
 
 export const Layout = () => {
-  const { user, logout, hasRole } = useAuth();
+  const { user, signOut, hasRole } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
-  const handleLogout = () => {
-    logout();
-    window.location.href = '/login';
+  const handleLogout = async () => {
+    await signOut();
+    navigate('/login');
   };
 
   const navItems = [
@@ -26,6 +26,9 @@ export const Layout = () => {
     hasRole(item.roles as any)
   );
 
+  // Get user name from metadata or email
+  const displayName = user?.user_metadata?.name || user?.email?.split('@')[0] || 'Usuário';
+
   return (
     <div className="min-h-screen bg-background flex flex-col">
       {/* Header */}
@@ -38,7 +41,7 @@ export const Layout = () => {
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2 text-white">
               <UserCircle className="w-5 h-5" />
-              <span className="hidden sm:inline font-medium">{user?.name}</span>
+              <span className="hidden sm:inline font-medium">{displayName}</span>
             </div>
             <button
               onClick={handleLogout}
