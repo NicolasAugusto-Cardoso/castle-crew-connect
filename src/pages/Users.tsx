@@ -1,37 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
+import { useUsers, UserWithRoles } from '@/hooks/useUsers';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Plus, UserCircle, Mail, Shield } from 'lucide-react';
-import { User } from '@/types';
-
-const mockUsers: User[] = [
-  {
-    id: '1',
-    email: 'admin@castle.com',
-    name: 'Admin Castle',
-    role: 'admin',
-    isActive: true,
-    createdAt: new Date().toISOString(),
-  },
-  {
-    id: '2',
-    email: 'social@castle.com',
-    name: 'Mídia Castle',
-    role: 'social_media',
-    isActive: true,
-    createdAt: new Date().toISOString(),
-  },
-  {
-    id: '3',
-    email: 'colab@castle.com',
-    name: 'João Silva',
-    role: 'collaborator',
-    isActive: true,
-    createdAt: new Date().toISOString(),
-  },
-];
+import { Plus, UserCircle, Mail, Shield, Loader2 } from 'lucide-react';
+import { CreateUserDialog } from '@/components/users/CreateUserDialog';
+import { EditUserDialog } from '@/components/users/EditUserDialog';
 
 const roleLabels: Record<string, string> = {
   admin: 'Administrador',
@@ -49,7 +24,10 @@ const roleColors: Record<string, string> = {
 
 export default function Users() {
   const { hasRole } = useAuth();
-  const [users] = useState<User[]>(mockUsers);
+  const { users, isLoading, createUser, updateUserRoles, isCreating, isUpdating } = useUsers();
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<UserWithRoles | null>(null);
 
   useEffect(() => {
     if (!hasRole(['admin'])) {
@@ -60,6 +38,33 @@ export default function Users() {
   if (!hasRole(['admin'])) {
     return null;
   }
+
+  const handleCreateUser = (data: {
+    email: string;
+    password: string;
+    name: string;
+    roles: string[];
+  }) => {
+    createUser(data, {
+      onSuccess: () => {
+        setCreateDialogOpen(false);
+      },
+    });
+  };
+
+  const handleEditUser = (data: { userId: string; roles: string[] }) => {
+    updateUserRoles(data, {
+      onSuccess: () => {
+        setEditDialogOpen(false);
+        setSelectedUser(null);
+      },
+    });
+  };
+
+  const openEditDialog = (user: UserWithRoles) => {
+    setSelectedUser(user);
+    setEditDialogOpen(true);
+  };
 
   return (
     <div className="container mx-auto px-4 py-6 max-w-4xl md:ml-64">
@@ -73,45 +78,73 @@ export default function Users() {
         </p>
       </div>
 
-      <Button className="w-full mb-6 h-14 btn-gradient text-base">
+      <Button
+        className="w-full mb-6 h-14 btn-gradient text-base"
+        onClick={() => setCreateDialogOpen(true)}
+      >
         <Plus className="w-5 h-5 mr-2" />
         Novo Usuário
       </Button>
 
-      <div className="space-y-4">
-        {users.map((user) => (
-          <Card key={user.id} className="card-elevated">
-            <CardHeader>
-              <div className="flex items-start justify-between">
-                <div className="flex items-center gap-3">
-                  <UserCircle className="w-12 h-12 text-muted-foreground" />
-                  <div>
-                    <CardTitle className="text-lg">{user.name}</CardTitle>
-                    <p className="text-sm text-muted-foreground flex items-center gap-1 mt-1">
-                      <Mail className="w-4 h-4" />
-                      {user.email}
-                    </p>
+      {isLoading ? (
+        <div className="flex justify-center items-center py-12">
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {users.map((user) => (
+            <Card key={user.id} className="card-elevated">
+              <CardHeader>
+                <div className="flex items-start justify-between">
+                  <div className="flex items-center gap-3">
+                    <UserCircle className="w-12 h-12 text-muted-foreground" />
+                    <div>
+                      <CardTitle className="text-lg">{user.name}</CardTitle>
+                      <p className="text-sm text-muted-foreground flex items-center gap-1 mt-1">
+                        <Mail className="w-4 h-4" />
+                        {user.email}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {user.roles.map((role) => (
+                      <Badge key={role} className={roleColors[role]}>
+                        {roleLabels[role]}
+                      </Badge>
+                    ))}
                   </div>
                 </div>
-                <Badge className={roleColors[user.role]}>
-                  {roleLabels[user.role]}
-                </Badge>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center justify-between">
-                <div className="text-sm text-muted-foreground">
-                  <p>Criado em: {new Date(user.createdAt).toLocaleDateString('pt-BR')}</p>
-                  <p>Status: {user.isActive ? 'Ativo' : 'Inativo'}</p>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center justify-between">
+                  <div className="text-sm text-muted-foreground">
+                    <p>Criado em: {new Date(user.created_at).toLocaleDateString('pt-BR')}</p>
+                    <p>Permissões: {user.roles.length}</p>
+                  </div>
+                  <Button variant="outline" size="sm" onClick={() => openEditDialog(user)}>
+                    Editar
+                  </Button>
                 </div>
-                <Button variant="outline" size="sm">
-                  Editar
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
+
+      <CreateUserDialog
+        open={createDialogOpen}
+        onOpenChange={setCreateDialogOpen}
+        onSubmit={handleCreateUser}
+        isLoading={isCreating}
+      />
+
+      <EditUserDialog
+        open={editDialogOpen}
+        onOpenChange={setEditDialogOpen}
+        user={selectedUser}
+        onSubmit={handleEditUser}
+        isLoading={isUpdating}
+      />
     </div>
   );
 }
