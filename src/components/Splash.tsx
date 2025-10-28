@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import castleLogo from '@/assets/castle-logo.jpeg';
+import castleLogo from '@/assets/castle-logo.png';
 
 interface SplashProps {
   onComplete: () => void;
