@@ -4,6 +4,7 @@ import { useVerseOfTheDay } from '@/hooks/useVerseOfTheDay';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Heart, MessageCircle, Plus, BookOpen, Loader2 } from 'lucide-react';
+import castleLogo from '@/assets/castle-logo.png';
 
 export default function Home() {
   const { hasRole } = useAuth();
@@ -14,6 +15,21 @@ export default function Home() {
 
   return (
     <div className="container mx-auto px-4 py-6 max-w-2xl md:ml-64">
+      {/* Welcome Section with Logo */}
+      <div className="mb-8 text-center animate-fade-in">
+        <img 
+          src={castleLogo} 
+          alt="Castle Movement" 
+          className="h-24 md:h-32 w-auto mx-auto mb-4"
+        />
+        <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-2">
+          Bem-vindo ao Castle Movement
+        </h1>
+        <p className="text-muted-foreground">
+          Comunidade, fé e transformação
+        </p>
+      </div>
+
       {/* Verse of the Day */}
       {loadingVerse ? (
         <Card className="mb-6 card-elevated">
