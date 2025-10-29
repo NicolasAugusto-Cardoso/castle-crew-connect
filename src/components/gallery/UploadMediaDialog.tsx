@@ -39,16 +39,40 @@ export function UploadMediaDialog({ folderId }: UploadMediaDialogProps) {
       let uploadedCount = 0;
 
       for (const file of Array.from(files)) {
-        // Validar tipo de arquivo
-        const validTypes = ['image/jpeg', 'image/jpg', 'video/mp4'];
-        if (!validTypes.includes(file.type)) {
-          toast.error(`Arquivo ${file.name} não é .jpeg ou .mp4`);
+        // Validar tipo de arquivo com fallback para extensão
+        const fileExtension = file.name.split('.').pop()?.toLowerCase();
+        const validExtensions = ['jpeg', 'jpg', 'mp4', 'png'];
+        const validMimeTypes = ['image/jpeg', 'image/jpg', 'image/png', 'video/mp4', 'video/quicktime'];
+        
+        const isValidExtension = fileExtension && validExtensions.includes(fileExtension);
+        const isValidMimeType = validMimeTypes.includes(file.type);
+        
+        if (!isValidExtension && !isValidMimeType) {
+          toast.error(`Arquivo ${file.name} não é um formato válido (.jpeg, .jpg, .png ou .mp4)`);
           continue;
+        }
+        
+        // Determinar tipo de mídia baseado na extensão se MIME type não estiver disponível
+        let mediaType: 'image' | 'video';
+        if (fileExtension === 'mp4') {
+          mediaType = 'video';
+        } else if (['jpeg', 'jpg', 'png'].includes(fileExtension || '')) {
+          mediaType = 'image';
+        } else {
+          mediaType = file.type.startsWith('video/') ? 'video' : 'image';
         }
 
         // Upload para storage bucket 'gallery'
         const fileExt = file.name.split('.').pop();
         const fileName = `${folderId}/${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
+        
+        console.log('Tentando upload:', {
+          fileName: file.name,
+          fileType: file.type,
+          fileSize: file.size,
+          fileExtension: fileExt,
+          mediaType
+        });
         
         const { error: uploadError } = await supabase.storage
           .from('gallery')
@@ -58,8 +82,20 @@ export function UploadMediaDialog({ folderId }: UploadMediaDialogProps) {
           });
 
         if (uploadError) {
-          console.error('Upload error:', uploadError);
-          toast.error(`Erro ao enviar ${file.name}`);
+          console.error('Upload error detalhado:', {
+            error: uploadError,
+            message: uploadError.message,
+            fileName: file.name,
+            bucket: 'gallery'
+          });
+          
+          if (uploadError.message.includes('new row violates row-level security')) {
+            toast.error('Você não tem permissão para fazer upload. Apenas admins e social media.');
+          } else if (uploadError.message.includes('Payload too large')) {
+            toast.error(`Arquivo ${file.name} é muito grande. Máximo: 50MB`);
+          } else {
+            toast.error(`Erro ao enviar ${file.name}: ${uploadError.message}`);
+          }
           continue;
         }
 
@@ -69,7 +105,6 @@ export function UploadMediaDialog({ folderId }: UploadMediaDialogProps) {
           .getPublicUrl(fileName);
 
         // Inserir registro no banco
-        const mediaType = file.type.startsWith('image/') ? 'image' : 'video';
         const { error: dbError } = await supabase
           .from('gallery_media')
           .insert({
@@ -118,20 +153,37 @@ export function UploadMediaDialog({ folderId }: UploadMediaDialogProps) {
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="files">Arquivos (.jpeg, .mp4)</Label>
+            <Label htmlFor="files">Arquivos (.jpeg, .png, .mp4)</Label>
             <input
               id="files"
               type="file"
               multiple
-              accept="image/jpeg,image/jpg,video/mp4"
+              accept="image/jpeg,image/jpg,image/png,video/mp4,video/*,image/*"
+              capture="environment"
               onChange={(e) => setFiles(e.target.files)}
               className="w-full p-2 border rounded"
               disabled={isUploading}
             />
             <p className="text-sm text-muted-foreground">
-              Selecione uma ou mais fotos (.jpeg) ou vídeos (.mp4)
+              📱 Mobile: Toque para acessar câmera ou galeria<br />
+              💻 Desktop: Selecione arquivos (.jpeg, .png ou .mp4, máx 50MB cada)
             </p>
           </div>
+
+          {files && files.length > 0 && (
+            <div className="space-y-2">
+              <Label>Arquivos selecionados: {files.length}</Label>
+              <div className="max-h-32 overflow-y-auto space-y-1">
+                {Array.from(files).map((file, index) => (
+                  <div key={index} className="text-sm text-muted-foreground flex items-center gap-2">
+                    {file.type.startsWith('image/') ? '🖼️' : '🎥'}
+                    <span>{file.name}</span>
+                    <span className="text-xs">({(file.size / 1024 / 1024).toFixed(2)} MB)</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           <div className="flex gap-3 justify-end">
             <Button
