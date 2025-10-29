@@ -12,6 +12,7 @@ import Login from "./pages/Login";
 import Testimonials from "./pages/Testimonials";
 import Contact from "./pages/Contact";
 import Gallery from "./pages/Gallery";
+import GalleryFolder from "./pages/GalleryFolder";
 import Discipleship from "./pages/Discipleship";
 import Users from "./pages/Users";
 import NotFound from "./pages/NotFound";
@@ -57,6 +58,7 @@ const App = () => {
               <Route path="/testimonials" element={<Testimonials />} />
               <Route path="/contact" element={<Contact />} />
               <Route path="/gallery" element={<Gallery />} />
+              <Route path="/gallery/:folderId" element={<GalleryFolder />} />
               <Route path="/discipleship" element={<Discipleship />} />
               <Route path="/users" element={<Users />} />
             </Route>

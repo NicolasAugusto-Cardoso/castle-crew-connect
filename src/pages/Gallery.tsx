@@ -4,8 +4,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Folder, Calendar, Loader2, Image, AlertCircle } from 'lucide-react';
 import { CreateFolderDialog } from '@/components/gallery/CreateFolderDialog';
 import { UploadMediaDialog } from '@/components/gallery/UploadMediaDialog';
+import { useNavigate } from 'react-router-dom';
 
 export default function Gallery() {
+  const navigate = useNavigate();
   const { hasRole } = useAuth();
   const { folders, isLoading } = useGallery();
 
@@ -58,7 +60,15 @@ export default function Gallery() {
       ) : (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {folders.map((folder) => (
-            <Card key={folder.id} className="card-elevated cursor-pointer hover:scale-105 transition-transform">
+            <Card 
+              key={folder.id} 
+              className="card-elevated cursor-pointer hover:scale-105 transition-transform"
+              onClick={(e) => {
+                // Don't navigate if clicking the upload button
+                if ((e.target as HTMLElement).closest('button')) return;
+                navigate(`/gallery/${folder.id}`);
+              }}
+            >
               <div className="aspect-video overflow-hidden bg-muted">
                 {folder.cover_url ? (
                   <img

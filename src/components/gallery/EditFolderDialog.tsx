@@ -10,19 +10,25 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { useGallery } from '@/hooks/useGallery';
+import { useGallery, GalleryFolder } from '@/hooks/useGallery';
 import { supabase } from '@/integrations/supabase/client';
-import { Plus, Upload, X } from 'lucide-react';
+import { Edit, Upload, X } from 'lucide-react';
 import { toast } from 'sonner';
 
-export function CreateFolderDialog() {
-  const { createFolder } = useGallery();
+interface EditFolderDialogProps {
+  folder: GalleryFolder;
+}
+
+export function EditFolderDialog({ folder }: EditFolderDialogProps) {
+  const { updateFolder } = useGallery();
   const [open, setOpen] = useState(false);
-  const [name, setName] = useState('');
-  const [description, setDescription] = useState('');
-  const [eventDate, setEventDate] = useState('');
+  const [name, setName] = useState(folder.name);
+  const [description, setDescription] = useState(folder.description || '');
+  const [eventDate, setEventDate] = useState(
+    folder.event_date ? new Date(folder.event_date).toISOString().split('T')[0] : ''
+  );
   const [coverFile, setCoverFile] = useState<File | null>(null);
-  const [coverPreview, setCoverPreview] = useState('');
+  const [coverPreview, setCoverPreview] = useState(folder.cover_url || '');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleCoverChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -46,19 +52,19 @@ export function CreateFolderDialog() {
     setIsSubmitting(true);
 
     try {
-      let coverUrl = '';
+      let coverUrl = folder.cover_url;
 
       if (coverFile) {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) throw new Error('Not authenticated');
 
         const fileExt = coverFile.name.split('.').pop();
-        const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
+        const fileName = `${folder.id}.${fileExt}`;
         const filePath = `covers/${fileName}`;
 
         const { error: uploadError } = await supabase.storage
           .from('gallery')
-          .upload(filePath, coverFile);
+          .upload(filePath, coverFile, { upsert: true });
 
         if (uploadError) throw uploadError;
 
@@ -69,22 +75,19 @@ export function CreateFolderDialog() {
         coverUrl = publicUrl;
       }
 
-      await createFolder.mutateAsync({
+      await updateFolder.mutateAsync({
+        id: folder.id,
         name,
         description: description || undefined,
         event_date: eventDate || undefined,
         cover_url: coverUrl || undefined
       });
-      
-      setName('');
-      setDescription('');
-      setEventDate('');
-      setCoverFile(null);
-      setCoverPreview('');
+
       setOpen(false);
+      toast.success('Pasta atualizada com sucesso!');
     } catch (error) {
-      console.error('Error creating folder:', error);
-      toast.error('Erro ao criar pasta');
+      console.error('Error updating folder:', error);
+      toast.error('Erro ao atualizar pasta');
     } finally {
       setIsSubmitting(false);
     }
@@ -93,14 +96,13 @@ export function CreateFolderDialog() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="w-full h-14 btn-gradient text-base">
-          <Plus className="w-5 h-5 mr-2" />
-          Nova Pasta
+        <Button variant="outline" size="icon">
+          <Edit className="w-4 h-4" />
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle>Nova Pasta de Galeria</DialogTitle>
+          <DialogTitle>Editar Pasta</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
@@ -109,7 +111,6 @@ export function CreateFolderDialog() {
               id="name"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="Ex: Ação Unimar - Out/2024"
               required
               disabled={isSubmitting}
             />
@@ -121,7 +122,6 @@ export function CreateFolderDialog() {
               id="description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Descreva o evento ou ação..."
               rows={3}
               disabled={isSubmitting}
             />
@@ -139,7 +139,7 @@ export function CreateFolderDialog() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="cover">Foto de Capa (opcional)</Label>
+            <Label htmlFor="cover">Foto de Capa</Label>
             <div className="flex gap-3 items-start">
               <div className="flex-1">
                 <Input
@@ -189,7 +189,7 @@ export function CreateFolderDialog() {
               Cancelar
             </Button>
             <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? 'Criando...' : 'Criar Pasta'}
+              {isSubmitting ? 'Salvando...' : 'Salvar Alterações'}
             </Button>
           </div>
         </form>
