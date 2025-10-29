@@ -52,14 +52,16 @@ export function UploadMediaDialog({ folderId }: UploadMediaDialogProps) {
           continue;
         }
         
-        // Determinar tipo de mídia baseado na extensão se MIME type não estiver disponível
-        let mediaType: 'image' | 'video';
+        // Determinar tipo MIME correto baseado na extensão
+        let mimeType: string;
         if (fileExtension === 'mp4') {
-          mediaType = 'video';
-        } else if (['jpeg', 'jpg', 'png'].includes(fileExtension || '')) {
-          mediaType = 'image';
+          mimeType = 'video/mp4';
+        } else if (fileExtension === 'jpeg' || fileExtension === 'jpg') {
+          mimeType = 'image/jpeg';
+        } else if (fileExtension === 'png') {
+          mimeType = 'image/png';
         } else {
-          mediaType = file.type.startsWith('video/') ? 'video' : 'image';
+          mimeType = file.type || 'application/octet-stream';
         }
 
         // Upload para storage bucket 'gallery'
@@ -71,7 +73,7 @@ export function UploadMediaDialog({ folderId }: UploadMediaDialogProps) {
           fileType: file.type,
           fileSize: file.size,
           fileExtension: fileExt,
-          mediaType
+          mimeType
         });
         
         const { error: uploadError } = await supabase.storage
@@ -110,7 +112,7 @@ export function UploadMediaDialog({ folderId }: UploadMediaDialogProps) {
           .insert({
             folder_id: folderId,
             url: publicUrl,
-            type: mediaType,
+            type: mimeType,
             created_by: user.id
           });
 

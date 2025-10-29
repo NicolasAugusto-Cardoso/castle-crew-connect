@@ -10,18 +10,33 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { useGallery, GalleryFolder } from '@/hooks/useGallery';
 import { supabase } from '@/integrations/supabase/client';
-import { Edit, Upload, X } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
+import { Edit, Upload, X, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { useNavigate } from 'react-router-dom';
 
 interface EditFolderDialogProps {
   folder: GalleryFolder;
 }
 
 export function EditFolderDialog({ folder }: EditFolderDialogProps) {
-  const { updateFolder } = useGallery();
+  const navigate = useNavigate();
+  const { hasRole } = useAuth();
+  const { updateFolder, deleteFolder } = useGallery();
   const [open, setOpen] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [name, setName] = useState(folder.name);
   const [description, setDescription] = useState(folder.description || '');
   const [eventDate, setEventDate] = useState(
@@ -30,6 +45,9 @@ export function EditFolderDialog({ folder }: EditFolderDialogProps) {
   const [coverFile, setCoverFile] = useState<File | null>(null);
   const [coverPreview, setCoverPreview] = useState(folder.cover_url || '');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  
+  const canDelete = hasRole(['admin']);
 
   const handleCoverChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -93,8 +111,59 @@ export function EditFolderDialog({ folder }: EditFolderDialogProps) {
     }
   };
 
+  const handleDelete = async () => {
+    setIsDeleting(true);
+    try {
+      // Deletar todos os arquivos de mídia da pasta
+      const { data: mediaFiles } = await supabase
+        .from('gallery_media')
+        .select('url')
+        .eq('folder_id', folder.id);
+
+      if (mediaFiles && mediaFiles.length > 0) {
+        // Extrair paths dos arquivos e deletar do storage
+        const filePaths = mediaFiles.map(media => {
+          const urlParts = media.url.split('/');
+          return urlParts.slice(urlParts.indexOf('gallery') + 1).join('/');
+        });
+
+        const { error: storageError } = await supabase.storage
+          .from('gallery')
+          .remove(filePaths);
+
+        if (storageError) {
+          console.error('Error deleting files from storage:', storageError);
+        }
+      }
+
+      // Deletar capa se existir
+      if (folder.cover_url) {
+        const urlParts = folder.cover_url.split('/');
+        const coverPath = urlParts.slice(urlParts.indexOf('gallery') + 1).join('/');
+        
+        await supabase.storage
+          .from('gallery')
+          .remove([coverPath]);
+      }
+
+      // Deletar a pasta (cascata deletará as mídias automaticamente)
+      await deleteFolder.mutateAsync(folder.id);
+      
+      toast.success('Pasta excluída com sucesso!');
+      setShowDeleteDialog(false);
+      setOpen(false);
+      navigate('/gallery');
+    } catch (error) {
+      console.error('Error deleting folder:', error);
+      toast.error('Erro ao excluir pasta');
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <>
+      <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button variant="outline" size="icon">
           <Edit className="w-4 h-4" />
@@ -179,21 +248,56 @@ export function EditFolderDialog({ folder }: EditFolderDialogProps) {
             )}
           </div>
 
-          <div className="flex gap-3 justify-end">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setOpen(false)}
-              disabled={isSubmitting}
-            >
-              Cancelar
-            </Button>
-            <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? 'Salvando...' : 'Salvar Alterações'}
-            </Button>
+          <div className="flex gap-3 justify-between">
+            {canDelete && (
+              <Button
+                type="button"
+                variant="destructive"
+                onClick={() => setShowDeleteDialog(true)}
+                disabled={isSubmitting}
+              >
+                <Trash2 className="w-4 h-4 mr-2" />
+                Excluir Pasta
+              </Button>
+            )}
+            <div className="flex gap-3 ml-auto">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setOpen(false)}
+                disabled={isSubmitting}
+              >
+                Cancelar
+              </Button>
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting ? 'Salvando...' : 'Salvar Alterações'}
+              </Button>
+            </div>
           </div>
         </form>
       </DialogContent>
     </Dialog>
+
+    <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Excluir pasta "{folder.name}"?</AlertDialogTitle>
+          <AlertDialogDescription>
+            Esta ação não pode ser desfeita. Todos os arquivos desta pasta também serão permanentemente removidos do servidor.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel disabled={isDeleting}>Cancelar</AlertDialogCancel>
+          <AlertDialogAction
+            onClick={handleDelete}
+            disabled={isDeleting}
+            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+          >
+            {isDeleting ? 'Excluindo...' : 'Excluir Pasta'}
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+    </>
   );
 }
