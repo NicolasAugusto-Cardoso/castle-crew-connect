@@ -68,14 +68,6 @@ export function UploadMediaDialog({ folderId }: UploadMediaDialogProps) {
         const fileExt = file.name.split('.').pop();
         const fileName = `${folderId}/${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
         
-        console.log('Tentando upload:', {
-          fileName: file.name,
-          fileType: file.type,
-          fileSize: file.size,
-          fileExtension: fileExt,
-          mimeType
-        });
-        
         const { error: uploadError } = await supabase.storage
           .from('gallery')
           .upload(fileName, file, {
@@ -84,19 +76,12 @@ export function UploadMediaDialog({ folderId }: UploadMediaDialogProps) {
           });
 
         if (uploadError) {
-          console.error('Upload error detalhado:', {
-            error: uploadError,
-            message: uploadError.message,
-            fileName: file.name,
-            bucket: 'gallery'
-          });
-          
           if (uploadError.message.includes('new row violates row-level security')) {
             toast.error('Você não tem permissão para fazer upload. Apenas admins e social media.');
           } else if (uploadError.message.includes('Payload too large')) {
             toast.error(`Arquivo ${file.name} é muito grande. Máximo: 50MB`);
           } else {
-            toast.error(`Erro ao enviar ${file.name}: ${uploadError.message}`);
+            toast.error(`Erro ao enviar ${file.name}`);
           }
           continue;
         }
@@ -117,7 +102,6 @@ export function UploadMediaDialog({ folderId }: UploadMediaDialogProps) {
           });
 
         if (dbError) {
-          console.error('Database error:', dbError);
           toast.error(`Erro ao registrar ${file.name}`);
           continue;
         }
@@ -135,7 +119,6 @@ export function UploadMediaDialog({ folderId }: UploadMediaDialogProps) {
       }
     } catch (error: any) {
       toast.error('Erro ao enviar arquivos');
-      console.error(error);
     } finally {
       setIsUploading(false);
     }

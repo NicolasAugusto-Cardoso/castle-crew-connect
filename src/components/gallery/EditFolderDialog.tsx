@@ -104,7 +104,6 @@ export function EditFolderDialog({ folder }: EditFolderDialogProps) {
       setOpen(false);
       toast.success('Pasta atualizada com sucesso!');
     } catch (error) {
-      console.error('Error updating folder:', error);
       toast.error('Erro ao atualizar pasta');
     } finally {
       setIsSubmitting(false);
@@ -132,7 +131,7 @@ export function EditFolderDialog({ folder }: EditFolderDialogProps) {
           .remove(filePaths);
 
         if (storageError) {
-          console.error('Error deleting files from storage:', storageError);
+          // Silenciar erro de storage - pasta será deletada mesmo assim
         }
       }
 
@@ -154,7 +153,6 @@ export function EditFolderDialog({ folder }: EditFolderDialogProps) {
       setOpen(false);
       navigate('/gallery');
     } catch (error) {
-      console.error('Error deleting folder:', error);
       toast.error('Erro ao excluir pasta');
     } finally {
       setIsDeleting(false);

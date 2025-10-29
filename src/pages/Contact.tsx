@@ -8,6 +8,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Mail, Phone, Loader2 } from 'lucide-react';
+import { contactFormSchema } from '@/lib/validations';
+import { toast } from 'sonner';
 
 export default function Contact() {
   const { hasRole } = useAuth();
@@ -25,11 +27,29 @@ export default function Contact() {
     setSubmitting(true);
     
     try {
-      await createMessage.mutateAsync({ name, phone, email, message });
+      // Validar dados do formulário
+      const validated = contactFormSchema.parse({ 
+        name, 
+        phone, 
+        email: email || undefined, 
+        message 
+      });
+      
+      await createMessage.mutateAsync(validated);
       setName('');
       setPhone('');
       setEmail('');
       setMessage('');
+      toast.success('Mensagem enviada com sucesso!');
+    } catch (error: any) {
+      if (error.errors) {
+        // Erros de validação Zod
+        error.errors.forEach((err: any) => {
+          toast.error(err.message);
+        });
+      } else {
+        toast.error('Erro ao enviar mensagem');
+      }
     } finally {
       setSubmitting(false);
     }
@@ -172,16 +192,18 @@ export default function Contact() {
                 <p className="text-xs text-muted-foreground">
                   Recebida em {new Date(msg.created_at).toLocaleString('pt-BR')}
                 </p>
-                {msg.status !== 'answered' && (
-                  <Button
-                    className="mt-4 btn-accent"
-                    size="sm"
-                    onClick={() => updateMessageStatus.mutate({ id: msg.id, status: 'answered' })}
-                    disabled={updateMessageStatus.isPending}
-                  >
-                    Responder
-                  </Button>
-                )}
+                <div className="flex gap-2 mt-4">
+                  {msg.status !== 'answered' && (
+                    <Button
+                      className="btn-accent"
+                      size="sm"
+                      onClick={() => updateMessageStatus.mutate({ id: msg.id, status: 'answered' })}
+                      disabled={updateMessageStatus.isPending}
+                    >
+                      Responder
+                    </Button>
+                  )}
+                </div>
               </CardContent>
             </Card>
           )))}

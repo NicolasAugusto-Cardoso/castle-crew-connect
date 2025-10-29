@@ -60,7 +60,6 @@ export function MediaLightbox({ media, currentIndex, onClose, onNavigate }: Medi
       document.body.removeChild(a);
       toast.success('Download iniciado!');
     } catch (error) {
-      console.error('Download error:', error);
       toast.error('Erro ao fazer download');
     }
   };
@@ -95,7 +94,6 @@ export function MediaLightbox({ media, currentIndex, onClose, onNavigate }: Medi
       
       setShowDeleteDialog(false);
     } catch (error) {
-      console.error('Delete error:', error);
       toast.error('Erro ao excluir mídia');
     } finally {
       setIsDeleting(false);

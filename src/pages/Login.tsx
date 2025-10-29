@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 import castleLogo from '@/assets/castle-logo.png';
+import { loginSchema, signupSchema } from '@/lib/validations';
 
 export default function Login() {
   const { signIn, signUp, isAuthenticated } = useAuth();
@@ -36,16 +37,32 @@ export default function Login() {
     setIsLoading(true);
 
     try {
-      const { error } = await signIn(loginData.email, loginData.password);
+      // Validar dados de login
+      const validated = loginSchema.parse(loginData);
+      
+      const { error } = await signIn(validated.email, validated.password);
       
       if (error) {
-        toast.error('Erro ao fazer login: ' + error.message);
+        if (error.message.includes('Invalid login credentials')) {
+          toast.error('E-mail ou senha incorretos');
+        } else if (error.message.includes('Email not confirmed')) {
+          toast.error('Confirme seu e-mail antes de fazer login');
+        } else {
+          toast.error('Erro ao fazer login. Tente novamente.');
+        }
       } else {
         toast.success('Login realizado com sucesso!');
         window.location.href = '/';
       }
-    } catch (error) {
-      toast.error('Erro ao fazer login');
+    } catch (error: any) {
+      if (error.errors) {
+        // Erros de validação Zod
+        error.errors.forEach((err: any) => {
+          toast.error(err.message);
+        });
+      } else {
+        toast.error('Erro ao fazer login');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -53,30 +70,35 @@ export default function Login() {
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (signupData.password !== signupData.confirmPassword) {
-      toast.error('As senhas não coincidem');
-      return;
-    }
-
-    if (signupData.password.length < 6) {
-      toast.error('A senha deve ter pelo menos 6 caracteres');
-      return;
-    }
-
     setIsLoading(true);
 
     try {
-      const { error } = await signUp(signupData.email, signupData.password, signupData.name);
+      // Validar dados de cadastro
+      const validated = signupSchema.parse(signupData);
+      
+      const { error } = await signUp(validated.email, validated.password, validated.name);
       
       if (error) {
-        toast.error('Erro ao criar conta: ' + error.message);
+        if (error.message.includes('User already registered')) {
+          toast.error('Este e-mail já está cadastrado');
+        } else if (error.message.includes('Password should be at least')) {
+          toast.error('A senha não atende aos requisitos de segurança');
+        } else {
+          toast.error('Erro ao criar conta. Tente novamente.');
+        }
       } else {
         toast.success('Conta criada com sucesso! Você já pode fazer login.');
         window.location.href = '/';
       }
-    } catch (error) {
-      toast.error('Erro ao criar conta');
+    } catch (error: any) {
+      if (error.errors) {
+        // Erros de validação Zod
+        error.errors.forEach((err: any) => {
+          toast.error(err.message);
+        });
+      } else {
+        toast.error('Erro ao criar conta');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -171,18 +193,21 @@ export default function Login() {
                   />
                 </div>
 
-                <div className="space-y-2">
+                 <div className="space-y-2">
                   <Label htmlFor="signup-password">Senha</Label>
                   <Input
                     id="signup-password"
                     type="password"
                     value={signupData.password}
                     onChange={(e) => setSignupData({ ...signupData, password: e.target.value })}
-                    placeholder="••••••"
+                    placeholder="Mín. 8 caracteres, maiúscula, minúscula, número e especial"
                     required
-                    minLength={6}
+                    minLength={8}
                     disabled={isLoading}
                   />
+                  <p className="text-xs text-muted-foreground">
+                    Sua senha deve ter no mínimo 8 caracteres e conter: letra maiúscula, minúscula, número e caractere especial
+                  </p>
                 </div>
 
                 <div className="space-y-2">

@@ -83,7 +83,6 @@ export function CreateFolderDialog() {
       setCoverPreview('');
       setOpen(false);
     } catch (error) {
-      console.error('Error creating folder:', error);
       toast.error('Erro ao criar pasta');
     } finally {
       setIsSubmitting(false);
