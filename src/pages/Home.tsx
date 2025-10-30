@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { usePosts } from '@/hooks/usePosts';
 import { useVerseOfTheDay } from '@/hooks/useVerseOfTheDay';
@@ -6,6 +7,7 @@ import { Heart, MessageCircle, BookOpen, Loader2, MoreVertical } from 'lucide-re
 import castleLogo from '@/assets/castle-logo.png';
 import { CreatePostDialog } from '@/components/posts/CreatePostDialog';
 import { EditPostDialog } from '@/components/posts/EditPostDialog';
+import { ImageLightbox } from '@/components/posts/ImageLightbox';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,6 +18,7 @@ export default function Home() {
   const { hasRole } = useAuth();
   const { posts, isLoading: loadingPosts, toggleLike } = usePosts();
   const { verse, isLoading: loadingVerse } = useVerseOfTheDay();
+  const [selectedImage, setSelectedImage] = useState<{ url: string; alt: string } | null>(null);
 
   const canManagePosts = hasRole(['admin', 'social_media']);
 
@@ -116,11 +119,16 @@ export default function Home() {
               </CardHeader>
               <CardContent className="space-y-4">
                 {post.image_url && (
-                  <img
-                    src={post.image_url}
-                    alt={post.title}
-                    className="w-full h-64 object-cover rounded-lg"
-                  />
+                  <div 
+                    className="w-full max-h-[500px] overflow-hidden rounded-lg bg-muted cursor-pointer hover:opacity-95 transition-opacity"
+                    onClick={() => setSelectedImage({ url: post.image_url!, alt: post.title })}
+                  >
+                    <img
+                      src={post.image_url}
+                      alt={post.title}
+                      className="w-full h-auto object-contain max-h-[500px]"
+                    />
+                  </div>
                 )}
                 <p className="text-foreground leading-relaxed">{post.content}</p>
                 
@@ -146,6 +154,16 @@ export default function Home() {
             </Card>
           ))}
         </div>
+      )}
+
+      {/* Image Lightbox */}
+      {selectedImage && (
+        <ImageLightbox
+          imageUrl={selectedImage.url}
+          alt={selectedImage.alt}
+          isOpen={!!selectedImage}
+          onClose={() => setSelectedImage(null)}
+        />
       )}
     </div>
   );
