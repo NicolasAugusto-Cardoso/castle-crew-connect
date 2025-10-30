@@ -76,19 +76,28 @@ export default function Login() {
       // Validar dados de cadastro
       const validated = signupSchema.parse(signupData);
       
-      const { error } = await signUp(validated.email, validated.password, validated.name);
+      const { data, error } = await signUp(validated.email, validated.password, validated.name);
       
       if (error) {
         if (error.message.includes('User already registered')) {
           toast.error('Este e-mail já está cadastrado');
         } else if (error.message.includes('Password should be at least')) {
-          toast.error('A senha não atende aos requisitos de segurança');
+          toast.error('A senha deve ter no mínimo 8 caracteres com maiúscula, minúscula, número e caractere especial');
         } else {
-          toast.error('Erro ao criar conta. Tente novamente.');
+          toast.error('Erro ao criar conta: ' + error.message);
         }
       } else {
-        toast.success('Conta criada com sucesso! Você já pode fazer login.');
-        window.location.href = '/';
+        // Verificar se a sessão foi criada automaticamente
+        if (data?.session) {
+          // Confirmação automática habilitada - usuário já está logado
+          toast.success('Conta criada com sucesso! Redirecionando...');
+          setTimeout(() => {
+            window.location.href = '/';
+          }, 1500);
+        } else if (data?.user && !data?.session) {
+          // Confirmação de e-mail necessária
+          toast.info('Conta criada! Verifique seu e-mail para confirmar o cadastro.');
+        }
       }
     } catch (error: any) {
       if (error.errors) {
