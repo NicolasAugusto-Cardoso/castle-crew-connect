@@ -12,7 +12,7 @@ import { contactFormSchema } from '@/lib/validations';
 import { toast } from 'sonner';
 
 export default function Contact() {
-  const { hasRole } = useAuth();
+  const { hasRole, loading: authLoading } = useAuth();
   const { messages, isLoading, createMessage, updateMessageStatus } = useContactMessages();
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
@@ -21,6 +21,16 @@ export default function Contact() {
   const [submitting, setSubmitting] = useState(false);
 
   const canManageMessages = hasRole(['admin', 'social_media']);
+
+  if (authLoading) {
+    return (
+      <div className="container mx-auto px-4 py-6 max-w-4xl md:ml-64">
+        <div className="flex justify-center py-12">
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        </div>
+      </div>
+    );
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
