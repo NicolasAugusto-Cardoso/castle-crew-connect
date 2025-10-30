@@ -22,19 +22,9 @@ const queryClient = new QueryClient();
 // Protected Layout Wrapper
 const ProtectedLayout = () => {
   const { isAuthenticated, loading } = useAuth();
-  const [showSplash, setShowSplash] = useState(true);
 
-  useEffect(() => {
-    if (!loading) {
-      const timer = setTimeout(() => {
-        setShowSplash(false);
-      }, 1500);
-      return () => clearTimeout(timer);
-    }
-  }, [loading]);
-
-  if (showSplash || loading) {
-    return <Splash onComplete={() => setShowSplash(false)} />;
+  if (loading) {
+    return null;
   }
 
   if (!isAuthenticated) {
@@ -45,6 +35,12 @@ const ProtectedLayout = () => {
 };
 
 const App = () => {
+  const [showInitialSplash, setShowInitialSplash] = useState(true);
+
+  if (showInitialSplash) {
+    return <Splash onComplete={() => setShowInitialSplash(false)} />;
+  }
+
   return (
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
