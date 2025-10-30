@@ -17,46 +17,31 @@ export const useUsers = () => {
   const { data: users, isLoading } = useQuery({
     queryKey: ['users'],
     queryFn: async () => {
-      // Fetch all profiles
-      const { data: profiles, error: profilesError } = await supabase
-        .from('profiles')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (profilesError) throw profilesError;
-
-      // Fetch all user roles
-      const { data: userRoles, error: rolesError } = await supabase
-        .from('user_roles')
-        .select('user_id, role');
-
-      if (rolesError) throw rolesError;
-
-      // Combine profiles with their roles
-      const usersWithRoles: UserWithRoles[] = profiles.map((profile) => ({
-        id: profile.id,
-        email: '', // Will be populated from auth
-        name: profile.name,
-        avatar_url: profile.avatar_url || undefined,
-        roles: userRoles
-          .filter((ur) => ur.user_id === profile.id)
-          .map((ur) => ur.role),
-        created_at: profile.created_at,
-      }));
-
-      // Fetch emails from auth.users (admin only)
-      const { data: authUsers } = await supabase.auth.admin.listUsers();
+      // Call Edge Function to list users with admin privileges
+      const { data: { session } } = await supabase.auth.getSession();
       
-      if (authUsers?.users) {
-        authUsers.users.forEach((authUser: { id: string; email?: string }) => {
-          const user = usersWithRoles.find((u) => u.id === authUser.id);
-          if (user) {
-            user.email = authUser.email || '';
-          }
-        });
+      if (!session) {
+        throw new Error('Você precisa estar autenticado');
       }
 
-      return usersWithRoles;
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/list-users`,
+        {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${session.access_token}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Erro ao listar usuários');
+      }
+
+      const result = await response.json();
+      return result.users as UserWithRoles[];
     },
   });
 
@@ -72,37 +57,39 @@ export const useUsers = () => {
       name: string;
       roles: string[];
     }) => {
-      // Create user in auth
-      const { data: authData, error: authError } = await supabase.auth.admin.createUser({
-        email,
-        password,
-        email_confirm: true,
-        user_metadata: { name },
-      });
+      // Call Edge Function to create user with admin privileges
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        throw new Error('Você precisa estar autenticado');
+      }
 
-      if (authError) throw authError;
-      if (!authData.user) throw new Error('Failed to create user');
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-user`,
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${session.access_token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ email, password, name, roles }),
+        }
+      );
 
-      // Insert roles
-      const roleInserts = roles.map((role) => ({
-        user_id: authData.user.id,
-        role: role as 'admin' | 'social_media' | 'collaborator' | 'user',
-      }));
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Erro ao criar usuário');
+      }
 
-      const { error: rolesError } = await supabase
-        .from('user_roles')
-        .insert(roleInserts);
-
-      if (rolesError) throw rolesError;
-
-      return authData.user;
+      const result = await response.json();
+      return result.user;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['users'] });
       toast.success('Usuário criado com sucesso!');
     },
-    onError: (error) => {
-      toast.error(`Erro ao criar usuário: ${error.message}`);
+    onError: (error: Error) => {
+      toast.error(error.message);
     },
   });
 
@@ -114,48 +101,75 @@ export const useUsers = () => {
       userId: string;
       roles: string[];
     }) => {
-      // Delete existing roles
-      const { error: deleteError } = await supabase
-        .from('user_roles')
-        .delete()
-        .eq('user_id', userId);
-
-      if (deleteError) throw deleteError;
-
-      // Insert new roles
-      if (roles.length > 0) {
-        const roleInserts = roles.map((role) => ({
-          user_id: userId,
-          role: role as 'admin' | 'social_media' | 'collaborator' | 'user',
-        }));
-
-        const { error: insertError } = await supabase
-          .from('user_roles')
-          .insert(roleInserts);
-
-        if (insertError) throw insertError;
+      // Call Edge Function to update roles with admin privileges
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        throw new Error('Você precisa estar autenticado');
       }
+
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/update-user-roles`,
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${session.access_token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ userId, roles }),
+        }
+      );
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Erro ao atualizar papéis');
+      }
+
+      return await response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['users'] });
-      toast.success('Roles atualizadas com sucesso!');
+      toast.success('Papéis atualizados com sucesso!');
     },
-    onError: (error) => {
-      toast.error(`Erro ao atualizar roles: ${error.message}`);
+    onError: (error: Error) => {
+      toast.error(error.message);
     },
   });
 
   const deleteUser = useMutation({
     mutationFn: async (userId: string) => {
-      const { error } = await supabase.auth.admin.deleteUser(userId);
-      if (error) throw error;
+      // Call Edge Function to delete user with admin privileges
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        throw new Error('Você precisa estar autenticado');
+      }
+
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/delete-user`,
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${session.access_token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ userId }),
+        }
+      );
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Erro ao excluir usuário');
+      }
+
+      return await response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['users'] });
       toast.success('Usuário removido com sucesso!');
     },
-    onError: (error) => {
-      toast.error(`Erro ao remover usuário: ${error.message}`);
+    onError: (error: Error) => {
+      toast.error(error.message);
     },
   });
 
