@@ -35,7 +35,7 @@ export const Layout = () => {
       <header className="sticky top-0 z-40 bg-gradient-to-r from-primary-light to-primary-dark shadow-lg">
         <div className="w-full pl-2 pr-4 py-3 flex items-center justify-between md:pl-4">
           <div className="flex items-center gap-3">
-            <img src={castleLogo} alt="Castle Movement" className="h-10 w-auto" />
+            <img src={castleLogo} alt="Castle Movement" className="h-14 md:h-16 w-auto" />
           </div>
           
           <div className="flex items-center gap-4 md:mr-4">
