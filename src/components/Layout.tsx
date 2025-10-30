@@ -33,7 +33,7 @@ export const Layout = () => {
     <div className="min-h-screen bg-background flex flex-col">
       {/* Header */}
       <header className="sticky top-0 z-40 bg-gradient-to-r from-primary-light to-primary-dark shadow-lg">
-        <div className="container mx-auto px-4 py-3 flex items-center justify-between">
+        <div className="w-full px-4 py-3 flex items-center justify-between md:pl-[280px]">
           <div className="flex items-center gap-3">
             <img src={castleLogo} alt="Castle Movement" className="h-10 w-auto" />
           </div>
@@ -54,9 +54,36 @@ export const Layout = () => {
         </div>
       </header>
 
+      {/* Sidebar Navigation (Desktop) */}
+      <aside className="hidden md:block fixed left-0 top-16 bottom-0 w-64 bg-card border-r border-border overflow-y-auto z-30">
+        <nav className="p-4 space-y-2">
+          {visibleNavItems.map((item) => {
+            const isActive = location.pathname === item.path;
+            return (
+              <button
+                key={item.path}
+                onClick={() => navigate(item.path)}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
+                  isActive
+                    ? 'bg-primary text-primary-foreground shadow-lg'
+                    : 'hover:bg-secondary text-foreground'
+                }`}
+              >
+                <item.icon className="w-5 h-5" />
+                <span className="font-medium">{item.label}</span>
+              </button>
+            );
+          })}
+        </nav>
+      </aside>
+
       {/* Main Content */}
-      <main className="flex-1 pb-20 md:pb-4">
-        <Outlet />
+      <main className="flex-1 pb-20 md:pb-4 md:ml-64">
+        <div className="flex justify-center w-full">
+          <div className="w-full max-w-7xl">
+            <Outlet />
+          </div>
+        </div>
       </main>
 
       {/* Bottom Navigation (Mobile) */}
@@ -81,29 +108,6 @@ export const Layout = () => {
           })}
         </div>
       </nav>
-
-      {/* Sidebar Navigation (Desktop) */}
-      <aside className="hidden md:block fixed left-0 top-16 bottom-0 w-64 bg-card border-r border-border overflow-y-auto">
-        <nav className="p-4 space-y-2">
-          {visibleNavItems.map((item) => {
-            const isActive = location.pathname === item.path;
-            return (
-              <button
-                key={item.path}
-                onClick={() => navigate(item.path)}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
-                  isActive
-                    ? 'bg-primary text-primary-foreground shadow-lg'
-                    : 'hover:bg-secondary text-foreground'
-                }`}
-              >
-                <item.icon className="w-5 h-5" />
-                <span className="font-medium">{item.label}</span>
-              </button>
-            );
-          })}
-        </nav>
-      </aside>
     </div>
   );
 };

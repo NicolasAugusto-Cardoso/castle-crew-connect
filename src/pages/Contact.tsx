@@ -24,7 +24,7 @@ export default function Contact() {
 
   if (authLoading) {
     return (
-      <div className="container mx-auto px-4 py-6 max-w-4xl md:ml-64">
+      <div className="container mx-auto px-4 py-6 max-w-4xl">
         <div className="flex justify-center py-12">
           <Loader2 className="w-8 h-8 animate-spin text-primary" />
         </div>
@@ -84,7 +84,7 @@ export default function Contact() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-6 max-w-4xl md:ml-64">
+    <div className="container mx-auto px-4 py-6 max-w-4xl">
       <div className="mb-8">
         <div className="flex items-center gap-3 mb-2">
           <Mail className="w-8 h-8 text-primary" />

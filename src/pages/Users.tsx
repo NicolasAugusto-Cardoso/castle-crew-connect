@@ -33,7 +33,7 @@ export default function Users() {
 
   if (!isAdmin) {
     return (
-      <div className="container mx-auto px-4 py-6 max-w-4xl md:ml-64">
+      <div className="container mx-auto px-4 py-6 max-w-4xl">
         <Card className="card-elevated">
           <CardContent className="py-12 text-center">
             <UserCircle className="w-12 h-12 mx-auto mb-3 text-destructive" />
@@ -75,7 +75,7 @@ export default function Users() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-6 max-w-4xl md:ml-64">
+    <div className="container mx-auto px-4 py-6 max-w-4xl">
       <div className="mb-8">
         <div className="flex items-center gap-3 mb-2">
           <Shield className="w-8 h-8 text-primary" />

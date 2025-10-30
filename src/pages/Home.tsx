@@ -23,7 +23,7 @@ export default function Home() {
   const canManagePosts = hasRole(['admin', 'social_media']);
 
   return (
-    <div className="container mx-auto px-4 py-6 max-w-2xl md:ml-64">
+    <div className="container mx-auto px-4 py-6 max-w-2xl">
       {/* Welcome Section with Logo */}
       <div className="mb-8 text-center animate-fade-in">
         <img 

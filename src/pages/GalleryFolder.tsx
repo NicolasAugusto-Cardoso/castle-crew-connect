@@ -23,7 +23,7 @@ export default function GalleryFolder() {
 
   if (authLoading) {
     return (
-      <div className="container mx-auto px-4 py-6 max-w-4xl md:ml-64">
+      <div className="container mx-auto px-4 py-6 max-w-4xl">
         <div className="flex justify-center py-12">
           <Loader2 className="w-8 h-8 animate-spin text-primary" />
         </div>
@@ -33,7 +33,7 @@ export default function GalleryFolder() {
 
   if (!canManage) {
     return (
-      <div className="container mx-auto px-4 py-6 max-w-4xl md:ml-64">
+      <div className="container mx-auto px-4 py-6 max-w-4xl">
         <Card className="card-elevated">
           <CardContent className="py-12 text-center">
             <AlertCircle className="w-12 h-12 mx-auto mb-3 text-destructive" />
@@ -49,7 +49,7 @@ export default function GalleryFolder() {
 
   if (!folder && !isLoading) {
     return (
-      <div className="container mx-auto px-4 py-6 max-w-4xl md:ml-64">
+      <div className="container mx-auto px-4 py-6 max-w-4xl">
         <Card className="card-elevated">
           <CardContent className="py-12 text-center">
             <AlertCircle className="w-12 h-12 mx-auto mb-3 text-destructive" />
@@ -65,7 +65,7 @@ export default function GalleryFolder() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-6 max-w-6xl md:ml-64">
+    <div className="container mx-auto px-4 py-6 max-w-6xl">
       <div className="mb-6">
         <Button 
           variant="ghost" 
