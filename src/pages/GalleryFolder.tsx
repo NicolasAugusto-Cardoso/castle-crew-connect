@@ -31,22 +31,6 @@ export default function GalleryFolder() {
     );
   }
 
-  if (!canManage) {
-    return (
-      <div className="container mx-auto px-4 py-6 max-w-4xl">
-        <Card className="card-elevated">
-          <CardContent className="py-12 text-center">
-            <AlertCircle className="w-12 h-12 mx-auto mb-3 text-destructive" />
-            <h2 className="text-xl font-bold mb-2">Acesso Restrito</h2>
-            <p className="text-muted-foreground">
-              Apenas administradores e social media podem acessar a galeria.
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
   if (!folder && !isLoading) {
     return (
       <div className="container mx-auto px-4 py-6 max-w-4xl">
@@ -89,10 +73,12 @@ export default function GalleryFolder() {
               </div>
             )}
           </div>
-          <div className="flex gap-2">
-            {folder && <EditFolderDialog folder={folder} />}
-            {folderId && <UploadMediaDialog folderId={folderId} />}
-          </div>
+          {canManage && (
+            <div className="flex gap-2">
+              {folder && <EditFolderDialog folder={folder} />}
+              {folderId && <UploadMediaDialog folderId={folderId} />}
+            </div>
+          )}
         </div>
       </div>
 

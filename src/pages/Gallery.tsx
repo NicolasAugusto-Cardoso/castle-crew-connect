@@ -23,22 +23,6 @@ export default function Gallery() {
     );
   }
 
-  if (!canManage) {
-    return (
-      <div className="container mx-auto px-4 py-6 max-w-4xl">
-        <Card className="card-elevated">
-          <CardContent className="py-12 text-center">
-            <AlertCircle className="w-12 h-12 mx-auto mb-3 text-destructive" />
-            <h2 className="text-xl font-bold mb-2">Acesso Restrito</h2>
-            <p className="text-muted-foreground">
-              Apenas administradores e social media podem acessar a galeria.
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
   return (
     <div className="container mx-auto px-4 py-6 max-w-6xl">
       <div className="mb-8">
@@ -51,9 +35,11 @@ export default function Gallery() {
         </p>
       </div>
 
-      <div className="mb-6">
-        <CreateFolderDialog />
-      </div>
+      {canManage && (
+        <div className="mb-6">
+          <CreateFolderDialog />
+        </div>
+      )}
 
       {isLoading ? (
         <div className="flex justify-center py-12">
@@ -94,13 +80,13 @@ export default function Gallery() {
               </div>
               <CardHeader>
                 <div className="flex items-center justify-between">
-                  <div>
+                  <div className="flex-1">
                     <CardTitle className="text-lg">{folder.name}</CardTitle>
                     {folder.description && (
                       <p className="text-sm text-muted-foreground">{folder.description}</p>
                     )}
                   </div>
-                  <UploadMediaDialog folderId={folder.id} />
+                  {canManage && <UploadMediaDialog folderId={folder.id} />}
                 </div>
               </CardHeader>
               <CardContent>
