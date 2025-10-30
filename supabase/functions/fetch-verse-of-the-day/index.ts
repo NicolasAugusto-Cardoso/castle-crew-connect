@@ -1,4 +1,5 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.76.1';
+import { fallbackVerses, getRandomFallbackVerse } from './fallback-verses.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -74,51 +75,60 @@ Deno.serve(async (req) => {
     const usedReferences = new Set(recentVerses?.map(v => v.reference) || []);
     console.log(`Found ${usedReferences.size} verses used in the last 30 days`);
 
-    // Try to fetch a unique verse (max 5 attempts)
-    let verse: BibleVerse | null = null;
-    let attempts = 0;
-    const maxAttempts = 5;
+    let reference = '';
+    let text = '';
+    let usedFallback = false;
 
-    while (attempts < maxAttempts) {
-      attempts++;
-      console.log(`Attempt ${attempts} to fetch unique verse`);
+    // Try to fetch from ABíbliaDigital API first
+    try {
+      let verse: BibleVerse | null = null;
+      let attempts = 0;
+      const maxAttempts = 3; // Reduced from 5 to fail faster
 
-      // Fetch random verse from ABíbliaDigital API
-      // Using "nvi" (Nova Versão Internacional) version
-      const apiResponse = await fetch(
-        'https://www.abibliadigital.com.br/api/verses/nvi/random'
-      );
+      while (attempts < maxAttempts) {
+        attempts++;
+        console.log(`Attempt ${attempts} to fetch from API`);
 
-      if (!apiResponse.ok) {
-        console.error('API response not OK:', apiResponse.status);
-        if (attempts === maxAttempts) {
-          throw new Error(`Bible API returned ${apiResponse.status}`);
+        const apiResponse = await fetch(
+          'https://www.abibliadigital.com.br/api/verses/nvi/random',
+          { signal: AbortSignal.timeout(5000) } // 5 second timeout
+        );
+
+        if (!apiResponse.ok) {
+          console.error('API response not OK:', apiResponse.status);
+          if (attempts === maxAttempts) {
+            throw new Error(`Bible API returned ${apiResponse.status}`);
+          }
+          continue;
         }
-        continue;
+
+        const apiVerse: BibleVerse = await apiResponse.json();
+        const apiReference = `${apiVerse.book.name} ${apiVerse.chapter}:${apiVerse.number}`;
+
+        if (!usedReferences.has(apiReference)) {
+          verse = apiVerse;
+          reference = apiReference;
+          text = apiVerse.text;
+          console.log('Got verse from API:', reference);
+          break;
+        }
+
+        console.log('Verse was used recently, trying again');
       }
 
-      const apiVerse: BibleVerse = await apiResponse.json();
-      const reference = `${apiVerse.book.name} ${apiVerse.chapter}:${apiVerse.number}`;
-
-      console.log(`Got verse: ${reference}`);
-
-      // Check if this verse was used recently
-      if (!usedReferences.has(reference)) {
-        verse = apiVerse;
-        console.log('Found unique verse!');
-        break;
+      if (!verse) {
+        throw new Error('Could not find unique verse from API');
       }
-
-      console.log('Verse was used recently, trying again');
+    } catch (apiError) {
+      console.error('API failed, using fallback verses:', apiError);
+      usedFallback = true;
+      
+      // Use fallback verses
+      const fallbackVerse = getRandomFallbackVerse(usedReferences);
+      reference = fallbackVerse.reference;
+      text = fallbackVerse.text;
+      console.log('Using fallback verse:', reference);
     }
-
-    if (!verse) {
-      throw new Error('Could not find a unique verse after maximum attempts');
-    }
-
-    // Format the verse data
-    const reference = `${verse.book.name} ${verse.chapter}:${verse.number}`;
-    const text = verse.text;
 
     console.log(`Saving new verse: ${reference}`);
 
@@ -144,8 +154,11 @@ Deno.serve(async (req) => {
 
     return new Response(
       JSON.stringify({ 
-        message: 'Successfully fetched and saved verse of the day', 
-        verse: newVerse 
+        message: usedFallback 
+          ? 'Successfully saved verse from fallback' 
+          : 'Successfully fetched and saved verse from API', 
+        verse: newVerse,
+        source: usedFallback ? 'fallback' : 'api'
       }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -170,10 +183,10 @@ Deno.serve(async (req) => {
         .maybeSingle();
 
       if (fallbackVerse) {
-        console.log('Using fallback verse:', fallbackVerse.reference);
+        console.log('Using previous day verse as fallback:', fallbackVerse.reference);
         return new Response(
           JSON.stringify({ 
-            message: 'Error fetching new verse, using fallback', 
+            message: 'Error fetching new verse, using previous verse', 
             verse: fallbackVerse,
             error: error instanceof Error ? error.message : 'Unknown error'
           }),
