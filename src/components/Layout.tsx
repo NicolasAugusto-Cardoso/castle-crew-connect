@@ -17,8 +17,8 @@ export const Layout = () => {
     { icon: Home, label: 'Home', path: '/', roles: ['admin', 'social_media', 'collaborator', 'user'] },
     { icon: BookOpen, label: 'Testemunhos', path: '/testimonials', roles: ['admin', 'social_media', 'collaborator', 'user'] },
     { icon: MessageSquare, label: 'Contato', path: '/contact', roles: ['admin', 'social_media', 'collaborator', 'user'] },
-    { icon: FolderOpen, label: 'Galeria', path: '/gallery', roles: ['admin', 'social_media'] },
-    { icon: Users, label: 'Discipulado', path: '/discipleship', roles: ['admin', 'social_media', 'collaborator'] },
+    { icon: FolderOpen, label: 'Galeria', path: '/gallery', roles: ['admin', 'social_media', 'user'] },
+    { icon: Users, label: 'Discipulado', path: '/discipleship', roles: ['admin', 'social_media', 'collaborator', 'user'] },
     { icon: Settings, label: 'Usuários', path: '/users', roles: ['admin'] },
   ];
 

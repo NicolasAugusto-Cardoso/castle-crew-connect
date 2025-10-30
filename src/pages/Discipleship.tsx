@@ -29,6 +29,7 @@ export default function Discipleship() {
 
   const isCollaborator = hasRole(['collaborator']);
   const canRegister = hasRole(['admin', 'social_media']);
+  const canUpdateStatus = hasRole(['admin', 'social_media', 'collaborator']);
 
   // Filter contacts for collaborators
   const filteredContacts = isCollaborator
@@ -122,7 +123,7 @@ export default function Discipleship() {
                 <Select
                   value={contact.status}
                   onValueChange={(value) => handleStatusChange(contact.id, value)}
-                  disabled={updateContactStatus.isPending}
+                  disabled={updateContactStatus.isPending || !canUpdateStatus}
                 >
                   <SelectTrigger className="w-full sm:w-[200px]">
                     <SelectValue />
