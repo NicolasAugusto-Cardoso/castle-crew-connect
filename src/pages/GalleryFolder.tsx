@@ -12,7 +12,7 @@ import { useState } from 'react';
 export default function GalleryFolder() {
   const { folderId } = useParams<{ folderId: string }>();
   const navigate = useNavigate();
-  const { hasRole } = useAuth();
+  const { hasRole, loading: authLoading } = useAuth();
   const { folders } = useGallery();
   const [selectedMediaIndex, setSelectedMediaIndex] = useState<number | null>(null);
 
@@ -20,6 +20,16 @@ export default function GalleryFolder() {
 
   const folder = folders.find(f => f.id === folderId);
   const { data: media = [], isLoading } = useGallery().getMediaByFolder(folderId || '');
+
+  if (authLoading) {
+    return (
+      <div className="container mx-auto px-4 py-6 max-w-4xl md:ml-64">
+        <div className="flex justify-center py-12">
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        </div>
+      </div>
+    );
+  }
 
   if (!canManage) {
     return (

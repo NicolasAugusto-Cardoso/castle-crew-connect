@@ -19,9 +19,7 @@ export function useAuth() {
         
         if (session?.user) {
           // Fetch user roles
-          setTimeout(() => {
-            fetchUserRoles(session.user.id);
-          }, 0);
+          fetchUserRoles(session.user.id);
         } else {
           setUserRoles([]);
         }

@@ -8,10 +8,20 @@ import { useNavigate } from 'react-router-dom';
 
 export default function Gallery() {
   const navigate = useNavigate();
-  const { hasRole } = useAuth();
+  const { hasRole, loading: authLoading } = useAuth();
   const { folders, isLoading } = useGallery();
 
   const canManage = hasRole(['admin', 'social_media']);
+
+  if (authLoading) {
+    return (
+      <div className="container mx-auto px-4 py-6 max-w-4xl md:ml-64">
+        <div className="flex justify-center py-12">
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        </div>
+      </div>
+    );
+  }
 
   if (!canManage) {
     return (
