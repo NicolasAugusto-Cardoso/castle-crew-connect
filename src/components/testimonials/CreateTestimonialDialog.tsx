@@ -20,8 +20,8 @@ export function CreateTestimonialDialog() {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [authorName, setAuthorName] = useState('');
+  const [isAnonymous, setIsAnonymous] = useState(false);
   const [published, setPublished] = useState(true);
-  const [anonymous, setAnonymous] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -32,15 +32,15 @@ export function CreateTestimonialDialog() {
       await createTestimonial.mutateAsync({
         title,
         content,
-        author_name: anonymous ? null : authorName,
+        author_name: isAnonymous ? undefined : authorName,
         status: published ? 'published' : 'draft'
       });
       
       setTitle('');
       setContent('');
       setAuthorName('');
+      setIsAnonymous(false);
       setPublished(true);
-      setAnonymous(false);
       setOpen(false);
     } finally {
       setIsSubmitting(false);
@@ -73,27 +73,30 @@ export function CreateTestimonialDialog() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="author">Nome do Autor</Label>
-            <Input
-              id="author"
-              value={authorName}
-              onChange={(e) => setAuthorName(e.target.value)}
-              placeholder="Nome completo"
-              required={!anonymous}
-              disabled={isSubmitting || anonymous}
-            />
-          </div>
-
-          <div className="flex items-center gap-2">
-            <Switch
-              id="anonymous"
-              checked={anonymous}
-              onCheckedChange={setAnonymous}
-              disabled={isSubmitting}
-            />
-            <Label htmlFor="anonymous" className="cursor-pointer">
-              Publicar anonimamente
-            </Label>
+            <div className="flex items-center gap-2 mb-2">
+              <Switch
+                id="anonymous"
+                checked={isAnonymous}
+                onCheckedChange={setIsAnonymous}
+                disabled={isSubmitting}
+              />
+              <Label htmlFor="anonymous" className="cursor-pointer">
+                Publicar anonimamente
+              </Label>
+            </div>
+            {!isAnonymous && (
+              <>
+                <Label htmlFor="author">Nome do Autor</Label>
+                <Input
+                  id="author"
+                  value={authorName}
+                  onChange={(e) => setAuthorName(e.target.value)}
+                  placeholder="Nome completo"
+                  required
+                  disabled={isSubmitting}
+                />
+              </>
+            )}
           </div>
 
           <div className="space-y-2">

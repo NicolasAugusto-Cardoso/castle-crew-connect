@@ -109,27 +109,30 @@ export function EditTestimonialDialog({ testimonial }: EditTestimonialDialogProp
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="edit-author">Nome do Autor</Label>
-              <Input
-                id="edit-author"
-                value={authorName}
-                onChange={(e) => setAuthorName(e.target.value)}
-                placeholder="Nome completo"
-                required={!anonymous}
-                disabled={isSubmitting || anonymous}
-              />
-            </div>
-
-            <div className="flex items-center gap-2">
-              <Switch
-                id="edit-anonymous"
-                checked={anonymous}
-                onCheckedChange={setAnonymous}
-                disabled={isSubmitting}
-              />
-              <Label htmlFor="edit-anonymous" className="cursor-pointer">
-                Publicar anonimamente
-              </Label>
+              <div className="flex items-center gap-2 mb-2">
+                <Switch
+                  id="edit-anonymous"
+                  checked={anonymous}
+                  onCheckedChange={setAnonymous}
+                  disabled={isSubmitting}
+                />
+                <Label htmlFor="edit-anonymous" className="cursor-pointer">
+                  Publicar anonimamente
+                </Label>
+              </div>
+              {!anonymous && (
+                <>
+                  <Label htmlFor="edit-author">Nome do Autor</Label>
+                  <Input
+                    id="edit-author"
+                    value={authorName}
+                    onChange={(e) => setAuthorName(e.target.value)}
+                    placeholder="Nome completo"
+                    required
+                    disabled={isSubmitting}
+                  />
+                </>
+              )}
             </div>
 
             <div className="space-y-2">
