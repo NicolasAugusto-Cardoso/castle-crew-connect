@@ -86,18 +86,18 @@ export default function Login() {
         } else {
           toast.error('Erro ao criar conta: ' + error.message);
         }
-      } else {
-        // Verificar se a sessão foi criada automaticamente
-        if (data?.session) {
-          // Confirmação automática habilitada - usuário já está logado
-          toast.success('Conta criada com sucesso! Redirecionando...');
-          setTimeout(() => {
-            window.location.href = '/';
-          }, 1500);
-        } else if (data?.user && !data?.session) {
-          // Confirmação de e-mail necessária
-          toast.info('Conta criada! Verifique seu e-mail para confirmar o cadastro.');
-        }
+      } else if (data?.user?.identities?.length === 0) {
+        // E-mail duplicado (erro silencioso do Supabase)
+        toast.error('Este e-mail já está cadastrado. Faça login ou recupere sua senha.');
+      } else if (data?.session) {
+        // Confirmação automática habilitada - usuário já está logado
+        toast.success('Conta criada com sucesso! Redirecionando...');
+        setTimeout(() => {
+          window.location.href = '/';
+        }, 1500);
+      } else if (data?.user && !data?.session) {
+        // Confirmação de e-mail necessária
+        toast.info('Conta criada! Verifique seu e-mail para confirmar o cadastro.');
       }
     } catch (error: any) {
       if (error.errors) {
