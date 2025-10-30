@@ -39,17 +39,9 @@ export default function Home() {
         </p>
       </div>
 
-      {/* Verse of the Day */}
-      {loadingVerse ? (
-        <Card className="mb-6 card-elevated">
-          <CardContent className="py-8">
-            <div className="flex justify-center">
-              <Loader2 className="w-8 h-8 animate-spin text-primary" />
-            </div>
-          </CardContent>
-        </Card>
-      ) : verse ? (
-        <Card className="mb-6 bg-gradient-to-br from-primary-light to-primary text-white card-elevated">
+      {/* Verse of the Day - Async loading without blocking feed */}
+      {verse && !loadingVerse ? (
+        <Card className="mb-6 bg-gradient-to-br from-primary-light to-primary text-white card-elevated animate-fade-in">
           <CardHeader className="pb-3">
             <div className="flex items-center gap-2">
               <BookOpen className="w-5 h-5 text-accent" />
@@ -57,18 +49,24 @@ export default function Home() {
             </div>
           </CardHeader>
           <CardContent>
-            <p className="text-base mb-2 leading-relaxed">{verse.text}</p>
-            <p className="text-sm font-bold text-accent">{verse.reference}</p>
+            <p className="text-base md:text-lg mb-3 leading-relaxed whitespace-pre-wrap break-words">
+              "{verse.text}"
+            </p>
+            <p className="text-sm md:text-base font-bold text-accent hover:text-white transition-colors cursor-default">
+              {verse.reference}
+            </p>
           </CardContent>
         </Card>
-      ) : (
-        <Card className="mb-6 bg-gradient-to-br from-primary-light to-primary text-white card-elevated">
-          <CardContent className="py-8 text-center">
-            <BookOpen className="w-12 h-12 text-accent mx-auto mb-3" />
-            <p className="text-sm">Nenhum versículo disponível hoje</p>
+      ) : loadingVerse ? (
+        <Card className="mb-6 card-elevated">
+          <CardContent className="py-6">
+            <div className="flex items-center gap-3">
+              <Loader2 className="w-5 h-5 animate-spin text-primary" />
+              <p className="text-sm text-muted-foreground">Carregando versículo do dia...</p>
+            </div>
           </CardContent>
         </Card>
-      )}
+      ) : null}
 
       {/* New Post Button */}
       {canManagePosts && (

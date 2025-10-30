@@ -9,29 +9,49 @@ interface VerseOfTheDay {
 }
 
 export function useVerseOfTheDay() {
-  const { data: verse, isLoading } = useQuery({
+  const { data: verse, isLoading, error } = useQuery({
     queryKey: ['verse-of-the-day'],
     queryFn: async () => {
-      const today = new Date().toISOString().split('T')[0];
+      // Get today's date in America/Sao_Paulo timezone
+      const today = new Date().toLocaleDateString('en-CA', { 
+        timeZone: 'America/Sao_Paulo' 
+      });
       
-      // First check if we have today's verse
-      const { data: existingVerse } = await supabase
+      // Check if we have today's verse
+      const { data: todayVerse, error: todayError } = await supabase
         .from('verse_of_the_day')
         .select('*')
         .eq('date', today)
         .maybeSingle();
 
-      if (existingVerse) {
-        return existingVerse as VerseOfTheDay;
+      if (todayError) {
+        console.error('Error fetching today\'s verse:', todayError);
+        throw todayError;
       }
 
-      // If not, fetch from API and store (for admin users only)
-      // For now, return null and let admins manage verses manually
-      return null;
+      if (todayVerse) {
+        return todayVerse as VerseOfTheDay;
+      }
+
+      // If no verse for today, get the most recent verse as fallback
+      const { data: fallbackVerse, error: fallbackError } = await supabase
+        .from('verse_of_the_day')
+        .select('*')
+        .order('date', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (fallbackError) {
+        console.error('Error fetching fallback verse:', fallbackError);
+        throw fallbackError;
+      }
+
+      return fallbackVerse as VerseOfTheDay | null;
     },
     staleTime: 1000 * 60 * 60, // 1 hour
-    refetchInterval: 1000 * 60 * 60 // Refetch every hour
+    refetchInterval: 1000 * 60 * 60, // Refetch every hour
+    retry: 2
   });
 
-  return { verse, isLoading };
+  return { verse, isLoading, error };
 }
