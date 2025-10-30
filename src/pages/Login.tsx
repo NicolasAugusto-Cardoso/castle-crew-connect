@@ -40,28 +40,44 @@ export default function Login() {
       // Validar dados de login
       const validated = loginSchema.parse(loginData);
       
-      const { error } = await signIn(validated.email, validated.password);
+      console.log('[LOGIN] Tentando fazer login:', validated.email);
+      
+      const { data, error } = await signIn(validated.email, validated.password);
+      
+      console.log('[LOGIN] Resposta:', { 
+        hasData: !!data, 
+        hasError: !!error,
+        hasSession: !!data?.session,
+        errorMessage: error?.message 
+      });
       
       if (error) {
+        console.error('[LOGIN] Erro:', error);
         if (error.message.includes('Invalid login credentials')) {
-          toast.error('E-mail ou senha incorretos');
+          toast.error('E-mail ou senha incorretos. Verifique seus dados e tente novamente.');
         } else if (error.message.includes('Email not confirmed')) {
-          toast.error('Confirme seu e-mail antes de fazer login');
+          toast.error('Confirme seu e-mail antes de fazer login. Verifique sua caixa de entrada.');
         } else {
-          toast.error('Erro ao fazer login. Tente novamente.');
+          toast.error('Erro ao fazer login: ' + error.message);
         }
-      } else {
+      } else if (data?.session) {
+        console.log('[LOGIN] Login realizado com sucesso!');
         toast.success('Login realizado com sucesso!');
-        window.location.href = '/';
+        setTimeout(() => {
+          window.location.href = '/';
+        }, 500);
+      } else {
+        console.error('[LOGIN] Estado inesperado - sem erro mas sem sessão');
+        toast.error('Erro inesperado ao processar login. Tente novamente.');
       }
     } catch (error: any) {
+      console.error('[LOGIN] Exceção:', error);
       if (error.errors) {
         // Erros de validação Zod
-        error.errors.forEach((err: any) => {
-          toast.error(err.message);
-        });
+        const firstError = error.errors[0];
+        toast.error(firstError.message);
       } else {
-        toast.error('Erro ao fazer login');
+        toast.error('Erro ao validar dados de login. Verifique os campos.');
       }
     } finally {
       setIsLoading(false);
@@ -76,37 +92,58 @@ export default function Login() {
       // Validar dados de cadastro
       const validated = signupSchema.parse(signupData);
       
+      console.log('[SIGNUP] Iniciando criação de conta:', validated.email);
+      
       const { data, error } = await signUp(validated.email, validated.password, validated.name);
       
+      console.log('[SIGNUP] Resposta:', { 
+        hasData: !!data, 
+        hasError: !!error,
+        hasUser: !!data?.user,
+        hasSession: !!data?.session,
+        identitiesLength: data?.user?.identities?.length,
+        errorMessage: error?.message 
+      });
+      
       if (error) {
+        console.error('[SIGNUP] Erro explícito:', error);
         if (error.message.includes('User already registered')) {
           toast.error('Este e-mail já está cadastrado');
         } else if (error.message.includes('Password should be at least')) {
           toast.error('A senha deve ter no mínimo 8 caracteres com maiúscula, minúscula, número e caractere especial');
+        } else if (error.message.includes('Password')) {
+          toast.error('Senha inválida. Use no mínimo 8 caracteres, com letras maiúsculas, minúsculas, números e caracteres especiais');
         } else {
           toast.error('Erro ao criar conta: ' + error.message);
         }
       } else if (data?.user?.identities?.length === 0) {
         // E-mail duplicado (erro silencioso do Supabase)
+        console.warn('[SIGNUP] E-mail duplicado detectado (identities vazio)');
         toast.error('Este e-mail já está cadastrado. Faça login ou recupere sua senha.');
       } else if (data?.session) {
         // Confirmação automática habilitada - usuário já está logado
+        console.log('[SIGNUP] Sucesso! Sessão criada, redirecionando...');
         toast.success('Conta criada com sucesso! Redirecionando...');
         setTimeout(() => {
           window.location.href = '/';
         }, 1500);
       } else if (data?.user && !data?.session) {
         // Confirmação de e-mail necessária
+        console.log('[SIGNUP] Usuário criado, aguardando confirmação de e-mail');
         toast.info('Conta criada! Verifique seu e-mail para confirmar o cadastro.');
+      } else {
+        // Caso inesperado
+        console.error('[SIGNUP] Estado inesperado:', { data, error });
+        toast.error('Erro ao processar criação de conta. Tente novamente.');
       }
     } catch (error: any) {
+      console.error('[SIGNUP] Exceção:', error);
       if (error.errors) {
         // Erros de validação Zod
-        error.errors.forEach((err: any) => {
-          toast.error(err.message);
-        });
+        const firstError = error.errors[0];
+        toast.error(firstError.message);
       } else {
-        toast.error('Erro ao criar conta');
+        toast.error('Erro inesperado ao validar dados. Verifique os campos.');
       }
     } finally {
       setIsLoading(false);
