@@ -23,13 +23,23 @@ const roleColors: Record<string, string> = {
 };
 
 export default function Users() {
-  const { hasRole } = useAuth();
+  const { hasRole, loading: authLoading } = useAuth();
   const { users, isLoading, createUser, updateUserRoles, isCreating, isUpdating } = useUsers();
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<UserWithRoles | null>(null);
 
   const isAdmin = hasRole(['admin']);
+
+  if (authLoading) {
+    return (
+      <div className="container mx-auto px-4 py-6 max-w-4xl">
+        <div className="flex justify-center items-center py-12">
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        </div>
+      </div>
+    );
+  }
 
   if (!isAdmin) {
     return (
