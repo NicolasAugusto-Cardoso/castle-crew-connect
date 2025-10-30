@@ -15,8 +15,9 @@ export const phoneSchema = z
   .trim()
   .min(1, { message: "Telefone é obrigatório" })
   .regex(/^\+?[\d\s\-()]+$/, { message: "Formato de telefone inválido" })
-  .min(10, { message: "Telefone deve ter no mínimo 10 dígitos" })
-  .max(20, { message: "Telefone deve ter no máximo 20 dígitos" });
+  .transform(phone => phone.replace(/\D/g, '')) // Remove caracteres não numéricos
+  .refine(phone => phone.length >= 10, { message: "Telefone deve ter no mínimo 10 dígitos" })
+  .refine(phone => phone.length <= 20, { message: "Telefone deve ter no máximo 20 dígitos" });
 
 // Validação de nome (sem números ou caracteres especiais)
 export const nameSchema = z

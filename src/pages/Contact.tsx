@@ -45,20 +45,40 @@ export default function Contact() {
         message 
       });
       
-      await createMessage.mutateAsync(validated);
+      // Garantir que phone é string (após transform)
+      const messageData = {
+        name: validated.name,
+        phone: validated.phone,
+        email: validated.email,
+        message: validated.message
+      };
+      
+      await createMessage.mutateAsync(messageData);
+      
+      // Limpar formulário apenas após sucesso
       setName('');
       setPhone('');
       setEmail('');
       setMessage('');
-      toast.success('Mensagem enviada com sucesso!');
     } catch (error: any) {
+      console.error('Erro ao enviar mensagem:', error);
+      
       if (error.errors) {
         // Erros de validação Zod
         error.errors.forEach((err: any) => {
           toast.error(err.message);
         });
+      } else if (error.code === '42501') {
+        // Erro RLS específico
+        toast.error('Erro de permissão. Por favor, tente novamente.');
+      } else if (error.code === '23505') {
+        toast.error('Você já enviou uma mensagem recentemente. Aguarde alguns minutos.');
+      } else if (error.message?.includes('rate limit')) {
+        toast.error('Limite de envios atingido. Aguarde 1 hora para enviar novamente.');
+      } else if (error.message) {
+        toast.error(error.message);
       } else {
-        toast.error('Erro ao enviar mensagem');
+        toast.error('Erro ao enviar mensagem. Verifique sua conexão e tente novamente.');
       }
     } finally {
       setSubmitting(false);
@@ -110,6 +130,7 @@ export default function Contact() {
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Seu nome completo"
                   required
+                  disabled={submitting}
                 />
               </div>
 
@@ -151,6 +172,7 @@ export default function Contact() {
               </div>
 
               <Button type="submit" className="w-full h-12 btn-gradient" disabled={submitting}>
+                {submitting && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
                 {submitting ? 'Enviando...' : 'Enviar Mensagem'}
               </Button>
             </form>

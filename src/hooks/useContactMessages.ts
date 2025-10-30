@@ -41,11 +41,23 @@ export function useContactMessages() {
       return data;
     },
     onSuccess: () => {
-      toast.success('Mensagem enviada! Entraremos em contato em breve.');
+      queryClient.invalidateQueries({ queryKey: ['contact-messages'] });
+      toast.success('✅ Mensagem enviada com sucesso! Responderemos em breve.', {
+        duration: 5000,
+      });
     },
-    onError: (error) => {
-      toast.error('Erro ao enviar mensagem');
-      console.error(error);
+    onError: (error: any) => {
+      console.error('Erro ao enviar mensagem:', error);
+      
+      if (error.code === '23505') {
+        toast.error('Você já enviou uma mensagem recentemente. Aguarde alguns minutos.');
+      } else if (error.code === 'PGRST116') {
+        toast.error('Limite de mensagens atingido. Aguarde 1 hora para enviar novamente.');
+      } else if (error.message) {
+        toast.error(error.message);
+      } else {
+        toast.error('Erro ao enviar mensagem. Tente novamente em instantes.');
+      }
     }
   });
 
