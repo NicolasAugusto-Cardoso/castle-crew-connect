@@ -21,6 +21,7 @@ export function CreateTestimonialDialog() {
   const [content, setContent] = useState('');
   const [authorName, setAuthorName] = useState('');
   const [published, setPublished] = useState(true);
+  const [anonymous, setAnonymous] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -31,7 +32,7 @@ export function CreateTestimonialDialog() {
       await createTestimonial.mutateAsync({
         title,
         content,
-        author_name: authorName,
+        author_name: anonymous ? null : authorName,
         status: published ? 'published' : 'draft'
       });
       
@@ -39,6 +40,7 @@ export function CreateTestimonialDialog() {
       setContent('');
       setAuthorName('');
       setPublished(true);
+      setAnonymous(false);
       setOpen(false);
     } finally {
       setIsSubmitting(false);
@@ -77,9 +79,21 @@ export function CreateTestimonialDialog() {
               value={authorName}
               onChange={(e) => setAuthorName(e.target.value)}
               placeholder="Nome completo"
-              required
+              required={!anonymous}
+              disabled={isSubmitting || anonymous}
+            />
+          </div>
+
+          <div className="flex items-center gap-2">
+            <Switch
+              id="anonymous"
+              checked={anonymous}
+              onCheckedChange={setAnonymous}
               disabled={isSubmitting}
             />
+            <Label htmlFor="anonymous" className="cursor-pointer">
+              Publicar anonimamente
+            </Label>
           </div>
 
           <div className="space-y-2">

@@ -319,7 +319,7 @@ export type Database = {
       }
       testimonials: {
         Row: {
-          author_name: string
+          author_name: string | null
           content: string
           created_at: string
           created_by: string
@@ -330,7 +330,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
-          author_name: string
+          author_name?: string | null
           content: string
           created_at?: string
           created_by: string
@@ -341,7 +341,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
-          author_name?: string
+          author_name?: string | null
           content?: string
           created_at?: string
           created_by?: string

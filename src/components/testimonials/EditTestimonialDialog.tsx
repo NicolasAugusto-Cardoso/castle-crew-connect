@@ -33,7 +33,8 @@ export function EditTestimonialDialog({ testimonial }: EditTestimonialDialogProp
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [title, setTitle] = useState(testimonial.title);
   const [content, setContent] = useState(testimonial.content);
-  const [authorName, setAuthorName] = useState(testimonial.author_name);
+  const [authorName, setAuthorName] = useState(testimonial.author_name || '');
+  const [anonymous, setAnonymous] = useState(!testimonial.author_name);
   const [published, setPublished] = useState(testimonial.status === 'published');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -41,7 +42,8 @@ export function EditTestimonialDialog({ testimonial }: EditTestimonialDialogProp
     if (open) {
       setTitle(testimonial.title);
       setContent(testimonial.content);
-      setAuthorName(testimonial.author_name);
+      setAuthorName(testimonial.author_name || '');
+      setAnonymous(!testimonial.author_name);
       setPublished(testimonial.status === 'published');
     }
   }, [open, testimonial]);
@@ -55,7 +57,7 @@ export function EditTestimonialDialog({ testimonial }: EditTestimonialDialogProp
         id: testimonial.id,
         title,
         content,
-        author_name: authorName,
+        author_name: anonymous ? null : authorName,
         status: published ? 'published' : 'draft'
       });
       
@@ -113,9 +115,21 @@ export function EditTestimonialDialog({ testimonial }: EditTestimonialDialogProp
                 value={authorName}
                 onChange={(e) => setAuthorName(e.target.value)}
                 placeholder="Nome completo"
-                required
+                required={!anonymous}
+                disabled={isSubmitting || anonymous}
+              />
+            </div>
+
+            <div className="flex items-center gap-2">
+              <Switch
+                id="edit-anonymous"
+                checked={anonymous}
+                onCheckedChange={setAnonymous}
                 disabled={isSubmitting}
               />
+              <Label htmlFor="edit-anonymous" className="cursor-pointer">
+                Publicar anonimamente
+              </Label>
             </div>
 
             <div className="space-y-2">

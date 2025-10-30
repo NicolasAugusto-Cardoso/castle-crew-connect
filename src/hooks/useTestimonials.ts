@@ -6,7 +6,7 @@ export interface Testimonial {
   id: string;
   title: string;
   content: string;
-  author_name: string;
+  author_name: string | null;
   status: 'draft' | 'published';
   created_by: string;
   created_at: string;
@@ -34,7 +34,7 @@ export function useTestimonials(includeUnpublished = false) {
   });
 
   const createTestimonial = useMutation({
-    mutationFn: async (testimonial: { title: string; content: string; author_name: string; status?: 'draft' | 'published' }) => {
+    mutationFn: async (testimonial: { title: string; content: string; author_name: string | null; status?: 'draft' | 'published' }) => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
 

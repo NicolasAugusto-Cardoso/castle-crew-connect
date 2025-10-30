@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 
 export default function Testimonials() {
-  const { hasRole } = useAuth();
+  const { hasRole, user } = useAuth();
   const canManageTestimonials = hasRole(['admin', 'social_media']);
   const { testimonials, isLoading } = useTestimonials(canManageTestimonials);
 
@@ -28,7 +28,7 @@ export default function Testimonials() {
         </p>
       </div>
 
-      {canManageTestimonials && (
+      {user && (
         <div className="mb-6">
           <CreateTestimonialDialog />
         </div>
@@ -56,7 +56,9 @@ export default function Testimonials() {
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <CardTitle className="text-xl">{testimonial.title}</CardTitle>
-                    <p className="text-sm font-semibold text-primary mt-1">{testimonial.author_name}</p>
+                    <p className="text-sm font-semibold text-primary mt-1">
+                      {testimonial.author_name || 'Anônimo'}
+                    </p>
                   </div>
                   <div className="flex items-center gap-2">
                     {canManageTestimonials && (
