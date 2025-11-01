@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Mail, Phone, Loader2 } from 'lucide-react';
 import { contactFormSchema } from '@/lib/validations';
 import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
 
 export default function Contact() {
   const { hasRole, loading: authLoading } = useAuth();
@@ -35,7 +36,16 @@ export default function Contact() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
-    
+
+    // DEBUG: Verificar estado de autenticação
+    const { data: { session } } = await supabase.auth.getSession();
+    console.log('🔍 Session Debug:', {
+      hasSession: !!session,
+      userId: session?.user?.id,
+      expiresAt: session?.expires_at,
+      isExpired: session?.expires_at ? new Date(session.expires_at * 1000) < new Date() : 'no session'
+    });
+
     try {
       // Validar dados do formulário
       const validated = contactFormSchema.parse({ 
@@ -72,8 +82,10 @@ export default function Contact() {
         // Rate limiting atingido
         toast.error('⏱️ Limite de envios atingido. Você pode enviar no máximo 3 mensagens por hora.');
       } else if (error.code === '42501') {
-        // Erro RLS específico
-        toast.error('🔐 Erro de permissão. Por favor, faça login e tente novamente.');
+        // Erro RLS específico - pode ser permissão ou autenticação
+        toast.error('🔐 Erro de permissão. Por favor, faça logout e login novamente.');
+      } else if (error.message?.includes('Authentication required')) {
+        toast.error('🔐 Sua sessão expirou. Faça login novamente.');
       } else if (error.code === '23505') {
         toast.error('Você já enviou uma mensagem recentemente. Aguarde alguns minutos.');
       } else if (error.message?.includes('JWT') || error.message?.includes('auth')) {
@@ -81,7 +93,7 @@ export default function Contact() {
       } else if (error.message) {
         toast.error(error.message);
       } else {
-        toast.error('Erro ao enviar mensagem. Verifique sua conexão e tente novamente.');
+        toast.error('Erro ao enviar mensagem. Tente novamente.');
       }
     } finally {
       setSubmitting(false);

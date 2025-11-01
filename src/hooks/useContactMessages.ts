@@ -31,6 +31,7 @@ export function useContactMessages() {
 
   const createMessage = useMutation({
     mutationFn: async (message: { name: string; phone: string; email?: string; message: string }) => {
+      // O user_id será definido automaticamente pelo trigger no backend
       const { data, error } = await supabase
         .from('contact_messages')
         .insert(message)
