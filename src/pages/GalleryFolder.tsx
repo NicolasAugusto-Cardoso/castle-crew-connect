@@ -38,7 +38,7 @@ export default function GalleryFolder() {
           <CardContent className="py-12 text-center">
             <AlertCircle className="w-12 h-12 mx-auto mb-3 text-destructive" />
             <h2 className="text-xl font-bold mb-2">Pasta não encontrada</h2>
-            <Button onClick={() => navigate('/gallery')} className="mt-4">
+            <Button onClick={() => navigate('/gallery')} className="mt-4 hover:bg-muted hover:text-foreground">
               <ArrowLeft className="w-4 h-4 mr-2" />
               Voltar para Galeria
             </Button>
@@ -54,7 +54,7 @@ export default function GalleryFolder() {
         <Button 
           variant="ghost" 
           onClick={() => navigate('/gallery')}
-          className="mb-4"
+          className="mb-4 hover:bg-muted hover:text-foreground"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
           Voltar
