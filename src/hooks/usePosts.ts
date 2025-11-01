@@ -14,7 +14,6 @@ export interface Post {
   author_avatar?: string | null;
   likes_count?: number;
   is_liked?: boolean;
-  comments_count?: number;
 }
 
 export function usePosts() {
@@ -45,16 +44,10 @@ export function usePosts() {
         .from('post_likes')
         .select('post_id, user_id');
 
-      // Get comments count
-      const { data: comments } = await supabase
-        .from('post_comments')
-        .select('post_id');
-
       // Combine data
       return postsData.map(post => {
         const author = profiles?.find(p => p.id === post.author_id);
         const postLikes = likes?.filter(l => l.post_id === post.id) || [];
-        const postComments = comments?.filter(c => c.post_id === post.id) || [];
         
         return {
           ...post,
@@ -62,7 +55,6 @@ export function usePosts() {
           author_avatar: author?.avatar_url,
           likes_count: postLikes.length,
           is_liked: user ? postLikes.some(l => l.user_id === user.id) : false,
-          comments_count: postComments.length
         };
       }) as Post[];
     }
@@ -164,12 +156,42 @@ export function usePosts() {
         if (error) throw error;
       }
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['posts'] });
+    onMutate: async (postId) => {
+      // Cancel outgoing queries
+      await queryClient.cancelQueries({ queryKey: ['posts'] });
+      
+      // Snapshot previous state
+      const previousPosts = queryClient.getQueryData(['posts']);
+      
+      // Optimistic update
+      queryClient.setQueryData(['posts'], (old: Post[] | undefined) => {
+        if (!old) return old;
+        
+        return old.map(post => {
+          if (post.id === postId) {
+            return {
+              ...post,
+              is_liked: !post.is_liked,
+              likes_count: (post.likes_count || 0) + (post.is_liked ? -1 : 1)
+            };
+          }
+          return post;
+        });
+      });
+      
+      return { previousPosts };
     },
-    onError: (error) => {
+    onError: (err, postId, context) => {
+      // Rollback on error
+      if (context?.previousPosts) {
+        queryClient.setQueryData(['posts'], context.previousPosts);
+      }
       toast.error('Erro ao curtir postagem');
-      console.error(error);
+      console.error(err);
+    },
+    onSettled: () => {
+      // Revalidate to ensure consistency
+      queryClient.invalidateQueries({ queryKey: ['posts'] });
     }
   });
 

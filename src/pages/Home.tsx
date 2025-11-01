@@ -3,7 +3,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { usePosts } from '@/hooks/usePosts';
 import { useVerseOfTheDay } from '@/hooks/useVerseOfTheDay';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Heart, MessageCircle, BookOpen, Loader2, MoreVertical } from 'lucide-react';
+import { Heart, BookOpen, Loader2, MoreVertical } from 'lucide-react';
 import castleLogo from '@/assets/castle-logo.png';
 import { CreatePostDialog } from '@/components/posts/CreatePostDialog';
 import { EditPostDialog } from '@/components/posts/EditPostDialog';
@@ -138,14 +138,9 @@ export default function Home() {
                         ? 'text-primary font-bold'
                         : 'text-muted-foreground hover:text-primary'
                     }`}
-                    disabled={toggleLike.isPending}
                   >
                     <Heart className={`w-5 h-5 ${post.is_liked ? 'fill-current' : ''}`} />
                     <span className="font-medium">{post.likes_count || 0}</span>
-                  </button>
-                  <button className="flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors">
-                    <MessageCircle className="w-5 h-5" />
-                    <span className="font-medium">{post.comments_count || 0}</span>
                   </button>
                 </div>
               </CardContent>
