@@ -42,13 +42,13 @@ export function useContactReplies(messageId: string | null) {
       .on(
         'postgres_changes',
         {
-          event: 'INSERT',
+          event: '*',
           schema: 'public',
           table: 'contact_replies',
           filter: `message_id=eq.${messageId}`,
         },
         (payload) => {
-          console.log('Nova reply recebida:', payload);
+          console.log('Mudança em reply:', payload);
           queryClient.invalidateQueries({ queryKey: ['contact-replies', messageId] });
           queryClient.invalidateQueries({ queryKey: ['unread-replies-count'] });
           queryClient.invalidateQueries({ queryKey: ['contact-messages'] });
@@ -97,10 +97,57 @@ export function useContactReplies(messageId: string | null) {
     },
   });
 
+  // Update a reply
+  const updateReply = useMutation({
+    mutationFn: async ({ replyId, content, messageId }: { replyId: string; content: string; messageId: string }) => {
+      const { data, error } = await supabase
+        .from('contact_replies')
+        .update({ content: content.trim() })
+        .eq('id', replyId)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['contact-replies', variables.messageId] });
+      toast.success('✏️ Mensagem editada com sucesso!');
+    },
+    onError: (error: any) => {
+      console.error('Erro ao editar mensagem:', error);
+      toast.error('Erro ao editar mensagem. Tente novamente.');
+    },
+  });
+
+  // Delete a reply
+  const deleteReply = useMutation({
+    mutationFn: async ({ replyId, messageId }: { replyId: string; messageId: string }) => {
+      const { error } = await supabase
+        .from('contact_replies')
+        .delete()
+        .eq('id', replyId);
+
+      if (error) throw error;
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['contact-replies', variables.messageId] });
+      queryClient.invalidateQueries({ queryKey: ['unread-replies-count'] });
+      queryClient.invalidateQueries({ queryKey: ['contact-messages'] });
+      toast.success('🗑️ Mensagem apagada com sucesso!');
+    },
+    onError: (error: any) => {
+      console.error('Erro ao apagar mensagem:', error);
+      toast.error('Erro ao apagar mensagem. Tente novamente.');
+    },
+  });
+
   return {
     replies,
     isLoading,
     createReply,
+    updateReply,
+    deleteReply,
   };
 }
 

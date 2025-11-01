@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Loader2, Send } from 'lucide-react';
+import { Loader2, Send, Pencil, Trash2, Check, X } from 'lucide-react';
 import { ContactMessage } from '@/hooks/useContactMessages';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
@@ -18,9 +18,11 @@ interface MessageThreadProps {
 
 export const MessageThread = ({ message, onClose }: MessageThreadProps) => {
   const { user, hasRole } = useAuth();
-  const { replies, isLoading, createReply } = useContactReplies(message.id);
+  const { replies, isLoading, createReply, updateReply, deleteReply } = useContactReplies(message.id);
   const queryClient = useQueryClient();
   const [replyText, setReplyText] = useState('');
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editText, setEditText] = useState('');
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const isAdmin = hasRole(['admin', 'social_media']);
@@ -74,6 +76,54 @@ export const MessageThread = ({ message, onClose }: MessageThreadProps) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSendReply();
+    }
+  };
+
+  const handleEditReply = (replyId: string, content: string) => {
+    setEditingId(replyId);
+    setEditText(content);
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editText.trim() || !editingId) return;
+
+    try {
+      await updateReply.mutateAsync({
+        replyId: editingId,
+        content: editText,
+        messageId: message.id,
+      });
+      setEditingId(null);
+      setEditText('');
+    } catch (error) {
+      console.error('Erro ao salvar edição:', error);
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setEditingId(null);
+    setEditText('');
+  };
+
+  const handleDeleteReply = async (replyId: string) => {
+    if (!confirm('Tem certeza que deseja apagar esta mensagem?')) return;
+
+    try {
+      await deleteReply.mutateAsync({
+        replyId,
+        messageId: message.id,
+      });
+    } catch (error) {
+      console.error('Erro ao apagar mensagem:', error);
+    }
+  };
+
+  const handleEditKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSaveEdit();
+    } else if (e.key === 'Escape') {
+      handleCancelEdit();
     }
   };
 
@@ -131,6 +181,8 @@ export const MessageThread = ({ message, onClose }: MessageThreadProps) => {
               const isSenderUser = reply.sender_id === message.user_id;
               const senderName = isSenderUser ? message.name : 'Administrador';
               const senderInitial = senderName.charAt(0).toUpperCase();
+              const isEdited = new Date(reply.updated_at) > new Date(reply.created_at);
+              const isEditing = editingId === reply.id;
               
               return (
                 <div
@@ -164,6 +216,11 @@ export const MessageThread = ({ message, onClose }: MessageThreadProps) => {
                       <span className="text-xs text-muted-foreground">
                         {new Date(reply.created_at).toLocaleString('pt-BR')}
                       </span>
+                      {isEdited && !isEditing && (
+                        <span className="text-xs text-muted-foreground italic">
+                          Editada
+                        </span>
+                      )}
                     </div>
                     <Card
                       className={cn(
@@ -173,7 +230,66 @@ export const MessageThread = ({ message, onClose }: MessageThreadProps) => {
                       )}
                     >
                       <CardContent className="p-3">
-                        <p className="text-sm whitespace-pre-wrap">{reply.content}</p>
+                        {isEditing ? (
+                          <div className="space-y-2">
+                            <Textarea
+                              value={editText}
+                              onChange={(e) => setEditText(e.target.value)}
+                              onKeyDown={handleEditKeyPress}
+                              className="min-h-[60px] resize-none"
+                              autoFocus
+                            />
+                            <div className="flex gap-2 justify-end">
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={handleCancelEdit}
+                                disabled={updateReply.isPending}
+                              >
+                                <X className="w-4 h-4 mr-1" />
+                                Cancelar
+                              </Button>
+                              <Button
+                                size="sm"
+                                onClick={handleSaveEdit}
+                                disabled={!editText.trim() || updateReply.isPending}
+                              >
+                                {updateReply.isPending ? (
+                                  <Loader2 className="w-4 h-4 animate-spin mr-1" />
+                                ) : (
+                                  <Check className="w-4 h-4 mr-1" />
+                                )}
+                                Salvar
+                              </Button>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="flex items-start gap-2">
+                            <p className="text-sm whitespace-pre-wrap flex-1">{reply.content}</p>
+                            {isOwnMessage && (
+                              <div className="flex gap-1 shrink-0">
+                                <Button
+                                  size="icon"
+                                  variant="ghost"
+                                  className="h-6 w-6"
+                                  onClick={() => handleEditReply(reply.id, reply.content)}
+                                  disabled={deleteReply.isPending || updateReply.isPending}
+                                >
+                                  <Pencil className="w-3 h-3" />
+                                </Button>
+                                <Button
+                                  size="icon"
+                                  variant="ghost"
+                                  className="h-6 w-6 hover:text-destructive"
+                                  onClick={() => handleDeleteReply(reply.id)}
+                                  disabled={deleteReply.isPending || updateReply.isPending}
+                                >
+                                  <Trash2 className="w-3 h-3" />
+                                </Button>
+                              </div>
+                            )}
+                          </div>
+                        )}
                       </CardContent>
                     </Card>
                   </div>
