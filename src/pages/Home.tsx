@@ -220,9 +220,8 @@ export default function Home() {
                 )}
                 <p className="text-foreground leading-relaxed">{post.content}</p>
                 
-                {/* Interaction Buttons */}
+                {/* Interaction - Click to like, Hold for reactions */}
                 <div className="flex items-center gap-4 pt-4 border-t">
-                  {/* Like Button - Instant Response */}
                   <button
                     disabled={!user || isProcessing}
                     onClick={(e) => {
@@ -237,64 +236,34 @@ export default function Home() {
                       }
                       toggleLike.mutate(post.id);
                     }}
-                    className={`flex items-center gap-2 transition-all ${
-                      !user 
-                        ? 'opacity-50 cursor-not-allowed' 
-                        : isProcessing
-                        ? 'opacity-50 cursor-wait'
-                        : post.is_liked
-                        ? 'text-primary font-bold'
-                        : 'text-muted-foreground hover:text-primary'
-                    }`}
-                    title={!user ? 'Faça login para curtir' : ''}
-                  >
-                    <Heart className={`w-5 h-5 ${post.is_liked ? 'fill-current' : ''}`} />
-                    <span className="font-medium">{post.likes_count || 0}</span>
-                  </button>
-
-                  {/* Reaction Button - Click or Long Press */}
-                  <button
-                    disabled={!user || isProcessing}
                     onMouseDown={(e) => handlePressStart(e, post.id)}
                     onMouseUp={handlePressEnd}
                     onMouseLeave={handlePressEnd}
                     onTouchStart={(e) => handlePressStart(e, post.id)}
                     onTouchEnd={handlePressEnd}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      if (!user) {
-                        toast({
-                          title: "Login necessário",
-                          description: "Faça login para reagir",
-                          variant: "destructive"
-                        });
-                        return;
-                      }
-                      const target = e.currentTarget as HTMLElement;
-                      const rect = target.getBoundingClientRect();
-                      setReactionMenu({
-                        isOpen: true,
-                        postId: post.id,
-                        position: { x: rect.left + rect.width / 2, y: rect.top }
-                      });
-                    }}
                     className={`flex items-center gap-2 transition-all ${
                       !user 
                         ? 'opacity-50 cursor-not-allowed' 
+                        : isProcessing
+                        ? 'opacity-50 cursor-wait'
                         : post.user_reaction
                         ? 'text-primary font-bold scale-110'
+                        : post.is_liked
+                        ? 'text-primary font-bold'
                         : 'text-muted-foreground hover:text-primary'
                     }`}
-                    title={!user ? 'Faça login para reagir' : 'Clique ou segure para reagir'}
+                    title={!user ? 'Faça login para curtir' : 'Clique para curtir, segure para reagir'}
                   >
                     {post.user_reaction ? (
                       <span className="text-2xl animate-scale-in">{EMOJI_MAP[post.user_reaction]}</span>
                     ) : (
-                      <span className="text-xl">😊</span>
+                      <Heart className={`w-5 h-5 ${post.is_liked ? 'fill-current' : ''}`} />
                     )}
-                    {post.user_reaction && (
-                      <span className="font-medium">{post.reactions[post.user_reaction]}</span>
-                    )}
+                    <span className="font-medium">
+                      {post.user_reaction 
+                        ? post.reactions[post.user_reaction]
+                        : post.likes_count || 0}
+                    </span>
                   </button>
 
                   {/* Other Reaction Counts */}
