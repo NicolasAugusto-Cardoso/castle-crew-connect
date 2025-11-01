@@ -1,13 +1,14 @@
 import { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useContactMessages, ContactMessage } from '@/hooks/useContactMessages';
+import { MessageThread } from '@/components/contact/MessageThread';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Mail, Phone, Loader2 } from 'lucide-react';
+import { Mail, Phone, Loader2, MessageSquare } from 'lucide-react';
 import { contactFormSchema } from '@/lib/validations';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
@@ -20,6 +21,7 @@ export default function Contact() {
   const [email, setEmail] = useState('');
   const [message, setMessage] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [selectedMessage, setSelectedMessage] = useState<ContactMessage | null>(null);
 
   const canManageMessages = hasRole(['admin', 'social_media']);
 
@@ -36,15 +38,6 @@ export default function Contact() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
-
-    // DEBUG: Verificar estado de autenticação
-    const { data: { session } } = await supabase.auth.getSession();
-    console.log('🔍 Session Debug:', {
-      hasSession: !!session,
-      userId: session?.user?.id,
-      expiresAt: session?.expires_at,
-      isExpired: session?.expires_at ? new Date(session.expires_at * 1000) < new Date() : 'no session'
-    });
 
     try {
       // Validar dados do formulário
@@ -197,63 +190,120 @@ export default function Contact() {
 
       {canManageMessages && (
         <div className="space-y-4">
-          <h2 className="text-xl font-bold">Mensagens Recebidas</h2>
-          {isLoading ? (
-            <div className="flex justify-center py-12">
-              <Loader2 className="w-8 h-8 animate-spin text-primary" />
-            </div>
-          ) : messages.length === 0 ? (
-            <Card className="card-elevated">
-              <CardContent className="py-12 text-center text-muted-foreground">
-                <Mail className="w-12 h-12 mx-auto mb-3" />
-                <p>Nenhuma mensagem recebida ainda</p>
-              </CardContent>
-            </Card>
+          {selectedMessage ? (
+            <MessageThread
+              message={selectedMessage}
+              onClose={() => setSelectedMessage(null)}
+            />
           ) : (
-            messages.map((msg) => (
-            <Card key={msg.id} className="card-elevated">
-              <CardHeader>
-                <div className="flex items-start justify-between">
-                  <div>
-                    <CardTitle className="text-lg">{msg.name}</CardTitle>
-                    <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground">
-                      <span className="flex items-center gap-1">
-                        <Phone className="w-4 h-4" />
-                        {msg.phone}
-                      </span>
-                      {msg.email && (
-                        <span className="flex items-center gap-1">
-                          <Mail className="w-4 h-4" />
-                          {msg.email}
-                        </span>
-                      )}
+            <>
+              <h2 className="text-xl font-bold">Mensagens Recebidas</h2>
+              {isLoading ? (
+                <div className="flex justify-center py-12">
+                  <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                </div>
+              ) : messages.length === 0 ? (
+                <Card className="card-elevated">
+                  <CardContent className="py-12 text-center text-muted-foreground">
+                    <Mail className="w-12 h-12 mx-auto mb-3" />
+                    <p>Nenhuma mensagem recebida ainda</p>
+                  </CardContent>
+                </Card>
+              ) : (
+                messages.map((msg) => (
+                  <Card key={msg.id} className="card-elevated hover:shadow-lg transition-shadow cursor-pointer" onClick={() => setSelectedMessage(msg)}>
+                    <CardHeader>
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <CardTitle className="text-lg">{msg.name}</CardTitle>
+                          <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground">
+                            <span className="flex items-center gap-1">
+                              <Phone className="w-4 h-4" />
+                              {msg.phone}
+                            </span>
+                            {msg.email && (
+                              <span className="flex items-center gap-1">
+                                <Mail className="w-4 h-4" />
+                                {msg.email}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                        <Badge className={getStatusColor(msg.status)}>
+                          {getStatusLabel(msg.status)}
+                        </Badge>
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-foreground leading-relaxed mb-4 line-clamp-2">{msg.message}</p>
+                      <div className="flex items-center justify-between">
+                        <p className="text-xs text-muted-foreground">
+                          Recebida em {new Date(msg.created_at).toLocaleString('pt-BR')}
+                        </p>
+                        <Button
+                          className="btn-gradient"
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedMessage(msg);
+                          }}
+                        >
+                          <MessageSquare className="w-4 h-4 mr-2" />
+                          Ver conversa
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))
+              )}
+            </>
+          )}
+        </div>
+      )}
+
+      {!canManageMessages && messages.length > 0 && (
+        <div className="mt-8">
+          <h2 className="text-xl font-bold mb-4">Minhas Mensagens</h2>
+          {selectedMessage ? (
+            <MessageThread
+              message={selectedMessage}
+              onClose={() => setSelectedMessage(null)}
+            />
+          ) : (
+            <div className="space-y-4">
+              {messages.map((msg) => (
+                <Card key={msg.id} className="card-elevated hover:shadow-lg transition-shadow cursor-pointer" onClick={() => setSelectedMessage(msg)}>
+                  <CardHeader>
+                    <div className="flex items-start justify-between">
+                      <CardTitle className="text-lg">Mensagem para Administração</CardTitle>
+                      <Badge className={getStatusColor(msg.status)}>
+                        {getStatusLabel(msg.status)}
+                      </Badge>
                     </div>
-                  </div>
-                  <Badge className={getStatusColor(msg.status)}>
-                    {getStatusLabel(msg.status)}
-                  </Badge>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <p className="text-foreground leading-relaxed mb-4">{msg.message}</p>
-                <p className="text-xs text-muted-foreground">
-                  Recebida em {new Date(msg.created_at).toLocaleString('pt-BR')}
-                </p>
-                <div className="flex gap-2 mt-4">
-                  {msg.status !== 'answered' && (
-                    <Button
-                      className="btn-accent"
-                      size="sm"
-                      onClick={() => updateMessageStatus.mutate({ id: msg.id, status: 'answered' })}
-                      disabled={updateMessageStatus.isPending}
-                    >
-                      Responder
-                    </Button>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          )))}
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-foreground leading-relaxed mb-4 line-clamp-2">{msg.message}</p>
+                    <div className="flex items-center justify-between">
+                      <p className="text-xs text-muted-foreground">
+                        Enviada em {new Date(msg.created_at).toLocaleString('pt-BR')}
+                      </p>
+                      <Button
+                        className="btn-gradient"
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedMessage(msg);
+                        }}
+                      >
+                        <MessageSquare className="w-4 h-4 mr-2" />
+                        Ver conversa
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
         </div>
       )}
     </div>
