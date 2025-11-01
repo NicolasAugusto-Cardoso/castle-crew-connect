@@ -31,7 +31,9 @@ export const useUnreadReplies = (userId: string | undefined) => {
       return count || 0;
     },
     enabled: !!userId,
-    refetchInterval: 30000, // Atualizar a cada 30 segundos como fallback
+    staleTime: 0,
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
   });
 
   // Marcar mensagem como lida
