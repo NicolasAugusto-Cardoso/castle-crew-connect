@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
+import { toast } from '@/hooks/use-toast';
 
 export type EmojiType = 'fire' | 'heart' | 'hands';
 
@@ -108,10 +108,10 @@ export function usePosts() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['posts'] });
-      toast.success('Postagem criada com sucesso!');
+      toast({ title: 'Sucesso', description: 'Postagem criada com sucesso!' });
     },
     onError: (error) => {
-      toast.error('Erro ao criar postagem');
+      toast({ title: 'Erro', description: 'Erro ao criar postagem', variant: 'destructive' });
       console.error(error);
     }
   });
@@ -130,10 +130,10 @@ export function usePosts() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['posts'] });
-      toast.success('Postagem atualizada!');
+      toast({ title: 'Sucesso', description: 'Postagem atualizada!' });
     },
     onError: (error) => {
-      toast.error('Erro ao atualizar postagem');
+      toast({ title: 'Erro', description: 'Erro ao atualizar postagem', variant: 'destructive' });
       console.error(error);
     }
   });
@@ -149,10 +149,10 @@ export function usePosts() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['posts'] });
-      toast.success('Postagem excluída!');
+      toast({ title: 'Sucesso', description: 'Postagem excluída!' });
     },
     onError: (error) => {
-      toast.error('Erro ao excluir postagem');
+      toast({ title: 'Erro', description: 'Erro ao excluir postagem', variant: 'destructive' });
       console.error(error);
     }
   });
@@ -210,12 +210,25 @@ export function usePosts() {
       
       return { previousPosts };
     },
-    onError: (err, postId, context) => {
+    onError: (err: any, postId, context) => {
       // Rollback on error
       if (context?.previousPosts) {
         queryClient.setQueryData(['posts'], context.previousPosts);
       }
-      toast.error('Erro ao curtir postagem');
+      
+      if (err.message?.includes('JWT') || err.message?.includes('auth') || err.message?.includes('Not authenticated')) {
+        toast({
+          title: "Erro de autenticação",
+          description: "Você precisa estar logado para curtir",
+          variant: "destructive"
+        });
+      } else {
+        toast({
+          title: "Erro",
+          description: "Erro ao curtir postagem",
+          variant: "destructive"
+        });
+      }
       console.error(err);
     },
     onSettled: () => {
@@ -297,11 +310,24 @@ export function usePosts() {
       
       return { previousPosts };
     },
-    onError: (err, variables, context) => {
+    onError: (err: any, variables, context) => {
       if (context?.previousPosts) {
         queryClient.setQueryData(['posts'], context.previousPosts);
       }
-      toast.error('Erro ao reagir');
+      
+      if (err.message?.includes('JWT') || err.message?.includes('auth') || err.message?.includes('Not authenticated')) {
+        toast({
+          title: "Erro de autenticação",
+          description: "Você precisa estar logado para reagir",
+          variant: "destructive"
+        });
+      } else {
+        toast({
+          title: "Erro",
+          description: "Erro ao reagir à publicação",
+          variant: "destructive"
+        });
+      }
       console.error(err);
     },
     onSettled: () => {

@@ -4,6 +4,7 @@ import { usePosts } from '@/hooks/usePosts';
 import { useVerseOfTheDay } from '@/hooks/useVerseOfTheDay';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Heart, BookOpen, Loader2, MoreVertical } from 'lucide-react';
+import { toast } from '@/hooks/use-toast';
 import castleLogo from '@/assets/castle-logo.png';
 import { CreatePostDialog } from '@/components/posts/CreatePostDialog';
 import { EditPostDialog } from '@/components/posts/EditPostDialog';
@@ -24,10 +25,11 @@ const EMOJI_MAP = {
 } as const;
 
 export default function Home() {
-  const { hasRole } = useAuth();
+  const { user, hasRole } = useAuth();
   const { posts, isLoading: loadingPosts, toggleLike, setReaction } = usePosts();
   const { verse, isLoading: loadingVerse } = useVerseOfTheDay();
   const [selectedImage, setSelectedImage] = useState<{ url: string; alt: string } | null>(null);
+  const [pressTimer, setPressTimer] = useState<NodeJS.Timeout | null>(null);
   const [reactionMenu, setReactionMenu] = useState<{
     isOpen: boolean;
     postId: string | null;
@@ -39,21 +41,53 @@ export default function Home() {
   });
 
   const canManagePosts = hasRole(['admin', 'social_media']);
+  const isProcessing = setReaction.isPending || toggleLike.isPending;
 
-  const handleLongPress = (e: React.MouseEvent | React.TouchEvent, postId: string) => {
+  const handlePressStart = (e: React.MouseEvent | React.TouchEvent, postId: string) => {
+    if (!user) {
+      toast({
+        title: "Login necessário",
+        description: "Faça login para reagir às publicações",
+        variant: "destructive"
+      });
+      return;
+    }
+
     e.preventDefault();
-    const rect = e.currentTarget.getBoundingClientRect();
-    setReactionMenu({
-      isOpen: true,
-      postId,
-      position: {
-        x: rect.left + rect.width / 2,
-        y: rect.top
-      }
-    });
+    const target = e.currentTarget as HTMLElement;
+    const rect = target.getBoundingClientRect();
+    
+    const timer = setTimeout(() => {
+      const x = rect.left + rect.width / 2;
+      const y = rect.top;
+      
+      setReactionMenu({
+        isOpen: true,
+        postId,
+        position: { x, y }
+      });
+    }, 500);
+
+    setPressTimer(timer);
+  };
+
+  const handlePressEnd = () => {
+    if (pressTimer) {
+      clearTimeout(pressTimer);
+      setPressTimer(null);
+    }
   };
 
   const handleReactionSelect = (emojiType: EmojiType) => {
+    if (!user) {
+      toast({
+        title: "Login necessário",
+        description: "Faça login para reagir às publicações",
+        variant: "destructive"
+      });
+      return;
+    }
+    
     if (reactionMenu.postId) {
       setReaction.mutate({ postId: reactionMenu.postId, emojiType });
     }
@@ -61,7 +95,17 @@ export default function Home() {
   };
 
   const handleQuickLike = (e: React.MouseEvent, postId: string) => {
+    if (!user) {
+      toast({
+        title: "Login necessário",
+        description: "Faça login para curtir publicações",
+        variant: "destructive"
+      });
+      return;
+    }
+
     e.preventDefault();
+    handlePressEnd();
     toggleLike.mutate(postId);
   };
 
@@ -196,35 +240,29 @@ export default function Home() {
                 <div className="flex items-center gap-6 pt-4 border-t">
                   <div className="flex items-center gap-2">
                     <button
+                      disabled={!user || isProcessing}
                       onClick={(e) => handleQuickLike(e, post.id)}
-                      onMouseDown={(e) => {
-                        const timeoutId = setTimeout(() => handleLongPress(e, post.id), 500);
-                        e.currentTarget.dataset.timeoutId = String(timeoutId);
-                      }}
-                      onMouseUp={(e) => {
-                        const timeoutId = e.currentTarget.dataset.timeoutId;
-                        if (timeoutId) clearTimeout(Number(timeoutId));
-                      }}
-                      onMouseLeave={(e) => {
-                        const timeoutId = e.currentTarget.dataset.timeoutId;
-                        if (timeoutId) clearTimeout(Number(timeoutId));
-                      }}
-                      onTouchStart={(e) => {
-                        const timeoutId = setTimeout(() => handleLongPress(e, post.id), 500);
-                        e.currentTarget.dataset.timeoutId = String(timeoutId);
-                      }}
-                      onTouchEnd={(e) => {
-                        const timeoutId = e.currentTarget.dataset.timeoutId;
-                        if (timeoutId) clearTimeout(Number(timeoutId));
-                      }}
+                      onMouseDown={(e) => handlePressStart(e, post.id)}
+                      onMouseUp={handlePressEnd}
+                      onMouseLeave={handlePressEnd}
+                      onTouchStart={(e) => handlePressStart(e, post.id)}
+                      onTouchEnd={handlePressEnd}
                       className={`flex items-center gap-2 transition-all relative ${
-                        post.user_reaction
+                        !user 
+                          ? 'opacity-50 cursor-not-allowed' 
+                          : isProcessing
+                          ? 'opacity-50 cursor-wait'
+                          : post.user_reaction
                           ? 'text-primary font-bold scale-110'
                           : post.is_liked
                           ? 'text-primary font-bold'
                           : 'text-muted-foreground hover:text-primary'
                       }`}
+                      title={!user ? 'Faça login para interagir' : ''}
                     >
+                      {isProcessing && (
+                        <Loader2 className="w-4 h-4 animate-spin absolute -top-1 -right-1" />
+                      )}
                       {post.user_reaction ? (
                         <span className="text-2xl animate-scale-in">{EMOJI_MAP[post.user_reaction]}</span>
                       ) : (
