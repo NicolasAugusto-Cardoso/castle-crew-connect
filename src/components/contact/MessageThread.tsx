@@ -33,7 +33,10 @@ export const MessageThread = ({ message, onClose }: MessageThreadProps) => {
     if (!replyText.trim()) return;
 
     try {
-      await createReply.mutateAsync(replyText);
+      await createReply.mutateAsync({
+        messageId: message.id,
+        content: replyText,
+      });
       setReplyText('');
     } catch (error) {
       console.error('Erro ao enviar resposta:', error);
@@ -93,6 +96,10 @@ export const MessageThread = ({ message, onClose }: MessageThreadProps) => {
           ) : (
             replies.map((reply) => {
               const isOwnMessage = reply.sender_id === user?.id;
+              const isSenderUser = reply.sender_id === message.user_id;
+              const senderName = isSenderUser ? message.name : 'Administrador';
+              const senderInitial = senderName.charAt(0).toUpperCase();
+              
               return (
                 <div
                   key={reply.id}
@@ -109,7 +116,7 @@ export const MessageThread = ({ message, onClose }: MessageThreadProps) => {
                           : 'bg-primary text-primary-foreground'
                       )}
                     >
-                      {reply.sender?.name?.charAt(0).toUpperCase() || '?'}
+                      {senderInitial}
                     </AvatarFallback>
                   </Avatar>
                   <div className={cn('flex-1', isOwnMessage && 'text-right')}>
@@ -120,7 +127,7 @@ export const MessageThread = ({ message, onClose }: MessageThreadProps) => {
                       )}
                     >
                       <span className="font-medium text-sm">
-                        {reply.sender?.name || 'Usuário'}
+                        {senderName}
                       </span>
                       <span className="text-xs text-muted-foreground">
                         {new Date(reply.created_at).toLocaleString('pt-BR')}

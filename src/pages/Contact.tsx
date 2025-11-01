@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useContactMessages, ContactMessage } from '@/hooks/useContactMessages';
+import { useUserRepliesNotifications } from '@/hooks/useContactReplies';
 import { MessageThread } from '@/components/contact/MessageThread';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -14,7 +15,7 @@ import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 
 export default function Contact() {
-  const { hasRole, loading: authLoading } = useAuth();
+  const { hasRole, loading: authLoading, user } = useAuth();
   const { messages, isLoading, createMessage, updateMessageStatus } = useContactMessages();
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
@@ -23,7 +24,15 @@ export default function Contact() {
   const [submitting, setSubmitting] = useState(false);
   const [selectedMessage, setSelectedMessage] = useState<ContactMessage | null>(null);
 
+  // Subscribe to realtime notifications for new replies
+  useUserRepliesNotifications();
+
   const canManageMessages = hasRole(['admin', 'social_media']);
+  
+  // Filter messages for regular users (only their own)
+  const displayedMessages = canManageMessages 
+    ? messages 
+    : messages.filter(m => m.user_id === user?.id);
 
   if (authLoading) {
     return (

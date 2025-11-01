@@ -9,6 +9,7 @@ export interface ContactMessage {
   email: string | null;
   message: string;
   status: 'new' | 'in_progress' | 'answered';
+  user_id: string | null;
   created_at: string;
   updated_at: string;
 }

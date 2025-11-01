@@ -10,13 +10,9 @@ export interface ContactReply {
   content: string;
   created_at: string;
   updated_at: string;
-  sender?: {
-    name: string;
-    avatar_url?: string | null;
-  } | null;
 }
 
-export const useContactReplies = (messageId: string | null) => {
+export function useContactReplies(messageId: string | null) {
   const queryClient = useQueryClient();
 
   // Fetch replies for a specific message
@@ -25,33 +21,19 @@ export const useContactReplies = (messageId: string | null) => {
     queryFn: async () => {
       if (!messageId) return [];
 
-      const { data: repliesData, error } = await supabase
+      const { data, error } = await supabase
         .from('contact_replies')
         .select('*')
         .eq('message_id', messageId)
         .order('created_at', { ascending: true });
 
       if (error) throw error;
-      if (!repliesData) return [];
-
-      // Fetch sender profiles
-      const senderIds = [...new Set(repliesData.map(r => r.sender_id))];
-      const { data: profiles } = await supabase
-        .from('profiles')
-        .select('id, name, avatar_url')
-        .in('id', senderIds);
-
-      const profilesMap = new Map(profiles?.map(p => [p.id, p]) || []);
-
-      return repliesData.map(reply => ({
-        ...reply,
-        sender: profilesMap.get(reply.sender_id) || null,
-      })) as ContactReply[];
+      return data as ContactReply[];
     },
     enabled: !!messageId,
   });
 
-  // Set up realtime subscription
+  // Subscribe to realtime updates
   useEffect(() => {
     if (!messageId) return;
 
@@ -65,36 +47,12 @@ export const useContactReplies = (messageId: string | null) => {
           table: 'contact_replies',
           filter: `message_id=eq.${messageId}`,
         },
-        async (payload) => {
-          console.log('🔔 Nova resposta recebida:', payload);
+        (payload) => {
+          console.log('Nova reply recebida:', payload);
+          queryClient.invalidateQueries({ queryKey: ['contact-replies', messageId] });
           
-          // Fetch the complete reply with sender info
-          const { data: replyData } = await supabase
-            .from('contact_replies')
-            .select('*')
-            .eq('id', payload.new.id)
-            .single();
-
-          if (replyData) {
-            // Fetch sender profile
-            const { data: senderProfile } = await supabase
-              .from('profiles')
-              .select('id, name, avatar_url')
-              .eq('id', replyData.sender_id)
-              .single();
-
-            const completeReply: ContactReply = {
-              ...replyData,
-              sender: senderProfile || null,
-            };
-
-            queryClient.setQueryData<ContactReply[]>(
-              ['contact-replies', messageId],
-              (old = []) => [...old, completeReply]
-            );
-            
-            toast.success('💬 Nova resposta recebida!');
-          }
+          // Mostrar notificação visual
+          toast.success('💬 Nova mensagem recebida!');
         }
       )
       .subscribe();
@@ -104,41 +62,39 @@ export const useContactReplies = (messageId: string | null) => {
     };
   }, [messageId, queryClient]);
 
-  // Create reply mutation
+  // Create a new reply
   const createReply = useMutation({
-    mutationFn: async (content: string) => {
-      if (!messageId) throw new Error('Message ID is required');
+    mutationFn: async ({ messageId, content }: { messageId: string; content: string }) => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Usuário não autenticado');
 
-      const { data: replyData, error } = await supabase
+      const { data, error } = await supabase
         .from('contact_replies')
         .insert({
           message_id: messageId,
-          content,
-          sender_id: (await supabase.auth.getUser()).data.user?.id,
+          sender_id: user.id,
+          content: content.trim(),
         })
         .select()
         .single();
 
       if (error) throw error;
-
-      // Fetch sender profile
-      const { data: senderProfile } = await supabase
-        .from('profiles')
-        .select('id, name, avatar_url')
-        .eq('id', replyData.sender_id)
-        .single();
-
-      return {
-        ...replyData,
-        sender: senderProfile || null,
-      } as ContactReply;
+      return data;
     },
-    onSuccess: () => {
-      toast.success('Resposta enviada com sucesso!');
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['contact-replies', variables.messageId] });
+      toast.success('✅ Resposta enviada com sucesso!');
     },
     onError: (error: any) => {
       console.error('Erro ao enviar resposta:', error);
-      toast.error('Erro ao enviar resposta. Tente novamente.');
+      
+      if (error.code === '42501') {
+        toast.error('🔐 Você não tem permissão para responder esta mensagem.');
+      } else if (error.message) {
+        toast.error(error.message);
+      } else {
+        toast.error('Erro ao enviar resposta. Tente novamente.');
+      }
     },
   });
 
@@ -147,4 +103,32 @@ export const useContactReplies = (messageId: string | null) => {
     isLoading,
     createReply,
   };
-};
+}
+
+// Hook to subscribe to all new replies for the current user
+export function useUserRepliesNotifications() {
+  const queryClient = useQueryClient();
+
+  useEffect(() => {
+    const channel = supabase
+      .channel('user-contact-replies')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'contact_replies',
+        },
+        (payload) => {
+          console.log('Nova reply no sistema:', payload);
+          // Invalidar queries de mensagens para atualizar contadores
+          queryClient.invalidateQueries({ queryKey: ['contact-messages'] });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [queryClient]);
+}
