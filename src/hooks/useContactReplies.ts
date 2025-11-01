@@ -52,9 +52,6 @@ export function useContactReplies(messageId: string | null) {
           queryClient.invalidateQueries({ queryKey: ['contact-replies', messageId] });
           queryClient.invalidateQueries({ queryKey: ['unread-replies-count'] });
           queryClient.invalidateQueries({ queryKey: ['contact-messages'] });
-          
-          // Mostrar notificação visual
-          toast.success('💬 Nova mensagem recebida!');
         }
       )
       .subscribe();
