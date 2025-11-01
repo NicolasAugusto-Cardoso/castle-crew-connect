@@ -1,12 +1,15 @@
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { Home, MessageSquare, Users, FolderOpen, BookOpen, LogOut, UserCircle, Settings } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
+import { useUnreadReplies } from '@/hooks/useUnreadReplies';
 import castleLogo from '@/assets/castle-logo.png';
+import { Badge } from '@/components/ui/badge';
 
 export const Layout = () => {
   const { user, signOut, hasRole } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const { unreadCount } = useUnreadReplies(user?.id);
 
   const handleLogout = async () => {
     await signOut();
@@ -69,7 +72,17 @@ export const Layout = () => {
                     : 'hover:bg-secondary text-foreground'
                 }`}
               >
-                <item.icon className="w-5 h-5" />
+                <div className="relative">
+                  <item.icon className="w-5 h-5" />
+                  {item.path === '/contact' && unreadCount > 0 && (
+                    <Badge 
+                      variant="destructive" 
+                      className="absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center p-0 text-xs"
+                    >
+                      {unreadCount}
+                    </Badge>
+                  )}
+                </div>
                 <span className="font-medium">{item.label}</span>
               </button>
             );
@@ -95,13 +108,23 @@ export const Layout = () => {
               <button
                 key={item.path}
                 onClick={() => navigate(item.path)}
-                className={`flex flex-col items-center gap-1 px-3 py-2 transition-colors ${
+                className={`flex flex-col items-center gap-1 px-3 py-2 transition-colors relative ${
                   isActive 
                     ? 'text-primary' 
                     : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
-                <item.icon className="w-5 h-5" />
+                <div className="relative">
+                  <item.icon className="w-5 h-5" />
+                  {item.path === '/contact' && unreadCount > 0 && (
+                    <Badge 
+                      variant="destructive" 
+                      className="absolute -top-1 -right-1 h-4 w-4 flex items-center justify-center p-0 text-[10px]"
+                    >
+                      {unreadCount}
+                    </Badge>
+                  )}
+                </div>
                 <span className="text-xs">{item.label}</span>
               </button>
             );

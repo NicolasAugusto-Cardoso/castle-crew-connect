@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useContactMessages, ContactMessage } from '@/hooks/useContactMessages';
 import { useUserRepliesNotifications } from '@/hooks/useContactReplies';
+import { useUnreadReplies } from '@/hooks/useUnreadReplies';
 import { MessageThread } from '@/components/contact/MessageThread';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -26,6 +27,9 @@ export default function Contact() {
 
   // Subscribe to realtime notifications for new replies
   useUserRepliesNotifications();
+  
+  // Initialize unread replies hook
+  useUnreadReplies(user?.id);
 
   const canManageMessages = hasRole(['admin', 'social_media']);
   

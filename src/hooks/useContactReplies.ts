@@ -50,6 +50,8 @@ export function useContactReplies(messageId: string | null) {
         (payload) => {
           console.log('Nova reply recebida:', payload);
           queryClient.invalidateQueries({ queryKey: ['contact-replies', messageId] });
+          queryClient.invalidateQueries({ queryKey: ['unread-replies-count'] });
+          queryClient.invalidateQueries({ queryKey: ['contact-messages'] });
           
           // Mostrar notificação visual
           toast.success('💬 Nova mensagem recebida!');
@@ -123,6 +125,7 @@ export function useUserRepliesNotifications() {
           console.log('Nova reply no sistema:', payload);
           // Invalidar queries de mensagens para atualizar contadores
           queryClient.invalidateQueries({ queryKey: ['contact-messages'] });
+          queryClient.invalidateQueries({ queryKey: ['unread-replies-count'] });
         }
       )
       .subscribe();

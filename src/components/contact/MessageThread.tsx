@@ -8,6 +8,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Loader2, Send } from 'lucide-react';
 import { ContactMessage } from '@/hooks/useContactMessages';
 import { cn } from '@/lib/utils';
+import { supabase } from '@/integrations/supabase/client';
 
 interface MessageThreadProps {
   message: ContactMessage;
@@ -21,6 +22,26 @@ export const MessageThread = ({ message, onClose }: MessageThreadProps) => {
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const isAdmin = hasRole(['admin', 'social_media']);
+
+  // Marcar mensagens como lidas quando abrir a thread
+  useEffect(() => {
+    if (!user?.id || isAdmin) return;
+
+    const markRepliesAsRead = async () => {
+      const { error } = await supabase
+        .from('contact_replies')
+        .update({ is_read: true })
+        .eq('message_id', message.id)
+        .neq('sender_id', user.id)
+        .eq('is_read', false);
+
+      if (error) {
+        console.error('Erro ao marcar mensagens como lidas:', error);
+      }
+    };
+
+    markRepliesAsRead();
+  }, [message.id, user?.id, isAdmin]);
 
   // Auto-scroll to bottom when new replies arrive
   useEffect(() => {
