@@ -56,7 +56,12 @@ export const MessageThread = ({ message, onClose }: MessageThreadProps) => {
         {/* Header */}
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-semibold">Conversa com {message.name}</h3>
-          <Button variant="ghost" size="sm" onClick={onClose}>
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={onClose}
+            className="hover:bg-destructive hover:text-destructive-foreground"
+          >
             ✕ Fechar
           </Button>
         </div>
