@@ -49,10 +49,14 @@ export function useContactMessages() {
     onError: (error: any) => {
       console.error('Erro ao enviar mensagem:', error);
       
-      if (error.code === '23505') {
+      if (error.code === 'PGRST116' || error.message?.includes('Rate limit')) {
+        toast.error('⏱️ Limite de envios atingido. Você pode enviar no máximo 3 mensagens por hora.');
+      } else if (error.code === '42501') {
+        toast.error('🔐 Erro de permissão. Por favor, faça login e tente novamente.');
+      } else if (error.code === '23505') {
         toast.error('Você já enviou uma mensagem recentemente. Aguarde alguns minutos.');
-      } else if (error.code === 'PGRST116') {
-        toast.error('Limite de mensagens atingido. Aguarde 1 hora para enviar novamente.');
+      } else if (error.message?.includes('JWT') || error.message?.includes('auth')) {
+        toast.error('🔐 Você precisa estar logado para enviar mensagens.');
       } else if (error.message) {
         toast.error(error.message);
       } else {

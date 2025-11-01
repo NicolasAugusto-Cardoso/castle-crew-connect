@@ -68,13 +68,16 @@ export default function Contact() {
         error.errors.forEach((err: any) => {
           toast.error(err.message);
         });
+      } else if (error.code === 'PGRST116' || error.message?.includes('Rate limit')) {
+        // Rate limiting atingido
+        toast.error('⏱️ Limite de envios atingido. Você pode enviar no máximo 3 mensagens por hora.');
       } else if (error.code === '42501') {
         // Erro RLS específico
-        toast.error('Erro de permissão. Por favor, tente novamente.');
+        toast.error('🔐 Erro de permissão. Por favor, faça login e tente novamente.');
       } else if (error.code === '23505') {
         toast.error('Você já enviou uma mensagem recentemente. Aguarde alguns minutos.');
-      } else if (error.message?.includes('rate limit')) {
-        toast.error('Limite de envios atingido. Aguarde 1 hora para enviar novamente.');
+      } else if (error.message?.includes('JWT') || error.message?.includes('auth')) {
+        toast.error('🔐 Você precisa estar logado para enviar mensagens.');
       } else if (error.message) {
         toast.error(error.message);
       } else {
