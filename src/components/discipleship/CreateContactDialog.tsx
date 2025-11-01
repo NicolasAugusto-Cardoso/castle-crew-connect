@@ -19,7 +19,6 @@ export function CreateContactDialog() {
   const [open, setOpen] = useState(false);
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
-  const [email, setEmail] = useState('');
   const [age, setAge] = useState('');
   const [city, setCity] = useState('');
   const [neighborhood, setNeighborhood] = useState('');
@@ -33,7 +32,6 @@ export function CreateContactDialog() {
       await createContact.mutateAsync({
         name,
         phone,
-        email: email || undefined,
         age: age ? parseInt(age) : undefined,
         city: city || undefined,
         neighborhood: neighborhood || undefined
@@ -42,7 +40,6 @@ export function CreateContactDialog() {
       // Reset form
       setName('');
       setPhone('');
-      setEmail('');
       setAge('');
       setCity('');
       setNeighborhood('');
@@ -96,18 +93,6 @@ export function CreateContactDialog() {
               onChange={(e) => setPhone(e.target.value)}
               placeholder="(00) 00000-0000"
               required
-              disabled={isSubmitting}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="email">E-mail</Label>
-            <Input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="email@exemplo.com"
               disabled={isSubmitting}
             />
           </div>
