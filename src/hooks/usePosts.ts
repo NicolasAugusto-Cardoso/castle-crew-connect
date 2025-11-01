@@ -4,12 +4,6 @@ import { toast } from 'sonner';
 
 export type EmojiType = 'fire' | 'heart' | 'hands';
 
-export interface Reaction {
-  emoji_type: EmojiType;
-  count: number;
-  user_reacted: boolean;
-}
-
 export interface Post {
   id: string;
   title: string;
@@ -22,7 +16,8 @@ export interface Post {
   author_avatar?: string | null;
   likes_count?: number;
   is_liked?: boolean;
-  reactions?: Reaction[];
+  user_reaction?: EmojiType | null;
+  reactions: Record<EmojiType, number>;
 }
 
 export function usePosts() {
@@ -54,7 +49,7 @@ export function usePosts() {
         .select('post_id, user_id');
 
       // Get reactions
-      const { data: reactions } = await supabase
+      const { data: reactionsData } = await supabase
         .from('post_reactions')
         .select('post_id, user_id, emoji_type');
 
@@ -62,20 +57,22 @@ export function usePosts() {
       return postsData.map(post => {
         const author = profiles?.find(p => p.id === post.author_id);
         const postLikes = likes?.filter(l => l.post_id === post.id) || [];
-        const postReactions = reactions?.filter(r => r.post_id === post.id) || [];
+        const postReactions = reactionsData?.filter(r => r.post_id === post.id) || [];
         
-        // Group reactions by emoji type
-        const reactionsByEmoji: Record<EmojiType, Reaction> = {
-          fire: { emoji_type: 'fire', count: 0, user_reacted: false },
-          heart: { emoji_type: 'heart', count: 0, user_reacted: false },
-          hands: { emoji_type: 'hands', count: 0, user_reacted: false }
+        // Count reactions by type
+        const reactionCounts: Record<EmojiType, number> = {
+          fire: 0,
+          heart: 0,
+          hands: 0
         };
+
+        let userReaction: EmojiType | null = null;
 
         postReactions.forEach(reaction => {
           const emojiType = reaction.emoji_type as EmojiType;
-          reactionsByEmoji[emojiType].count++;
+          reactionCounts[emojiType]++;
           if (user && reaction.user_id === user.id) {
-            reactionsByEmoji[emojiType].user_reacted = true;
+            userReaction = emojiType;
           }
         });
         
@@ -85,7 +82,8 @@ export function usePosts() {
           author_avatar: author?.avatar_url,
           likes_count: postLikes.length,
           is_liked: user ? postLikes.some(l => l.user_id === user.id) : false,
-          reactions: Object.values(reactionsByEmoji)
+          user_reaction: userReaction,
+          reactions: reactionCounts
         };
       }) as Post[];
     }
@@ -226,33 +224,44 @@ export function usePosts() {
     }
   });
 
-  const toggleReaction = useMutation({
+  const setReaction = useMutation({
     mutationFn: async ({ postId, emojiType }: { postId: string; emojiType: EmojiType }) => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
 
-      // Check if already reacted with this emoji
+      // Check if user already has a reaction on this post
       const { data: existingReaction } = await supabase
         .from('post_reactions')
-        .select('id')
+        .select('id, emoji_type')
         .eq('post_id', postId)
         .eq('user_id', user.id)
-        .eq('emoji_type', emojiType)
         .maybeSingle();
 
       if (existingReaction) {
-        // Remove reaction
-        const { error } = await supabase
-          .from('post_reactions')
-          .delete()
-          .eq('id', existingReaction.id);
-        if (error) throw error;
+        if (existingReaction.emoji_type === emojiType) {
+          // Remove reaction if clicking the same emoji
+          const { error } = await supabase
+            .from('post_reactions')
+            .delete()
+            .eq('id', existingReaction.id);
+          if (error) throw error;
+          return { action: 'removed' };
+        } else {
+          // Update to new emoji
+          const { error } = await supabase
+            .from('post_reactions')
+            .update({ emoji_type: emojiType })
+            .eq('id', existingReaction.id);
+          if (error) throw error;
+          return { action: 'updated', oldEmoji: existingReaction.emoji_type, newEmoji: emojiType };
+        }
       } else {
-        // Add reaction
+        // Add new reaction
         const { error } = await supabase
           .from('post_reactions')
           .insert({ post_id: postId, user_id: user.id, emoji_type: emojiType });
         if (error) throw error;
+        return { action: 'added', newEmoji: emojiType };
       }
     },
     onMutate: async ({ postId, emojiType }) => {
@@ -263,18 +272,24 @@ export function usePosts() {
         if (!old) return old;
         
         return old.map(post => {
-          if (post.id === postId && post.reactions) {
-            const updatedReactions = post.reactions.map(reaction => {
-              if (reaction.emoji_type === emojiType) {
-                return {
-                  ...reaction,
-                  user_reacted: !reaction.user_reacted,
-                  count: reaction.count + (reaction.user_reacted ? -1 : 1)
-                };
-              }
-              return reaction;
-            });
-            return { ...post, reactions: updatedReactions };
+          if (post.id === postId) {
+            const newReactions = { ...post.reactions };
+            const oldReaction = post.user_reaction;
+            
+            // Remove old reaction count if exists
+            if (oldReaction) {
+              newReactions[oldReaction] = Math.max(0, newReactions[oldReaction] - 1);
+            }
+            
+            // Toggle or add new reaction
+            if (oldReaction === emojiType) {
+              // Remove reaction
+              return { ...post, user_reaction: null, reactions: newReactions };
+            } else {
+              // Add/change reaction
+              newReactions[emojiType]++;
+              return { ...post, user_reaction: emojiType, reactions: newReactions };
+            }
           }
           return post;
         });
@@ -301,6 +316,6 @@ export function usePosts() {
     updatePost,
     deletePost,
     toggleLike,
-    toggleReaction
+    setReaction
   };
 }

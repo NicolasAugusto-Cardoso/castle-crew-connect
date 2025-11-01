@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { usePosts } from '@/hooks/usePosts';
 import { useVerseOfTheDay } from '@/hooks/useVerseOfTheDay';
@@ -14,6 +14,9 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 
+import { ReactionMenu } from '@/components/posts/ReactionMenu';
+import { EmojiType } from '@/hooks/usePosts';
+
 const EMOJI_MAP = {
   fire: '🔥',
   heart: '❤️',
@@ -22,11 +25,64 @@ const EMOJI_MAP = {
 
 export default function Home() {
   const { hasRole } = useAuth();
-  const { posts, isLoading: loadingPosts, toggleLike, toggleReaction } = usePosts();
+  const { posts, isLoading: loadingPosts, toggleLike, setReaction } = usePosts();
   const { verse, isLoading: loadingVerse } = useVerseOfTheDay();
   const [selectedImage, setSelectedImage] = useState<{ url: string; alt: string } | null>(null);
+  const [reactionMenu, setReactionMenu] = useState<{
+    isOpen: boolean;
+    postId: string | null;
+    position: { x: number; y: number };
+  }>({
+    isOpen: false,
+    postId: null,
+    position: { x: 0, y: 0 }
+  });
 
   const canManagePosts = hasRole(['admin', 'social_media']);
+
+  const handleLongPress = (e: React.MouseEvent | React.TouchEvent, postId: string) => {
+    e.preventDefault();
+    const rect = e.currentTarget.getBoundingClientRect();
+    setReactionMenu({
+      isOpen: true,
+      postId,
+      position: {
+        x: rect.left + rect.width / 2,
+        y: rect.top
+      }
+    });
+  };
+
+  const handleReactionSelect = (emojiType: EmojiType) => {
+    if (reactionMenu.postId) {
+      setReaction.mutate({ postId: reactionMenu.postId, emojiType });
+    }
+    setReactionMenu({ isOpen: false, postId: null, position: { x: 0, y: 0 } });
+  };
+
+  const handleQuickLike = (e: React.MouseEvent, postId: string) => {
+    e.preventDefault();
+    toggleLike.mutate(postId);
+  };
+
+  // Close menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = () => {
+      if (reactionMenu.isOpen) {
+        setReactionMenu({ isOpen: false, postId: null, position: { x: 0, y: 0 } });
+      }
+    };
+
+    if (reactionMenu.isOpen) {
+      document.addEventListener('click', handleClickOutside);
+      document.addEventListener('touchstart', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('click', handleClickOutside);
+      document.removeEventListener('touchstart', handleClickOutside);
+    };
+  }, [reactionMenu.isOpen]);
 
   return (
     <div className="container mx-auto px-4 py-6 max-w-2xl">
@@ -136,42 +192,66 @@ export default function Home() {
                 )}
                 <p className="text-foreground leading-relaxed">{post.content}</p>
                 
-                {/* Like Button */}
-                <div className="flex items-center gap-2 pt-4 border-t">
-                  <button
-                    onClick={() => toggleLike.mutate(post.id)}
-                    className={`flex items-center gap-2 transition-colors ${
-                      post.is_liked
-                        ? 'text-primary font-bold'
-                        : 'text-muted-foreground hover:text-primary'
-                    }`}
-                  >
-                    <Heart className={`w-5 h-5 ${post.is_liked ? 'fill-current' : ''}`} />
-                    <span className="font-medium">{post.likes_count || 0}</span>
-                  </button>
-                </div>
-
-                {/* Emoji Reactions */}
-                <div className="flex items-center gap-3 pt-3 pb-2">
-                  {post.reactions?.map((reaction) => (
+                {/* Reaction Button - Long press to show menu, click for quick like */}
+                <div className="flex items-center gap-6 pt-4 border-t">
+                  <div className="flex items-center gap-2">
                     <button
-                      key={reaction.emoji_type}
-                      onClick={() => toggleReaction.mutate({ 
-                        postId: post.id, 
-                        emojiType: reaction.emoji_type 
-                      })}
-                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full transition-all ${
-                        reaction.user_reacted
-                          ? 'bg-primary/20 text-primary ring-2 ring-primary/30 scale-105'
-                          : 'bg-secondary hover:bg-secondary/80 text-muted-foreground hover:text-foreground'
+                      onClick={(e) => handleQuickLike(e, post.id)}
+                      onMouseDown={(e) => {
+                        const timeoutId = setTimeout(() => handleLongPress(e, post.id), 500);
+                        e.currentTarget.dataset.timeoutId = String(timeoutId);
+                      }}
+                      onMouseUp={(e) => {
+                        const timeoutId = e.currentTarget.dataset.timeoutId;
+                        if (timeoutId) clearTimeout(Number(timeoutId));
+                      }}
+                      onMouseLeave={(e) => {
+                        const timeoutId = e.currentTarget.dataset.timeoutId;
+                        if (timeoutId) clearTimeout(Number(timeoutId));
+                      }}
+                      onTouchStart={(e) => {
+                        const timeoutId = setTimeout(() => handleLongPress(e, post.id), 500);
+                        e.currentTarget.dataset.timeoutId = String(timeoutId);
+                      }}
+                      onTouchEnd={(e) => {
+                        const timeoutId = e.currentTarget.dataset.timeoutId;
+                        if (timeoutId) clearTimeout(Number(timeoutId));
+                      }}
+                      className={`flex items-center gap-2 transition-all relative ${
+                        post.user_reaction
+                          ? 'text-primary font-bold scale-110'
+                          : post.is_liked
+                          ? 'text-primary font-bold'
+                          : 'text-muted-foreground hover:text-primary'
                       }`}
                     >
-                      <span className="text-lg">{EMOJI_MAP[reaction.emoji_type]}</span>
-                      {reaction.count > 0 && (
-                        <span className="text-sm font-semibold">{reaction.count}</span>
+                      {post.user_reaction ? (
+                        <span className="text-2xl animate-scale-in">{EMOJI_MAP[post.user_reaction]}</span>
+                      ) : (
+                        <Heart className={`w-5 h-5 ${post.is_liked ? 'fill-current' : ''}`} />
                       )}
+                      <span className="font-medium">
+                        {post.user_reaction 
+                          ? post.reactions[post.user_reaction]
+                          : post.likes_count || 0}
+                      </span>
                     </button>
-                  ))}
+                    
+                    {/* Reaction counts */}
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground ml-2">
+                      {Object.entries(post.reactions).map(([type, count]) => {
+                        const emojiType = type as EmojiType;
+                        if (count > 0 && emojiType !== post.user_reaction) {
+                          return (
+                            <span key={type} className="flex items-center gap-1">
+                              {EMOJI_MAP[emojiType]} {count}
+                            </span>
+                          );
+                        }
+                        return null;
+                      })}
+                    </div>
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -188,6 +268,13 @@ export default function Home() {
           onClose={() => setSelectedImage(null)}
         />
       )}
+
+      {/* Reaction Menu */}
+      <ReactionMenu
+        isOpen={reactionMenu.isOpen}
+        onSelect={handleReactionSelect}
+        position={reactionMenu.position}
+      />
     </div>
   );
 }
