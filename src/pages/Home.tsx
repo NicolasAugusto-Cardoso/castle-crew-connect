@@ -14,9 +14,15 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 
+const EMOJI_MAP = {
+  fire: '🔥',
+  heart: '❤️',
+  hands: '🙌'
+} as const;
+
 export default function Home() {
   const { hasRole } = useAuth();
-  const { posts, isLoading: loadingPosts, toggleLike } = usePosts();
+  const { posts, isLoading: loadingPosts, toggleLike, toggleReaction } = usePosts();
   const { verse, isLoading: loadingVerse } = useVerseOfTheDay();
   const [selectedImage, setSelectedImage] = useState<{ url: string; alt: string } | null>(null);
 
@@ -130,7 +136,8 @@ export default function Home() {
                 )}
                 <p className="text-foreground leading-relaxed">{post.content}</p>
                 
-                <div className="flex items-center gap-6 pt-4 border-t">
+                {/* Like Button */}
+                <div className="flex items-center gap-2 pt-4 border-t">
                   <button
                     onClick={() => toggleLike.mutate(post.id)}
                     className={`flex items-center gap-2 transition-colors ${
@@ -142,6 +149,29 @@ export default function Home() {
                     <Heart className={`w-5 h-5 ${post.is_liked ? 'fill-current' : ''}`} />
                     <span className="font-medium">{post.likes_count || 0}</span>
                   </button>
+                </div>
+
+                {/* Emoji Reactions */}
+                <div className="flex items-center gap-3 pt-3 pb-2">
+                  {post.reactions?.map((reaction) => (
+                    <button
+                      key={reaction.emoji_type}
+                      onClick={() => toggleReaction.mutate({ 
+                        postId: post.id, 
+                        emojiType: reaction.emoji_type 
+                      })}
+                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full transition-all ${
+                        reaction.user_reacted
+                          ? 'bg-primary/20 text-primary ring-2 ring-primary/30 scale-105'
+                          : 'bg-secondary hover:bg-secondary/80 text-muted-foreground hover:text-foreground'
+                      }`}
+                    >
+                      <span className="text-lg">{EMOJI_MAP[reaction.emoji_type]}</span>
+                      {reaction.count > 0 && (
+                        <span className="text-sm font-semibold">{reaction.count}</span>
+                      )}
+                    </button>
+                  ))}
                 </div>
               </CardContent>
             </Card>
