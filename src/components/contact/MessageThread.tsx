@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useContactReplies } from '@/hooks/useContactReplies';
+import { useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent } from '@/components/ui/card';
@@ -18,6 +19,7 @@ interface MessageThreadProps {
 export const MessageThread = ({ message, onClose }: MessageThreadProps) => {
   const { user, hasRole } = useAuth();
   const { replies, isLoading, createReply } = useContactReplies(message.id);
+  const queryClient = useQueryClient();
   const [replyText, setReplyText] = useState('');
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -37,11 +39,15 @@ export const MessageThread = ({ message, onClose }: MessageThreadProps) => {
 
       if (error) {
         console.error('Erro ao marcar mensagens como lidas:', error);
+      } else {
+        // Atualizar contadores imediatamente
+        await queryClient.invalidateQueries({ queryKey: ['unread-replies-count', user.id] });
+        await queryClient.refetchQueries({ queryKey: ['unread-replies-count', user.id] });
       }
     };
 
     markRepliesAsRead();
-  }, [message.id, user?.id, isAdmin]);
+  }, [message.id, user?.id, isAdmin, queryClient]);
 
   // Auto-scroll to bottom when new replies arrive
   useEffect(() => {

@@ -32,7 +32,8 @@ export const useUnreadReplies = (userId: string | undefined) => {
     },
     enabled: !!userId,
     staleTime: 0,
-    refetchOnMount: true,
+    gcTime: 0,
+    refetchOnMount: 'always',
     refetchOnWindowFocus: true,
   });
 
@@ -50,9 +51,10 @@ export const useUnreadReplies = (userId: string | undefined) => {
 
       if (error) throw error;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['unread-replies-count', userId] });
-      queryClient.invalidateQueries({ queryKey: ['contact-replies'] });
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['unread-replies-count', userId] });
+      await queryClient.invalidateQueries({ queryKey: ['contact-replies'] });
+      await queryClient.refetchQueries({ queryKey: ['unread-replies-count', userId] });
     },
   });
 
