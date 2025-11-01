@@ -25,7 +25,7 @@ export const Splash: React.FC<SplashProps> = ({ onComplete }) => {
           initial={{ opacity: 1 }}
           exit={{ opacity: 0, scale: 0.95 }}
           transition={{ duration: 0.4, ease: 'easeInOut' }}
-          className="fixed inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-primary via-primary-dark to-background overflow-hidden"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-primary-light via-primary to-primary-dark overflow-hidden"
         >
           <div className="relative">
             {/* Animated glow effect */}
