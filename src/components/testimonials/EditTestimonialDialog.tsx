@@ -11,31 +11,19 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { useTestimonials, Testimonial } from '@/hooks/useTestimonials';
-import { Edit, Trash2 } from 'lucide-react';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
+import { Edit } from 'lucide-react';
 
 interface EditTestimonialDialogProps {
   testimonial: Testimonial;
 }
 
 export function EditTestimonialDialog({ testimonial }: EditTestimonialDialogProps) {
-  const { updateTestimonial, deleteTestimonial } = useTestimonials();
+  const { updateTestimonial } = useTestimonials();
   const [open, setOpen] = useState(false);
-  const [deleteOpen, setDeleteOpen] = useState(false);
   const [title, setTitle] = useState(testimonial.title);
   const [content, setContent] = useState(testimonial.content);
   const [authorName, setAuthorName] = useState(testimonial.author_name || '');
   const [anonymous, setAnonymous] = useState(!testimonial.author_name);
-  const [published, setPublished] = useState(testimonial.status === 'published');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
@@ -44,7 +32,6 @@ export function EditTestimonialDialog({ testimonial }: EditTestimonialDialogProp
       setContent(testimonial.content);
       setAuthorName(testimonial.author_name || '');
       setAnonymous(!testimonial.author_name);
-      setPublished(testimonial.status === 'published');
     }
   }, [open, testimonial]);
 
@@ -58,20 +45,9 @@ export function EditTestimonialDialog({ testimonial }: EditTestimonialDialogProp
         title,
         content,
         author_name: anonymous ? null : authorName,
-        status: published ? 'published' : 'draft'
+        status: 'draft' // Sempre manter como rascunho ao editar
       });
       
-      setOpen(false);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const handleDelete = async () => {
-    setIsSubmitting(true);
-    try {
-      await deleteTestimonial.mutateAsync(testimonial.id);
-      setDeleteOpen(false);
       setOpen(false);
     } finally {
       setIsSubmitting(false);
@@ -148,62 +124,22 @@ export function EditTestimonialDialog({ testimonial }: EditTestimonialDialogProp
               />
             </div>
 
-            <div className="flex items-center gap-2">
-              <Switch
-                id="edit-published"
-                checked={published}
-                onCheckedChange={setPublished}
-                disabled={isSubmitting}
-              />
-              <Label htmlFor="edit-published" className="cursor-pointer">
-                Publicado
-              </Label>
-            </div>
-
-            <div className="flex gap-3 justify-between">
+            <div className="flex gap-3 justify-end">
               <Button
                 type="button"
-                variant="destructive"
-                onClick={() => setDeleteOpen(true)}
+                variant="outline"
+                onClick={() => setOpen(false)}
                 disabled={isSubmitting}
               >
-                <Trash2 className="w-4 h-4 mr-2" />
-                Excluir
+                Cancelar
               </Button>
-              <div className="flex gap-3">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setOpen(false)}
-                  disabled={isSubmitting}
-                >
-                  Cancelar
-                </Button>
-                <Button type="submit" disabled={isSubmitting}>
-                  {isSubmitting ? 'Salvando...' : 'Salvar Alterações'}
-                </Button>
-              </div>
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting ? 'Salvando...' : 'Salvar Alterações'}
+              </Button>
             </div>
           </form>
         </DialogContent>
       </Dialog>
-
-      <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Confirmar Exclusão</AlertDialogTitle>
-            <AlertDialogDescription>
-              Tem certeza que deseja excluir este testemunho? Esta ação não pode ser desfeita.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={isSubmitting}>Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete} disabled={isSubmitting}>
-              {isSubmitting ? 'Excluindo...' : 'Excluir'}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </>
   );
 }

@@ -2,7 +2,8 @@ import { useAuth } from '@/hooks/useAuth';
 import { useTestimonials } from '@/hooks/useTestimonials';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Sparkles, Loader2, MoreVertical } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Sparkles, Loader2, MoreVertical, Trash2 } from 'lucide-react';
 import { CreateTestimonialDialog } from '@/components/testimonials/CreateTestimonialDialog';
 import { EditTestimonialDialog } from '@/components/testimonials/EditTestimonialDialog';
 import {
@@ -10,11 +11,38 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { useState } from 'react';
 
 export default function Testimonials() {
   const { hasRole, user } = useAuth();
   const canManageTestimonials = hasRole(['admin', 'social_media']);
-  const { testimonials, isLoading } = useTestimonials(canManageTestimonials);
+  const { testimonials, isLoading, deleteTestimonial } = useTestimonials(canManageTestimonials);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [testimonialToDelete, setTestimonialToDelete] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const handleDelete = async () => {
+    if (!testimonialToDelete) return;
+    
+    setIsDeleting(true);
+    try {
+      await deleteTestimonial.mutateAsync(testimonialToDelete);
+      setDeleteOpen(false);
+      setTestimonialToDelete(null);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
   return (
     <div className="container mx-auto px-4 py-6 max-w-4xl">
@@ -66,7 +94,8 @@ export default function Testimonials() {
                         {testimonial.status === 'published' ? 'Publicado' : 'Rascunho'}
                       </Badge>
                     )}
-                    {canManageTestimonials && (
+                    {/* Mostrar editar apenas para o próprio criador se for rascunho */}
+                    {user?.id === testimonial.created_by && testimonial.status === 'draft' && (
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <button className="p-2 hover:bg-secondary rounded-lg transition-colors">
@@ -77,6 +106,20 @@ export default function Testimonials() {
                           <EditTestimonialDialog testimonial={testimonial} />
                         </DropdownMenuContent>
                       </DropdownMenu>
+                    )}
+                    {/* Mostrar apenas delete para admins */}
+                    {canManageTestimonials && (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => {
+                          setTestimonialToDelete(testimonial.id);
+                          setDeleteOpen(true);
+                        }}
+                        className="hover:bg-destructive/10 hover:text-destructive"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
                     )}
                   </div>
                 </div>
@@ -91,6 +134,27 @@ export default function Testimonials() {
           ))}
         </div>
       )}
+
+      <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirmar Exclusão</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem certeza que deseja excluir este testemunho? Esta ação não pode ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleDelete} 
+              disabled={isDeleting}
+              className="bg-destructive hover:bg-destructive/90"
+            >
+              {isDeleting ? 'Excluindo...' : 'Excluir'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
