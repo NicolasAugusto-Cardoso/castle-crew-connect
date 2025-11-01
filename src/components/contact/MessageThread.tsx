@@ -112,7 +112,7 @@ export const MessageThread = ({ message, onClose }: MessageThreadProps) => {
                     <AvatarFallback
                       className={cn(
                         isOwnMessage
-                          ? 'bg-accent text-accent-foreground'
+                          ? 'bg-primary text-primary-foreground'
                           : 'bg-primary text-primary-foreground'
                       )}
                     >
@@ -136,7 +136,7 @@ export const MessageThread = ({ message, onClose }: MessageThreadProps) => {
                     <Card
                       className={cn(
                         isOwnMessage
-                          ? 'bg-accent text-accent-foreground'
+                          ? 'bg-primary/10'
                           : 'bg-muted'
                       )}
                     >
