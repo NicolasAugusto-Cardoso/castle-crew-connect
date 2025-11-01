@@ -130,6 +130,8 @@ export type Database = {
       discipleship_contacts: {
         Row: {
           age: number | null
+          assigned_at: string | null
+          assigned_by: string | null
           assigned_collaborator_id: string | null
           city: string | null
           created_at: string
@@ -144,6 +146,8 @@ export type Database = {
         }
         Insert: {
           age?: number | null
+          assigned_at?: string | null
+          assigned_by?: string | null
           assigned_collaborator_id?: string | null
           city?: string | null
           created_at?: string
@@ -158,6 +162,8 @@ export type Database = {
         }
         Update: {
           age?: number | null
+          assigned_at?: string | null
+          assigned_by?: string | null
           assigned_collaborator_id?: string | null
           city?: string | null
           created_at?: string
@@ -468,6 +474,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      find_nearest_collaborator: {
+        Args: { p_city: string; p_neighborhood: string }
+        Returns: string
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

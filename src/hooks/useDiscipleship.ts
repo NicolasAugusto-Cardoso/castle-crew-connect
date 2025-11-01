@@ -1,6 +1,8 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { useEffect } from 'react';
+import { useAuth } from './useAuth';
 
 export interface DiscipleshipContact {
   id: string;
@@ -11,6 +13,8 @@ export interface DiscipleshipContact {
   city: string | null;
   neighborhood: string | null;
   assigned_collaborator_id: string | null;
+  assigned_at: string | null;
+  assigned_by: string | null;
   status: string;
   registered_by: string;
   created_at: string;
@@ -33,6 +37,49 @@ export interface CollaboratorProfile {
 
 export function useDiscipleship() {
   const queryClient = useQueryClient();
+  const { user } = useAuth();
+
+  // Listen for realtime updates
+  useEffect(() => {
+    if (!user) return;
+
+    const channel = supabase
+      .channel('discipleship-updates')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'discipleship_contacts',
+          filter: `assigned_collaborator_id=eq.${user.id}`
+        },
+        async (payload) => {
+          const newContact = payload.new as DiscipleshipContact;
+          
+          // Get profile name
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('name')
+            .eq('id', newContact.registered_by)
+            .single();
+
+          toast.success(
+            `Novo discipulado atribuído a você!`,
+            {
+              description: `${newContact.name} - ${newContact.neighborhood || newContact.city || 'Sem localização'}\nCadastrado por: ${profile?.name || 'Desconhecido'}`,
+              duration: 8000,
+            }
+          );
+          
+          queryClient.invalidateQueries({ queryKey: ['discipleship-contacts'] });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user, queryClient]);
 
   const { data: contacts = [], isLoading: loadingContacts } = useQuery({
     queryKey: ['discipleship-contacts'],
@@ -102,7 +149,6 @@ export function useDiscipleship() {
       age?: number;
       city?: string;
       neighborhood?: string;
-      assigned_collaborator_id?: string;
     }) => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
@@ -117,11 +163,43 @@ export function useDiscipleship() {
         .single();
 
       if (error) throw error;
+      
+      // Get assigned collaborator name if available
+      if (data.assigned_collaborator_id) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('name')
+          .eq('id', data.assigned_collaborator_id)
+          .single();
+        
+        return {
+          ...data,
+          assigned_collaborator_name: profile?.name
+        };
+      }
+      
       return data;
     },
-    onSuccess: () => {
+    onSuccess: (data: DiscipleshipContact & { assigned_collaborator_name?: string }) => {
       queryClient.invalidateQueries({ queryKey: ['discipleship-contacts'] });
-      toast.success('Contato cadastrado com sucesso!');
+      
+      if (data.assigned_collaborator_id) {
+        toast.success(
+          'Cadastro realizado com sucesso!',
+          {
+            description: `Pessoa atribuída automaticamente ao colaborador: ${data.assigned_collaborator_name || 'Desconhecido'}`,
+            duration: 6000,
+          }
+        );
+      } else {
+        toast.warning(
+          'Cadastro realizado!',
+          {
+            description: 'Nenhum colaborador disponível para a região foi encontrado. O administrador será notificado.',
+            duration: 6000,
+          }
+        );
+      }
     },
     onError: (error) => {
       toast.error('Erro ao cadastrar contato');
