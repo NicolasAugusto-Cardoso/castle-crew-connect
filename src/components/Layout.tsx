@@ -94,8 +94,10 @@ export const Layout = () => {
 
       {/* Main Content */}
       <main className="flex-1 pb-20 md:pb-4 md:ml-64">
-        <div className="w-full">
-          <Outlet />
+        <div className="flex justify-center w-full">
+          <div className="w-full max-w-7xl">
+            <Outlet />
+          </div>
         </div>
       </main>
 
