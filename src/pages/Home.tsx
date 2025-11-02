@@ -119,7 +119,7 @@ export default function Home() {
         <img 
           src={castleLogo} 
           alt="Castle Movement" 
-          className="h-24 md:h-32 w-auto mx-auto mb-2"
+          className="h-32 md:h-40 w-auto mx-auto mb-2"
         />
         <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-2">
           Bem-vindo ao Castle Movement
