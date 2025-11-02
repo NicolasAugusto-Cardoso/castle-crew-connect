@@ -33,7 +33,7 @@ export const Layout = () => {
   const displayName = user?.user_metadata?.name || user?.email?.split('@')[0] || 'Usuário';
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="min-h-screen bg-background flex flex-col overflow-x-hidden">
       {/* Header */}
       <header className="sticky top-0 z-40 bg-gradient-to-r from-primary-light to-primary-dark shadow-lg">
         <div className="w-full px-2 xs:px-3 sm:px-4 py-1 sm:py-0.5 flex items-center justify-between md:px-8">
@@ -60,7 +60,7 @@ export const Layout = () => {
       </header>
 
       {/* Sidebar Navigation (Desktop) */}
-      <aside className="hidden md:block fixed left-0 top-16 bottom-0 w-64 bg-card border-r border-border overflow-y-auto z-30">
+      <aside className="hidden md:block fixed left-0 top-16 bottom-0 w-64 bg-card border-r border-border z-30">
         <nav className="p-4 space-y-2">
           {visibleNavItems.map((item) => {
             const isActive = location.pathname === item.path;
@@ -93,7 +93,7 @@ export const Layout = () => {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 pb-20 md:pb-4 md:ml-64">
+      <main className="flex-1 pb-20 md:pb-4 md:ml-64 overflow-x-hidden">
         <div className="flex justify-center w-full">
           <div className="w-full max-w-7xl">
             <Outlet />
