@@ -5,7 +5,6 @@ import { useVerseOfTheDay } from '@/hooks/useVerseOfTheDay';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Heart, BookOpen, Loader2, MoreVertical } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
-import castleLogo from '@/assets/castle-logo-latest.png';
 import { CreatePostDialog } from '@/components/posts/CreatePostDialog';
 import { EditPostDialog } from '@/components/posts/EditPostDialog';
 import { ImageLightbox } from '@/components/posts/ImageLightbox';
@@ -114,13 +113,8 @@ export default function Home() {
 
   return (
     <div className="container mx-auto px-4 py-6 max-w-2xl">
-      {/* Welcome Section with Logo */}
+      {/* Welcome Section */}
       <div className="mb-8 text-center animate-fade-in">
-        <img 
-          src={castleLogo} 
-          alt="Castle Movement" 
-          className="h-40 md:h-48 w-auto mx-auto mb-2"
-        />
         <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-2">
           Bem-vindo ao Castle Movement
         </h1>

@@ -2,7 +2,7 @@ import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { Home, MessageSquare, Users, FolderOpen, BookOpen, LogOut, UserCircle, Settings } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useUnreadReplies } from '@/hooks/useUnreadReplies';
-import castleLogo from '@/assets/castle-logo.png';
+import castleLogo from '@/assets/castle-logo-header.png';
 import { Badge } from '@/components/ui/badge';
 
 export const Layout = () => {
@@ -36,12 +36,12 @@ export const Layout = () => {
     <div className="min-h-screen bg-background flex flex-col">
       {/* Header */}
       <header className="sticky top-0 z-40 bg-gradient-to-r from-primary-light to-primary-dark shadow-lg">
-        <div className="w-full pl-2 pr-4 py-1 flex items-center justify-between md:pl-4">
-          <div className="flex items-center gap-3">
+        <div className="w-full px-4 py-1 flex items-center justify-center md:px-8">
+          <div className="flex items-center justify-center flex-1">
             <img src={castleLogo} alt="Castle Movement" className="h-14 md:h-16 w-auto" />
           </div>
           
-          <div className="flex items-center gap-4 md:mr-4">
+          <div className="flex items-center gap-4 absolute right-4 md:right-8">
             <div className="flex items-center gap-2 text-white">
               <UserCircle className="w-5 h-5" />
               <span className="hidden sm:inline font-medium">{displayName}</span>
