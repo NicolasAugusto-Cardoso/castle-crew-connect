@@ -24,7 +24,13 @@ const ProtectedLayout = () => {
   const { isAuthenticated, loading } = useAuth();
 
   if (loading) {
-    return null;
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-primary-light via-primary to-primary-dark flex items-center justify-center">
+        <div className="animate-pulse">
+          <div className="w-16 h-16 rounded-full border-4 border-accent/30 border-t-accent animate-spin" />
+        </div>
+      </div>
+    );
   }
 
   if (!isAuthenticated) {
@@ -35,7 +41,30 @@ const ProtectedLayout = () => {
 };
 
 const App = () => {
-  const [showInitialSplash, setShowInitialSplash] = useState(true);
+  const { isAuthenticated, loading } = useAuth();
+  const [showInitialSplash, setShowInitialSplash] = useState(false);
+  const [hasCheckedAuth, setHasCheckedAuth] = useState(false);
+
+  useEffect(() => {
+    // Só mostra splash se não houver sessão ativa
+    if (!loading && !hasCheckedAuth) {
+      if (!isAuthenticated) {
+        setShowInitialSplash(true);
+      }
+      setHasCheckedAuth(true);
+    }
+  }, [loading, isAuthenticated, hasCheckedAuth]);
+
+  // Enquanto verifica auth, mantém o fundo gradiente (sem tela branca)
+  if (!hasCheckedAuth) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-primary-light via-primary to-primary-dark flex items-center justify-center">
+        <div className="animate-pulse">
+          <div className="w-16 h-16 rounded-full border-4 border-accent/30 border-t-accent animate-spin" />
+        </div>
+      </div>
+    );
+  }
 
   if (showInitialSplash) {
     return <Splash onComplete={() => setShowInitialSplash(false)} />;

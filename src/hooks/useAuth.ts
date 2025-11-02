@@ -11,6 +11,18 @@ export function useAuth() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Check for existing session first
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setUser(session?.user ?? null);
+      setLoading(false); // ⚡ Libera UI IMEDIATAMENTE
+      
+      // Busca roles em background (não bloqueia UI)
+      if (session?.user) {
+        fetchUserRoles(session.user.id);
+      }
+    });
+
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
@@ -18,25 +30,12 @@ export function useAuth() {
         setUser(session?.user ?? null);
         
         if (session?.user) {
-          // Fetch user roles
           fetchUserRoles(session.user.id);
         } else {
           setUserRoles([]);
         }
       }
     );
-
-    // Check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      
-      if (session?.user) {
-        fetchUserRoles(session.user.id);
-      } else {
-        setLoading(false);
-      }
-    });
 
     return () => subscription.unsubscribe();
   }, []);
@@ -55,8 +54,6 @@ export function useAuth() {
     } catch (error) {
       console.error('Error fetching user roles:', error);
       setUserRoles([]);
-    } finally {
-      setLoading(false);
     }
   };
 
