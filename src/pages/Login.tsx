@@ -10,8 +10,15 @@ import castleLogo from '@/assets/castle-logo.png';
 import { loginSchema, signupSchema } from '@/lib/validations';
 
 export default function Login() {
-  const { signIn, signUp } = useAuth();
+  const { signIn, signUp, isAuthenticated } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
+
+  // Redirect if already logged in
+  useEffect(() => {
+    if (isAuthenticated) {
+      window.location.href = '/';
+    }
+  }, [isAuthenticated]);
 
   const [loginData, setLoginData] = useState({
     email: '',
@@ -56,7 +63,9 @@ export default function Login() {
       } else if (data?.session) {
         console.log('[LOGIN] Login realizado com sucesso!');
         toast.success('Login realizado com sucesso!');
-        window.location.href = '/';
+        setTimeout(() => {
+          window.location.href = '/';
+        }, 500);
       } else {
         console.error('[LOGIN] Estado inesperado - sem erro mas sem sessão');
         toast.error('Erro inesperado ao processar login. Tente novamente.');
@@ -115,7 +124,9 @@ export default function Login() {
         // Confirmação automática habilitada - usuário já está logado
         console.log('[SIGNUP] Sucesso! Sessão criada, redirecionando...');
         toast.success('Conta criada com sucesso! Redirecionando...');
-        window.location.href = '/';
+        setTimeout(() => {
+          window.location.href = '/';
+        }, 1500);
       } else if (data?.user && !data?.session) {
         // Confirmação de e-mail necessária
         console.log('[SIGNUP] Usuário criado, aguardando confirmação de e-mail');
