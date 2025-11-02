@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Switch } from '@/components/ui/switch';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   Dialog,
   DialogContent,
@@ -86,10 +86,10 @@ export function EditTestimonialDialog({ testimonial }: EditTestimonialDialogProp
 
             <div className="space-y-2">
               <div className="flex items-center gap-2 mb-2">
-                <Switch
+                <Checkbox
                   id="edit-anonymous"
                   checked={anonymous}
-                  onCheckedChange={setAnonymous}
+                  onCheckedChange={(checked) => setAnonymous(checked === true)}
                   disabled={isSubmitting}
                 />
                 <Label htmlFor="edit-anonymous" className="cursor-pointer">

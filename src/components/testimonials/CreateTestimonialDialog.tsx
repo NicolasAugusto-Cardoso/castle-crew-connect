@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Switch } from '@/components/ui/switch';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import {
   Dialog,
@@ -83,10 +83,10 @@ export function CreateTestimonialDialog() {
             />
             
             <div className="flex items-center gap-2 pt-2">
-              <Switch
+              <Checkbox
                 id="anonymous"
                 checked={isAnonymous}
-                onCheckedChange={setIsAnonymous}
+                onCheckedChange={(checked) => setIsAnonymous(checked === true)}
                 disabled={isSubmitting}
               />
               <Label htmlFor="anonymous" className="cursor-pointer text-sm text-muted-foreground">
