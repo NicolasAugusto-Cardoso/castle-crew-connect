@@ -151,51 +151,53 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-background via-background to-primary/5">
+    <div className="min-h-screen flex items-center justify-center p-3 xs:p-4 sm:p-6 bg-gradient-to-br from-background via-background to-primary/5">
       <Card className="w-full max-w-md card-elevated">
-        <CardHeader className="text-center space-y-4">
+        <CardHeader className="text-center space-y-3 xs:space-y-4 px-4 xs:px-6 pt-6 xs:pt-8">
           <div className="flex justify-center">
             <img 
               src={castleLogo} 
               alt="Castle Movement Logo" 
-              className="w-24 h-24 rounded-full ring-4 ring-primary shadow-lg"
+              className="w-20 h-20 xs:w-24 xs:h-24 rounded-full ring-4 ring-primary shadow-lg"
             />
           </div>
           <div>
-            <CardTitle className="text-3xl gradient-text mb-2">Castle Movement</CardTitle>
-            <CardDescription>Faça login ou crie sua conta</CardDescription>
+            <CardTitle className="text-2xl xs:text-3xl gradient-text mb-1.5 xs:mb-2">Castle Movement</CardTitle>
+            <CardDescription className="text-xs xs:text-sm">Faça login ou crie sua conta</CardDescription>
           </div>
         </CardHeader>
-        <CardContent>
+        <CardContent className="px-4 xs:px-6 pb-6 xs:pb-8">
           <Tabs defaultValue="login" className="w-full">
-            <TabsList className="grid w-full grid-cols-2 mb-6">
-              <TabsTrigger value="login">Login</TabsTrigger>
-              <TabsTrigger value="signup">Criar Conta</TabsTrigger>
+            <TabsList className="grid w-full grid-cols-2 mb-5 xs:mb-6 h-9 xs:h-10">
+              <TabsTrigger value="login" className="text-xs xs:text-sm">Login</TabsTrigger>
+              <TabsTrigger value="signup" className="text-xs xs:text-sm">Criar Conta</TabsTrigger>
             </TabsList>
             
             <TabsContent value="login">
-              <form onSubmit={handleLogin} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="login-email">E-mail</Label>
+              <form onSubmit={handleLogin} className="space-y-3.5 xs:space-y-4">
+                <div className="space-y-1.5 xs:space-y-2">
+                  <Label htmlFor="login-email" className="text-xs xs:text-sm">E-mail</Label>
                   <Input
                     id="login-email"
                     type="email"
                     value={loginData.email}
                     onChange={(e) => setLoginData({ ...loginData, email: e.target.value })}
                     placeholder="seu@email.com"
+                    className="h-10 xs:h-11 text-sm xs:text-base"
                     required
                     disabled={isLoading}
                   />
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="login-password">Senha</Label>
+                <div className="space-y-1.5 xs:space-y-2">
+                  <Label htmlFor="login-password" className="text-xs xs:text-sm">Senha</Label>
                   <Input
                     id="login-password"
                     type="password"
                     value={loginData.password}
                     onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
                     placeholder="••••••"
+                    className="h-10 xs:h-11 text-sm xs:text-base"
                     required
                     disabled={isLoading}
                   />
@@ -203,7 +205,7 @@ export default function Login() {
 
                 <Button 
                   type="submit" 
-                  className="w-full h-12 btn-gradient text-base"
+                  className="w-full h-10 xs:h-11 sm:h-12 btn-gradient text-sm xs:text-base"
                   disabled={isLoading}
                 >
                   {isLoading ? 'Entrando...' : 'Entrar'}
@@ -212,58 +214,62 @@ export default function Login() {
             </TabsContent>
 
             <TabsContent value="signup">
-              <form onSubmit={handleSignup} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="signup-name">Nome Completo</Label>
+              <form onSubmit={handleSignup} className="space-y-3.5 xs:space-y-4">
+                <div className="space-y-1.5 xs:space-y-2">
+                  <Label htmlFor="signup-name" className="text-xs xs:text-sm">Nome Completo</Label>
                   <Input
                     id="signup-name"
                     type="text"
                     value={signupData.name}
                     onChange={(e) => setSignupData({ ...signupData, name: e.target.value })}
                     placeholder="Seu nome"
+                    className="h-10 xs:h-11 text-sm xs:text-base"
                     required
                     disabled={isLoading}
                   />
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="signup-email">E-mail</Label>
+                <div className="space-y-1.5 xs:space-y-2">
+                  <Label htmlFor="signup-email" className="text-xs xs:text-sm">E-mail</Label>
                   <Input
                     id="signup-email"
                     type="email"
                     value={signupData.email}
                     onChange={(e) => setSignupData({ ...signupData, email: e.target.value })}
                     placeholder="seu@email.com"
+                    className="h-10 xs:h-11 text-sm xs:text-base"
                     required
                     disabled={isLoading}
                   />
                 </div>
 
-                 <div className="space-y-2">
-                  <Label htmlFor="signup-password">Senha</Label>
+                 <div className="space-y-1.5 xs:space-y-2">
+                  <Label htmlFor="signup-password" className="text-xs xs:text-sm">Senha</Label>
                   <Input
                     id="signup-password"
                     type="password"
                     value={signupData.password}
                     onChange={(e) => setSignupData({ ...signupData, password: e.target.value })}
-                    placeholder="Mín. 8 caracteres, maiúscula, minúscula, número e especial"
+                    placeholder="Mín. 8 caracteres"
+                    className="h-10 xs:h-11 text-sm xs:text-base"
                     required
                     minLength={8}
                     disabled={isLoading}
                   />
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-[10px] xs:text-xs text-muted-foreground leading-tight">
                     Sua senha deve ter no mínimo 8 caracteres e conter: letra maiúscula, minúscula, número e caractere especial
                   </p>
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="signup-confirm-password">Confirmar Senha</Label>
+                <div className="space-y-1.5 xs:space-y-2">
+                  <Label htmlFor="signup-confirm-password" className="text-xs xs:text-sm">Confirmar Senha</Label>
                   <Input
                     id="signup-confirm-password"
                     type="password"
                     value={signupData.confirmPassword}
                     onChange={(e) => setSignupData({ ...signupData, confirmPassword: e.target.value })}
                     placeholder="••••••"
+                    className="h-10 xs:h-11 text-sm xs:text-base"
                     required
                     minLength={6}
                     disabled={isLoading}
@@ -272,7 +278,7 @@ export default function Login() {
 
                 <Button 
                   type="submit" 
-                  className="w-full h-12 btn-accent text-base"
+                  className="w-full h-10 xs:h-11 sm:h-12 btn-accent text-sm xs:text-base"
                   disabled={isLoading}
                 >
                   {isLoading ? 'Criando conta...' : 'Criar Conta'}

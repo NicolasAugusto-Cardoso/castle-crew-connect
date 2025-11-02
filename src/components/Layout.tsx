@@ -36,24 +36,24 @@ export const Layout = () => {
     <div className="min-h-screen bg-background flex flex-col">
       {/* Header */}
       <header className="sticky top-0 z-40 bg-gradient-to-r from-primary-light to-primary-dark shadow-lg">
-        <div className="w-full px-4 py-0.5 flex items-center justify-between md:px-8">
-          <div className="w-32"></div>
+        <div className="w-full px-2 xs:px-3 sm:px-4 py-1 sm:py-0.5 flex items-center justify-between md:px-8">
+          <div className="w-8 xs:w-16 sm:w-24 md:w-32"></div>
           
           <div className="flex items-center justify-center flex-1">
-            <img src={castleLogo} alt="Castle Movement" className="h-12 md:h-14 w-auto" />
+            <img src={castleLogo} alt="Castle Movement" className="h-10 xs:h-11 sm:h-12 md:h-14 w-auto" />
           </div>
           
-          <div className="flex items-center gap-4 w-32 justify-end">
-            <div className="flex items-center gap-2 text-white">
-              <UserCircle className="w-5 h-5" />
-              <span className="hidden sm:inline font-medium">{displayName}</span>
+          <div className="flex items-center gap-1 xs:gap-2 sm:gap-4 w-8 xs:w-16 sm:w-24 md:w-32 justify-end">
+            <div className="flex items-center gap-1 xs:gap-1.5 sm:gap-2 text-white">
+              <UserCircle className="w-4 xs:w-4.5 sm:w-5 h-4 xs:h-4.5 sm:h-5 flex-shrink-0" />
+              <span className="hidden sm:inline font-medium text-xs sm:text-sm md:text-base truncate max-w-[80px] md:max-w-none">{displayName}</span>
             </div>
             <button
               onClick={handleLogout}
-              className="text-white hover:text-accent transition-colors p-2"
+              className="text-white hover:text-accent transition-colors p-1.5 xs:p-2"
               title="Sair"
             >
-              <LogOut className="w-5 h-5" />
+              <LogOut className="w-4 xs:w-4.5 sm:w-5 h-4 xs:h-4.5 sm:h-5" />
             </button>
           </div>
         </div>
@@ -102,32 +102,32 @@ export const Layout = () => {
       </main>
 
       {/* Bottom Navigation (Mobile) */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-card border-t border-border md:hidden z-30">
-        <div className="flex justify-around items-center py-2">
+      <nav className="fixed bottom-0 left-0 right-0 bg-card border-t border-border md:hidden z-30 safe-area-bottom">
+        <div className="flex justify-around items-center py-1.5 xs:py-2">
           {visibleNavItems.slice(0, 5).map((item) => {
             const isActive = location.pathname === item.path;
             return (
               <button
                 key={item.path}
                 onClick={() => navigate(item.path)}
-                className={`flex flex-col items-center gap-1 px-3 py-2 transition-colors relative ${
+                className={`flex flex-col items-center gap-0.5 xs:gap-1 px-1.5 xs:px-2 sm:px-3 py-1.5 xs:py-2 transition-colors relative ${
                   isActive 
                     ? 'text-primary' 
                     : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
                 <div className="relative">
-                  <item.icon className="w-5 h-5" />
+                  <item.icon className="w-4.5 xs:w-5 sm:w-5.5 h-4.5 xs:h-5 sm:h-5.5" />
                   {item.path === '/contact' && unreadCount > 0 && (
                     <Badge 
                       variant="destructive" 
-                      className="absolute -top-1 -right-1 h-4 w-4 flex items-center justify-center p-0 text-[10px]"
+                      className="absolute -top-1 -right-1 h-3.5 w-3.5 xs:h-4 xs:w-4 flex items-center justify-center p-0 text-[9px] xs:text-[10px]"
                     >
-                      {unreadCount}
+                      {unreadCount > 9 ? '9+' : unreadCount}
                     </Badge>
                   )}
                 </div>
-                <span className="text-xs">{item.label}</span>
+                <span className="text-[10px] xs:text-xs leading-tight">{item.label}</span>
               </button>
             );
           })}

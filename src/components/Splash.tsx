@@ -52,7 +52,7 @@ export const Splash: React.FC<SplashProps> = ({ onComplete }) => {
             {/* SVG Crown - Graffiti Style */}
             <motion.svg
               viewBox="0 0 160 180"
-              className="w-48 h-48 md:w-56 md:h-56 relative z-10"
+              className="w-32 h-32 xs:w-40 xs:h-40 sm:w-48 sm:h-48 md:w-56 md:h-56 lg:w-64 lg:h-64 relative z-10"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.3 }}
@@ -210,22 +210,23 @@ export const Splash: React.FC<SplashProps> = ({ onComplete }) => {
                 delay: 2.3,
                 ease: 'easeOut'
               }}
-              className="mt-4"
+              className="mt-3 sm:mt-4 px-4"
             >
-              <h1 className="text-2xl md:text-3xl font-bold text-white text-center tracking-wide drop-shadow-lg">
+              <h1 className="text-xl xs:text-2xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-white text-center tracking-wide drop-shadow-lg">
                 Castle Movement
               </h1>
             </motion.div>
 
             {/* Accent line with graffiti style */}
             <motion.div
-              className="mt-3 mx-auto h-1 rounded-full overflow-hidden"
+              className="mt-2 sm:mt-3 mx-auto h-0.5 sm:h-1 rounded-full overflow-hidden"
               style={{
                 background: 'linear-gradient(90deg, transparent, #FFD700, #FFA500, transparent)',
-                boxShadow: '0 0 20px rgba(255, 215, 0, 0.5)'
+                boxShadow: '0 0 20px rgba(255, 215, 0, 0.5)',
+                maxWidth: 'min(200px, 70vw)'
               }}
               initial={{ width: 0, opacity: 0 }}
-              animate={{ width: '200px', opacity: 1 }}
+              animate={{ width: '100%', opacity: 1 }}
               transition={{ 
                 duration: 0.5,
                 delay: 2.5,

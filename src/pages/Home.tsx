@@ -112,41 +112,41 @@ export default function Home() {
   }, [reactionMenu.isOpen]);
 
   return (
-    <div className="container mx-auto px-4 py-6 max-w-2xl">
+    <div className="container mx-auto px-3 xs:px-4 sm:px-6 py-4 xs:py-5 sm:py-6 max-w-2xl">
       {/* Welcome Section */}
-      <div className="mb-8 text-center animate-fade-in">
-        <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-2">
+      <div className="mb-6 xs:mb-7 sm:mb-8 text-center animate-fade-in px-2">
+        <h1 className="text-xl xs:text-2xl sm:text-2xl md:text-3xl font-bold text-foreground mb-1.5 xs:mb-2">
           Bem-vindo ao Castle Movement
         </h1>
-        <p className="text-muted-foreground">
+        <p className="text-sm xs:text-base text-muted-foreground">
           Comunidade, fé e transformação
         </p>
       </div>
 
       {/* Verse of the Day - Async loading without blocking feed */}
       {verse && !loadingVerse ? (
-        <Card className="mb-6 bg-gradient-to-br from-primary-light to-primary text-white card-elevated animate-fade-in">
-          <CardHeader className="pb-3">
-            <div className="flex items-center gap-2">
-              <BookOpen className="w-5 h-5 text-accent" />
-              <CardTitle className="text-lg font-bold">Versículo do Dia</CardTitle>
+        <Card className="mb-5 xs:mb-5.5 sm:mb-6 bg-gradient-to-br from-primary-light to-primary text-white card-elevated animate-fade-in">
+          <CardHeader className="pb-2.5 xs:pb-3 px-4 xs:px-5 sm:px-6 pt-4 xs:pt-5 sm:pt-6">
+            <div className="flex items-center gap-1.5 xs:gap-2">
+              <BookOpen className="w-4 xs:w-4.5 sm:w-5 h-4 xs:h-4.5 sm:h-5 text-accent flex-shrink-0" />
+              <CardTitle className="text-base xs:text-lg font-bold">Versículo do Dia</CardTitle>
             </div>
           </CardHeader>
-          <CardContent>
-            <p className="text-base md:text-lg mb-3 leading-relaxed whitespace-pre-wrap break-words">
+          <CardContent className="px-4 xs:px-5 sm:px-6 pb-4 xs:pb-5 sm:pb-6">
+            <p className="text-sm xs:text-base md:text-lg mb-2.5 xs:mb-3 leading-relaxed whitespace-pre-wrap break-words">
               "{verse.text}"
             </p>
-            <p className="text-sm md:text-base font-bold text-accent hover:text-white transition-colors cursor-default">
+            <p className="text-xs xs:text-sm md:text-base font-bold text-accent hover:text-white transition-colors cursor-default">
               {verse.reference}
             </p>
           </CardContent>
         </Card>
       ) : loadingVerse ? (
-        <Card className="mb-6 card-elevated">
-          <CardContent className="py-6">
-            <div className="flex items-center gap-3">
-              <Loader2 className="w-5 h-5 animate-spin text-primary" />
-              <p className="text-sm text-muted-foreground">Carregando versículo do dia...</p>
+        <Card className="mb-5 xs:mb-5.5 sm:mb-6 card-elevated">
+          <CardContent className="py-5 xs:py-5.5 sm:py-6 px-4 xs:px-5 sm:px-6">
+            <div className="flex items-center gap-2.5 xs:gap-3">
+              <Loader2 className="w-4 xs:w-4.5 sm:w-5 h-4 xs:h-4.5 sm:h-5 animate-spin text-primary flex-shrink-0" />
+              <p className="text-xs xs:text-sm text-muted-foreground">Carregando versículo do dia...</p>
             </div>
           </CardContent>
         </Card>
@@ -154,42 +154,42 @@ export default function Home() {
 
       {/* New Post Button */}
       {canManagePosts && (
-        <div className="mb-6">
+        <div className="mb-5 xs:mb-5.5 sm:mb-6">
           <CreatePostDialog />
         </div>
       )}
 
       {/* Posts Feed */}
       {loadingPosts ? (
-        <div className="flex justify-center py-12">
-          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        <div className="flex justify-center py-10 xs:py-11 sm:py-12">
+          <Loader2 className="w-7 xs:w-7.5 sm:w-8 h-7 xs:h-7.5 sm:h-8 animate-spin text-primary" />
         </div>
       ) : posts.length === 0 ? (
         <Card className="card-elevated">
-          <CardContent className="py-12 text-center text-muted-foreground">
-            <p>Nenhuma postagem ainda</p>
+          <CardContent className="py-10 xs:py-11 sm:py-12 px-4 xs:px-5 sm:px-6 text-center text-muted-foreground">
+            <p className="text-sm xs:text-base">Nenhuma postagem ainda</p>
             {canManagePosts && (
-              <p className="text-sm mt-2">Seja o primeiro a criar uma postagem!</p>
+              <p className="text-xs xs:text-sm mt-2">Seja o primeiro a criar uma postagem!</p>
             )}
           </CardContent>
         </Card>
       ) : (
-        <div className="space-y-6">
+        <div className="space-y-4 xs:space-y-5 sm:space-y-6">
           {posts.map((post) => (
-            <Card key={post.id} className="card-elevated">
-              <CardHeader>
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <CardTitle className="text-xl">{post.title}</CardTitle>
-                    <p className="text-sm text-muted-foreground">
+            <Card key={post.id} className="card-elevated overflow-hidden">
+              <CardHeader className="px-4 xs:px-5 sm:px-6 pt-4 xs:pt-5 sm:pt-6 pb-3 xs:pb-4">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex-1 min-w-0">
+                    <CardTitle className="text-base xs:text-lg sm:text-xl break-words">{post.title}</CardTitle>
+                    <p className="text-xs xs:text-sm text-muted-foreground mt-1 break-words">
                       Por {post.author_name} • {new Date(post.created_at).toLocaleDateString('pt-BR')}
                     </p>
                   </div>
                   {canManagePosts && (
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <button className="p-2 hover:bg-secondary rounded-lg transition-colors">
-                          <MoreVertical className="w-4 h-4" />
+                        <button className="p-1.5 xs:p-2 hover:bg-secondary rounded-lg transition-colors flex-shrink-0">
+                          <MoreVertical className="w-3.5 xs:w-4 h-3.5 xs:h-4" />
                         </button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
@@ -199,20 +199,21 @@ export default function Home() {
                   )}
                 </div>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className="space-y-3 xs:space-y-4 px-4 xs:px-5 sm:px-6 pb-4 xs:pb-5 sm:pb-6">
                 {post.image_url && (
                   <div 
-                    className="w-full max-h-[500px] overflow-hidden rounded-lg bg-muted cursor-pointer hover:opacity-95 transition-opacity"
+                    className="w-full max-h-[300px] xs:max-h-[400px] sm:max-h-[500px] overflow-hidden rounded-lg bg-muted cursor-pointer hover:opacity-95 transition-opacity -mx-4 xs:-mx-5 sm:mx-0"
                     onClick={() => setSelectedImage({ url: post.image_url!, alt: post.title })}
                   >
                     <img
                       src={post.image_url}
                       alt={post.title}
-                      className="w-full h-auto object-contain max-h-[500px]"
+                      className="w-full h-auto object-contain max-h-[300px] xs:max-h-[400px] sm:max-h-[500px]"
+                      loading="lazy"
                     />
                   </div>
                 )}
-                <p className="text-foreground leading-relaxed">{post.content}</p>
+                <p className="text-sm xs:text-base text-foreground leading-relaxed break-words whitespace-pre-wrap">{post.content}</p>
                 
                 {/* Interaction - Click to like, Hold for reactions */}
                 <div className="flex items-center gap-4 pt-4 border-t">
