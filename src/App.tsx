@@ -24,7 +24,9 @@ const ProtectedLayout = () => {
   const { isAuthenticated, loading } = useAuth();
 
   if (loading) {
-    return null;
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-primary-light via-primary to-primary-dark" />
+    );
   }
 
   if (!isAuthenticated) {
@@ -36,32 +38,52 @@ const ProtectedLayout = () => {
 
 const App = () => {
   const [showInitialSplash, setShowInitialSplash] = useState(true);
+  const [appReady, setAppReady] = useState(false);
 
-  if (showInitialSplash) {
-    return <Splash onComplete={() => setShowInitialSplash(false)} />;
-  }
+  // Start loading resources during splash
+  useEffect(() => {
+    // Preload critical resources in background
+    const initApp = async () => {
+      // Allow splash to show for minimum duration
+      const minSplashTime = new Promise(resolve => setTimeout(resolve, 2000));
+      
+      // Wait for both splash time and any critical loads
+      await Promise.all([
+        minSplashTime,
+        // Add any critical data fetching here if needed
+      ]);
+      
+      setAppReady(true);
+    };
+
+    initApp();
+  }, []);
 
   return (
     <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <Routes>
-            <Route path="/login" element={<Login />} />
-            <Route element={<ProtectedLayout />}>
-              <Route path="/" element={<Home />} />
-              <Route path="/testimonials" element={<Testimonials />} />
-              <Route path="/contact" element={<Contact />} />
-              <Route path="/gallery" element={<Gallery />} />
-              <Route path="/gallery/:folderId" element={<GalleryFolder />} />
-              <Route path="/discipleship" element={<Discipleship />} />
-              <Route path="/users" element={<Users />} />
-            </Route>
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </TooltipProvider>
-      </BrowserRouter>
+      {showInitialSplash ? (
+        <Splash onComplete={() => setShowInitialSplash(false)} />
+      ) : (
+        <BrowserRouter>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <Routes>
+              <Route path="/login" element={<Login />} />
+              <Route element={<ProtectedLayout />}>
+                <Route path="/" element={<Home />} />
+                <Route path="/testimonials" element={<Testimonials />} />
+                <Route path="/contact" element={<Contact />} />
+                <Route path="/gallery" element={<Gallery />} />
+                <Route path="/gallery/:folderId" element={<GalleryFolder />} />
+                <Route path="/discipleship" element={<Discipleship />} />
+                <Route path="/users" element={<Users />} />
+              </Route>
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </TooltipProvider>
+        </BrowserRouter>
+      )}
     </QueryClientProvider>
   );
 };
