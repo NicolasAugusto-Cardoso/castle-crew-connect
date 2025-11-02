@@ -113,7 +113,7 @@ export default function Users() {
           {users.map((user) => (
             <Card key={user.id} className="card-elevated">
               <CardHeader>
-                <div className="flex items-start justify-between">
+                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
                   <div className="flex items-center gap-3">
                     <UserCircle className="w-12 h-12 text-muted-foreground" />
                     <div>
@@ -124,7 +124,7 @@ export default function Users() {
                       </p>
                     </div>
                   </div>
-                  <div className="flex flex-wrap gap-2">
+                  <div className="flex flex-wrap gap-2 sm:justify-end">
                     {user.roles.map((role) => (
                       <Badge key={role} className={roleColors[role]}>
                         {roleLabels[role]}
