@@ -36,11 +36,11 @@ export const Layout = () => {
     <div className="min-h-screen bg-background flex flex-col">
       {/* Header */}
       <header className="sticky top-0 z-40 bg-gradient-to-r from-primary-light to-primary-dark shadow-lg">
-        <div className="w-full px-4 py-1 flex items-center justify-between md:px-8">
+        <div className="w-full px-4 py-0.5 flex items-center justify-between md:px-8">
           <div className="w-32"></div>
           
           <div className="flex items-center justify-center flex-1">
-            <img src={castleLogo} alt="Castle Movement" className="h-14 md:h-16 w-auto" />
+            <img src={castleLogo} alt="Castle Movement" className="h-12 md:h-14 w-auto" />
           </div>
           
           <div className="flex items-center gap-4 w-32 justify-end">
