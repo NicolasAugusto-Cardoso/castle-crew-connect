@@ -2,7 +2,7 @@ import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { Home, MessageSquare, Users, FolderOpen, BookOpen, LogOut, UserCircle, Settings } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useUnreadReplies } from '@/hooks/useUnreadReplies';
-import castleLogo from '@/assets/castle-logo-header.png';
+import castleLogo from '@/assets/castle-logo-final.png';
 import { Badge } from '@/components/ui/badge';
 
 export const Layout = () => {
