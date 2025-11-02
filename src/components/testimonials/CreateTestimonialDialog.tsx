@@ -4,6 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import {
   Dialog,
   DialogContent,
@@ -12,7 +13,7 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { useTestimonials } from '@/hooks/useTestimonials';
-import { Plus } from 'lucide-react';
+import { Plus, Info } from 'lucide-react';
 
 export function CreateTestimonialDialog() {
   const { createTestimonial } = useTestimonials();
@@ -21,7 +22,6 @@ export function CreateTestimonialDialog() {
   const [content, setContent] = useState('');
   const [authorName, setAuthorName] = useState('');
   const [isAnonymous, setIsAnonymous] = useState(false);
-  const [published, setPublished] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -33,14 +33,13 @@ export function CreateTestimonialDialog() {
         title,
         content,
         author_name: isAnonymous ? undefined : authorName,
-        status: published ? 'published' : 'draft'
+        status: 'draft'
       });
       
       setTitle('');
       setContent('');
       setAuthorName('');
       setIsAnonymous(false);
-      setPublished(true);
       setOpen(false);
     } finally {
       setIsSubmitting(false);
@@ -73,30 +72,27 @@ export function CreateTestimonialDialog() {
           </div>
 
           <div className="space-y-2">
-            <div className="flex items-center gap-2 mb-2">
+            <Label htmlFor="author">Nome do Autor</Label>
+            <Input
+              id="author"
+              value={authorName}
+              onChange={(e) => setAuthorName(e.target.value)}
+              placeholder="Nome completo"
+              required={!isAnonymous}
+              disabled={isSubmitting || isAnonymous}
+            />
+            
+            <div className="flex items-center gap-2 pt-2">
               <Switch
                 id="anonymous"
                 checked={isAnonymous}
                 onCheckedChange={setIsAnonymous}
                 disabled={isSubmitting}
               />
-              <Label htmlFor="anonymous" className="cursor-pointer">
+              <Label htmlFor="anonymous" className="cursor-pointer text-sm text-muted-foreground">
                 Publicar anonimamente
               </Label>
             </div>
-            {!isAnonymous && (
-              <>
-                <Label htmlFor="author">Nome do Autor</Label>
-                <Input
-                  id="author"
-                  value={authorName}
-                  onChange={(e) => setAuthorName(e.target.value)}
-                  placeholder="Nome completo"
-                  required
-                  disabled={isSubmitting}
-                />
-              </>
-            )}
           </div>
 
           <div className="space-y-2">
@@ -112,17 +108,12 @@ export function CreateTestimonialDialog() {
             />
           </div>
 
-          <div className="flex items-center gap-2">
-            <Switch
-              id="published"
-              checked={published}
-              onCheckedChange={setPublished}
-              disabled={isSubmitting}
-            />
-            <Label htmlFor="published" className="cursor-pointer">
-              Publicar imediatamente
-            </Label>
-          </div>
+          <Alert className="bg-blue-50 border-blue-200 dark:bg-blue-950/30 dark:border-blue-800">
+            <Info className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+            <AlertDescription className="text-sm text-blue-800 dark:text-blue-300">
+              Seu testemunho será enviado para revisão antes de ser publicado.
+            </AlertDescription>
+          </Alert>
 
           <div className="flex flex-col sm:flex-row gap-3 sm:justify-end">
             <Button
@@ -135,7 +126,7 @@ export function CreateTestimonialDialog() {
               Cancelar
             </Button>
             <Button type="submit" disabled={isSubmitting} className="w-full sm:w-auto">
-              {isSubmitting ? 'Salvando...' : 'Salvar Testemunho'}
+              {isSubmitting ? 'Enviando...' : 'Enviar Testemunho'}
             </Button>
           </div>
         </form>
