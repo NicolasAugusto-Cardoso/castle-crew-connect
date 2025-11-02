@@ -125,18 +125,24 @@ export default function Contact() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-6 max-w-4xl">
-      <div className="mb-8">
-        <div className="flex items-center gap-3 mb-2">
-          <Mail className="w-8 h-8 text-primary" />
-          <h1 className="text-3xl font-bold gradient-text">Contato</h1>
+    <div className="min-h-screen flex flex-col">
+      {/* Padding Superior com fundo branco */}
+      <div className="bg-white dark:bg-card py-6">
+        <div className="container mx-auto px-4 max-w-4xl">
+          <div className="flex items-center gap-3 mb-2">
+            <Mail className="w-8 h-8 text-primary" />
+            <h1 className="text-3xl font-bold gradient-text">Contato</h1>
+          </div>
+          <p className="text-muted-foreground">
+            {canManageMessages ? 'Gerencie as mensagens recebidas' : 'Entre em contato conosco'}
+          </p>
         </div>
-        <p className="text-muted-foreground">
-          {canManageMessages ? 'Gerencie as mensagens recebidas' : 'Entre em contato conosco'}
-        </p>
       </div>
 
-      {!canManageMessages && displayedMessages.length === 0 && (
+      {/* Área de Conteúdo Principal */}
+      <div className="flex-1 bg-transparent py-6">
+        <div className="container mx-auto px-4 max-w-4xl">
+          {!canManageMessages && displayedMessages.length === 0 && (
         <Card className="mb-6 card-elevated">
           <CardHeader>
             <CardTitle>Envie uma Mensagem</CardTitle>
@@ -319,6 +325,20 @@ export default function Contact() {
           )}
         </div>
       )}
+        </div>
+      </div>
+
+      {/* Padding Inferior com fundo azul/gradient */}
+      <div className="bg-gradient-to-r from-primary/20 via-primary/10 to-accent/20 py-8">
+        <div className="container mx-auto px-4 max-w-4xl">
+          <div className="text-center">
+            <Mail className="w-8 h-8 mx-auto mb-2 text-primary opacity-70" />
+            <p className="text-sm text-muted-foreground">
+              Estamos aqui para ajudar você
+            </p>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
