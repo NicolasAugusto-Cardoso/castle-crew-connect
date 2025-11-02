@@ -16,6 +16,7 @@ import GalleryFolder from "./pages/GalleryFolder";
 import Discipleship from "./pages/Discipleship";
 import Users from "./pages/Users";
 import NotFound from "./pages/NotFound";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
 
 const queryClient = new QueryClient();
 
@@ -76,7 +77,11 @@ const App = () => {
                 <Route path="/contact" element={<Contact />} />
                 <Route path="/gallery" element={<Gallery />} />
                 <Route path="/gallery/:folderId" element={<GalleryFolder />} />
-                <Route path="/discipleship" element={<Discipleship />} />
+                <Route path="/discipleship" element={
+                  <ProtectedRoute allowedRoles={['admin', 'collaborator']}>
+                    <Discipleship />
+                  </ProtectedRoute>
+                } />
                 <Route path="/users" element={<Users />} />
               </Route>
               <Route path="*" element={<NotFound />} />

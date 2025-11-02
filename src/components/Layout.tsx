@@ -21,7 +21,7 @@ export const Layout = () => {
     { icon: BookOpen, label: 'Testemunhos', path: '/testimonials', roles: ['admin', 'social_media', 'collaborator', 'user'] },
     { icon: MessageSquare, label: 'Contato', path: '/contact', roles: ['admin', 'social_media', 'collaborator', 'user'] },
     { icon: FolderOpen, label: 'Galeria', path: '/gallery', roles: ['admin', 'social_media', 'user'] },
-    { icon: Users, label: 'Discipulado', path: '/discipleship', roles: ['admin', 'social_media', 'collaborator', 'user'] },
+    { icon: Users, label: 'Discipulado', path: '/discipleship', roles: ['admin', 'collaborator'] },
     { icon: Settings, label: 'Usuários', path: '/users', roles: ['admin'] },
   ];
 
