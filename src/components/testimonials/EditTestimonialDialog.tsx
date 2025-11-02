@@ -3,7 +3,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Checkbox } from '@/components/ui/checkbox';
 import {
   Dialog,
   DialogContent,
@@ -23,7 +22,6 @@ export function EditTestimonialDialog({ testimonial }: EditTestimonialDialogProp
   const [title, setTitle] = useState(testimonial.title);
   const [content, setContent] = useState(testimonial.content);
   const [authorName, setAuthorName] = useState(testimonial.author_name || '');
-  const [anonymous, setAnonymous] = useState(!testimonial.author_name);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
@@ -31,7 +29,6 @@ export function EditTestimonialDialog({ testimonial }: EditTestimonialDialogProp
       setTitle(testimonial.title);
       setContent(testimonial.content);
       setAuthorName(testimonial.author_name || '');
-      setAnonymous(!testimonial.author_name);
     }
   }, [open, testimonial]);
 
@@ -44,7 +41,7 @@ export function EditTestimonialDialog({ testimonial }: EditTestimonialDialogProp
         id: testimonial.id,
         title,
         content,
-        author_name: anonymous ? null : authorName,
+        author_name: authorName,
         status: 'draft' // Sempre manter como rascunho ao editar
       });
       
@@ -85,30 +82,15 @@ export function EditTestimonialDialog({ testimonial }: EditTestimonialDialogProp
             </div>
 
             <div className="space-y-2">
-              <div className="flex items-center gap-2 mb-2">
-                <Checkbox
-                  id="edit-anonymous"
-                  checked={anonymous}
-                  onCheckedChange={(checked) => setAnonymous(checked === true)}
-                  disabled={isSubmitting}
-                />
-                <Label htmlFor="edit-anonymous" className="cursor-pointer">
-                  Publicar anonimamente
-                </Label>
-              </div>
-              {!anonymous && (
-                <>
-                  <Label htmlFor="edit-author">Nome do Autor</Label>
-                  <Input
-                    id="edit-author"
-                    value={authorName}
-                    onChange={(e) => setAuthorName(e.target.value)}
-                    placeholder="Nome completo"
-                    required
-                    disabled={isSubmitting}
-                  />
-                </>
-              )}
+              <Label htmlFor="edit-author">Nome do Autor</Label>
+              <Input
+                id="edit-author"
+                value={authorName}
+                onChange={(e) => setAuthorName(e.target.value)}
+                placeholder="Nome completo"
+                required
+                disabled={isSubmitting}
+              />
             </div>
 
             <div className="space-y-2">

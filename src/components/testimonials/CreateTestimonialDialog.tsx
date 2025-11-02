@@ -3,7 +3,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import {
   Dialog,
@@ -21,7 +20,6 @@ export function CreateTestimonialDialog() {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [authorName, setAuthorName] = useState('');
-  const [isAnonymous, setIsAnonymous] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -32,14 +30,13 @@ export function CreateTestimonialDialog() {
       await createTestimonial.mutateAsync({
         title,
         content,
-        author_name: isAnonymous ? undefined : authorName,
+        author_name: authorName,
         status: 'draft'
       });
       
       setTitle('');
       setContent('');
       setAuthorName('');
-      setIsAnonymous(false);
       setOpen(false);
     } finally {
       setIsSubmitting(false);
@@ -78,21 +75,9 @@ export function CreateTestimonialDialog() {
               value={authorName}
               onChange={(e) => setAuthorName(e.target.value)}
               placeholder="Nome completo"
-              required={!isAnonymous}
-              disabled={isSubmitting || isAnonymous}
+              required
+              disabled={isSubmitting}
             />
-            
-            <div className="flex items-center gap-2 pt-2">
-              <Checkbox
-                id="anonymous"
-                checked={isAnonymous}
-                onCheckedChange={(checked) => setIsAnonymous(checked === true)}
-                disabled={isSubmitting}
-              />
-              <Label htmlFor="anonymous" className="cursor-pointer text-sm text-muted-foreground">
-                Publicar anonimamente
-              </Label>
-            </div>
           </div>
 
           <div className="space-y-2">
