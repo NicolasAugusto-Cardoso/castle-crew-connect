@@ -107,6 +107,18 @@ All colors MUST be HSL.
     --shadow-glow: 0 0 30px hsl(195 85% 58% / 0.2);
     --shadow-accent: 0 4px 15px hsl(45 85% 55% / 0.3);
   }
+  
+  /* Respect user motion preferences */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
 }
 
 @layer base {
@@ -169,10 +181,24 @@ All colors MUST be HSL.
     box-sizing: border-box;
   }
   
+  /* Minimum touch target size for accessibility */
+  button, a, input[type="checkbox"], input[type="radio"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* Prevent iOS zoom on input focus */
+  input, select, textarea {
+    font-size: 16px;
+  }
+  
   /* Safe area for mobile devices with notches */
   @supports (padding: env(safe-area-inset-bottom)) {
     .safe-area-bottom {
       padding-bottom: env(safe-area-inset-bottom);
+    }
+    .safe-area-top {
+      padding-top: env(safe-area-inset-top);
     }
   }
 }
@@ -214,5 +240,21 @@ All colors MUST be HSL.
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
+  }
+  
+  /* Touch-friendly interaction */
+  .touch-target {
+    @apply min-h-[44px] min-w-[44px] flex items-center justify-center;
+  }
+  
+  /* Smooth scrolling */
+  .smooth-scroll {
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  /* Prevent layout shift */
+  .aspect-stable {
+    content-visibility: auto;
   }
 }

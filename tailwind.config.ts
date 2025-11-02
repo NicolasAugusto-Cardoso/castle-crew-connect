@@ -6,6 +6,7 @@ export default {
   prefix: "",
   theme: {
     screens: {
+      xxs: "320px",
       xs: "375px",
       sm: "640px",
       md: "768px",
@@ -128,6 +129,26 @@ export default {
             transform: "translateY(0)",
           },
         },
+        "scale-in": {
+          "0%": {
+            transform: "scale(0.95)",
+            opacity: "0"
+          },
+          "100%": {
+            transform: "scale(1)",
+            opacity: "1"
+          }
+        },
+        "fade-in": {
+          "0%": {
+            opacity: "0",
+            transform: "translateY(10px)"
+          },
+          "100%": {
+            opacity: "1",
+            transform: "translateY(0)"
+          }
+        }
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -135,6 +156,17 @@ export default {
         "crown-rise": "crown-rise 1.2s cubic-bezier(0.34, 1.56, 0.64, 1)",
         "pulse-glow": "pulse-glow 2s ease-in-out infinite",
         "fade-in-delayed": "fade-in-delayed 1.5s ease-out",
+        "scale-in": "scale-in 0.2s ease-out",
+        "fade-in": "fade-in 0.3s ease-out",
+      },
+      zIndex: {
+        'base': '0',
+        'dropdown': '10',
+        'sticky': '20',
+        'overlay': '30',
+        'modal': '40',
+        'popover': '50',
+        'toast': '60',
       },
     },
   },

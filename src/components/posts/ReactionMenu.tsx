@@ -22,7 +22,7 @@ export function ReactionMenu({ isOpen, onSelect, position }: ReactionMenuProps) 
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.8, y: 10 }}
           transition={{ duration: 0.2, ease: 'easeOut' }}
-          className="fixed z-50 bg-card border border-border rounded-full shadow-2xl px-2 py-2"
+          className="fixed z-[60] bg-card border border-border rounded-full shadow-2xl px-2 py-2"
           style={{
             left: `${position.x}px`,
             top: `${position.y}px`,
