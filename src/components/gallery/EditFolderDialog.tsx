@@ -167,7 +167,7 @@ export function EditFolderDialog({ folder }: EditFolderDialogProps) {
           <Edit className="w-4 h-4" />
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto px-4 sm:px-6">
         <DialogHeader>
           <DialogTitle>Editar Pasta</DialogTitle>
         </DialogHeader>
@@ -223,7 +223,7 @@ export function EditFolderDialog({ folder }: EditFolderDialogProps) {
               </div>
             </div>
             {coverPreview && (
-              <div className="relative w-full h-48 rounded-lg overflow-hidden bg-muted">
+              <div className="relative w-full h-32 sm:h-48 rounded-lg overflow-hidden bg-muted">
                 <img
                   src={coverPreview}
                   alt="Preview"
@@ -246,28 +246,30 @@ export function EditFolderDialog({ folder }: EditFolderDialogProps) {
             )}
           </div>
 
-          <div className="flex gap-3 justify-between">
+          <div className="flex flex-col sm:flex-row gap-3 sm:justify-between">
             {canDelete && (
               <Button
                 type="button"
                 variant="destructive"
                 onClick={() => setShowDeleteDialog(true)}
                 disabled={isSubmitting}
+                className="w-full sm:w-auto"
               >
                 <Trash2 className="w-4 h-4 mr-2" />
                 Excluir Pasta
               </Button>
             )}
-            <div className="flex gap-3 ml-auto">
+            <div className="flex flex-col sm:flex-row gap-3 sm:ml-auto w-full sm:w-auto">
               <Button
                 type="button"
                 variant="outline"
                 onClick={() => setOpen(false)}
                 disabled={isSubmitting}
+                className="w-full sm:w-auto"
               >
                 Cancelar
               </Button>
-              <Button type="submit" disabled={isSubmitting}>
+              <Button type="submit" disabled={isSubmitting} className="w-full sm:w-auto">
                 {isSubmitting ? 'Salvando...' : 'Salvar Alterações'}
               </Button>
             </div>
