@@ -24,17 +24,18 @@ export const Splash: React.FC<SplashProps> = ({ onComplete }) => {
           initial={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.5, ease: 'easeInOut' }}
-          className="fixed inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-primary-light via-primary to-primary-dark overflow-hidden"
+          className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-gradient-to-br from-primary-light via-primary to-primary-dark overflow-hidden"
         >
-          <div className="relative">
+          <div className="relative flex flex-col items-center justify-center">
             {/* Graffiti spray particles */}
             {[...Array(8)].map((_, i) => (
               <motion.div
                 key={i}
                 className="absolute w-1 h-1 rounded-full bg-accent"
                 style={{
-                  left: `${50 + Math.cos((i * Math.PI * 2) / 8) * 80}%`,
-                  top: `${50 + Math.sin((i * Math.PI * 2) / 8) * 80}%`,
+                  left: `calc(50% + ${Math.cos((i * Math.PI * 2) / 8) * 80}px)`,
+                  top: `calc(50% + ${Math.sin((i * Math.PI * 2) / 8) * 80}px)`,
+                  transform: 'translate(-50%, -50%)'
                 }}
                 initial={{ opacity: 0, scale: 0 }}
                 animate={{ 
@@ -52,7 +53,7 @@ export const Splash: React.FC<SplashProps> = ({ onComplete }) => {
             {/* SVG Crown - Graffiti Style */}
             <motion.svg
               viewBox="0 0 160 180"
-              className="w-32 h-32 xs:w-40 xs:h-40 sm:w-48 sm:h-48 md:w-56 md:h-56 lg:w-64 lg:h-64 relative z-10"
+              className="w-32 h-32 xs:w-40 xs:h-40 sm:w-48 sm:h-48 md:w-56 md:h-56 lg:w-64 lg:h-64 relative z-10 mx-auto"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.3 }}
@@ -210,7 +211,7 @@ export const Splash: React.FC<SplashProps> = ({ onComplete }) => {
                 delay: 2.3,
                 ease: 'easeOut'
               }}
-              className="mt-3 sm:mt-4 px-4"
+              className="mt-3 sm:mt-4 px-4 mx-auto max-w-full"
             >
               <h1 className="text-xl xs:text-2xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-white text-center tracking-wide drop-shadow-lg">
                 Castle Movement
@@ -223,7 +224,8 @@ export const Splash: React.FC<SplashProps> = ({ onComplete }) => {
               style={{
                 background: 'linear-gradient(90deg, transparent, #FFD700, #FFA500, transparent)',
                 boxShadow: '0 0 20px rgba(255, 215, 0, 0.5)',
-                maxWidth: 'min(200px, 70vw)'
+                width: '200px',
+                maxWidth: '70vw'
               }}
               initial={{ width: 0, opacity: 0 }}
               animate={{ width: '100%', opacity: 1 }}
