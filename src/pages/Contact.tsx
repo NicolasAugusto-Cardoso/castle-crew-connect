@@ -248,7 +248,7 @@ export default function Contact() {
                             )}
                           </div>
                         </div>
-                        <Badge className={`${getStatusColor(msg.status)} whitespace-nowrap`}>
+                        <Badge className={`${getStatusColor(msg.status)} whitespace-nowrap text-xs px-2 py-0.5`}>
                           {getStatusLabel(msg.status)}
                         </Badge>
                       </div>
@@ -295,7 +295,7 @@ export default function Contact() {
                   <CardHeader>
                     <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
                       <CardTitle className="text-base sm:text-lg break-words flex-1">Mensagem para Administração</CardTitle>
-                      <Badge className={`${getStatusColor(msg.status)} whitespace-nowrap`}>
+                      <Badge className={`${getStatusColor(msg.status)} whitespace-nowrap text-xs px-2 py-0.5`}>
                         {getStatusLabel(msg.status)}
                       </Badge>
                     </div>
