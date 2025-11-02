@@ -4,6 +4,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useUnreadReplies } from '@/hooks/useUnreadReplies';
 import castleLogo from '@/assets/castle-logo-final.png';
 import { Badge } from '@/components/ui/badge';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 
 export const Layout = () => {
   const { user, signOut, hasRole } = useAuth();
@@ -22,7 +23,6 @@ export const Layout = () => {
     { icon: MessageSquare, label: 'Contato', path: '/contact', roles: ['admin', 'social_media', 'collaborator', 'user'] },
     { icon: FolderOpen, label: 'Galeria', path: '/gallery', roles: ['admin', 'social_media', 'user'] },
     { icon: Users, label: 'Discipulado', path: '/discipleship', roles: ['admin', 'collaborator'] },
-    { icon: Settings, label: 'Usuários', path: '/users', roles: ['admin'] },
   ];
 
   const visibleNavItems = navItems.filter(item => 
@@ -44,17 +44,40 @@ export const Layout = () => {
           </div>
           
           <div className="flex items-center gap-1 xs:gap-2 sm:gap-4 w-8 xs:w-16 sm:w-24 md:w-32 justify-end">
-            <div className="flex items-center gap-1 xs:gap-1.5 sm:gap-2 text-white">
-              <UserCircle className="w-4 xs:w-4.5 sm:w-5 h-4 xs:h-4.5 sm:h-5 flex-shrink-0" />
-              <span className="hidden sm:inline font-medium text-xs sm:text-sm md:text-base truncate max-w-[80px] md:max-w-none">{displayName}</span>
-            </div>
-            <button
-              onClick={handleLogout}
-              className="text-white hover:text-accent transition-colors p-1.5 xs:p-2"
-              title="Sair"
-            >
-              <LogOut className="w-4 xs:w-4.5 sm:w-5 h-4 xs:h-4.5 sm:h-5" />
-            </button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className="flex items-center gap-1 xs:gap-1.5 sm:gap-2 text-white hover:text-accent transition-colors p-1.5 xs:p-2">
+                  <UserCircle className="w-4 xs:w-4.5 sm:w-5 h-4 xs:h-4.5 sm:h-5 flex-shrink-0" />
+                  <span className="hidden sm:inline font-medium text-xs sm:text-sm md:text-base truncate max-w-[80px] md:max-w-none">{displayName}</span>
+                </button>
+              </DropdownMenuTrigger>
+              
+              <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuLabel>
+                  <div className="flex flex-col space-y-1">
+                    <p className="text-sm font-medium">{displayName}</p>
+                    <p className="text-xs text-muted-foreground">{user?.email}</p>
+                  </div>
+                </DropdownMenuLabel>
+                
+                <DropdownMenuSeparator />
+                
+                {hasRole(['admin']) && (
+                  <>
+                    <DropdownMenuItem onClick={() => navigate('/users')}>
+                      <Settings className="mr-2 h-4 w-4" />
+                      <span>Gerenciar Usuários</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                  </>
+                )}
+                
+                <DropdownMenuItem onClick={handleLogout} className="text-destructive focus:text-destructive">
+                  <LogOut className="mr-2 h-4 w-4" />
+                  <span>Sair</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
       </header>
