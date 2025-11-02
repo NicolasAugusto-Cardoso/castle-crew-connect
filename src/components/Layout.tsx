@@ -104,7 +104,7 @@ export const Layout = () => {
       {/* Bottom Navigation (Mobile) */}
       <nav className="fixed bottom-0 left-0 right-0 bg-card border-t border-border md:hidden z-30 safe-area-bottom">
         <div className="flex justify-around items-center py-1.5 xs:py-2">
-          {visibleNavItems.slice(0, 5).map((item) => {
+          {visibleNavItems.map((item) => {
             const isActive = location.pathname === item.path;
             return (
               <button
