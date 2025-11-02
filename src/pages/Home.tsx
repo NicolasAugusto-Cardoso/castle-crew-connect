@@ -5,7 +5,7 @@ import { useVerseOfTheDay } from '@/hooks/useVerseOfTheDay';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Heart, BookOpen, Loader2, MoreVertical } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
-import castleLogo from '@/assets/castle-logo-new.png';
+import castleLogo from '@/assets/castle-logo-latest.png';
 import { CreatePostDialog } from '@/components/posts/CreatePostDialog';
 import { EditPostDialog } from '@/components/posts/EditPostDialog';
 import { ImageLightbox } from '@/components/posts/ImageLightbox';
