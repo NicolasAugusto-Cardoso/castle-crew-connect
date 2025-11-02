@@ -202,13 +202,13 @@ export default function Home() {
               <CardContent className="space-y-3 xs:space-y-4 px-4 xs:px-5 sm:px-6 pb-4 xs:pb-5 sm:pb-6">
                 {post.image_url && (
                   <div 
-                    className="w-full max-h-[300px] xs:max-h-[400px] sm:max-h-[500px] overflow-hidden rounded-lg bg-muted cursor-pointer hover:opacity-95 transition-opacity -mx-4 xs:-mx-5 sm:mx-0"
+                    className="w-full max-h-[300px] xs:max-h-[400px] sm:max-h-[500px] overflow-hidden rounded-lg bg-muted cursor-pointer hover:opacity-95 transition-opacity flex items-center justify-center mx-auto"
                     onClick={() => setSelectedImage({ url: post.image_url!, alt: post.title })}
                   >
                     <img
                       src={post.image_url}
                       alt={post.title}
-                      className="w-full h-auto object-contain max-h-[300px] xs:max-h-[400px] sm:max-h-[500px]"
+                      className="w-full h-auto object-contain max-h-[300px] xs:max-h-[400px] sm:max-h-[500px] mx-auto"
                       loading="lazy"
                     />
                   </div>
