@@ -24,13 +24,13 @@ export default function Gallery() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-6 max-w-6xl">
-      <div className="mb-8">
-        <div className="flex items-center gap-3 mb-2">
-          <Folder className="w-8 h-8 text-primary" />
-          <h1 className="text-3xl font-bold gradient-text">Galeria</h1>
+    <div className="container mx-auto px-3 xs:px-4 sm:px-6 py-4 xs:py-5 sm:py-6 max-w-6xl">
+      <div className="mb-6 xs:mb-7 sm:mb-8">
+        <div className="flex items-center gap-2 xs:gap-3 mb-2">
+          <Folder className="w-6 xs:w-7 sm:w-8 h-6 xs:h-7 sm:h-8 text-primary flex-shrink-0" />
+          <h1 className="text-2xl xs:text-2xl sm:text-3xl font-bold gradient-text">Galeria</h1>
         </div>
-        <p className="text-muted-foreground">
+        <p className="text-sm xs:text-base text-muted-foreground">
           Fotos e vídeos dos eventos e ações do movimento
         </p>
       </div>
@@ -54,7 +54,7 @@ export default function Gallery() {
           </CardContent>
         </Card>
       ) : (
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 xs:gap-5 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
           {folders.map((folder) => (
             <Card 
               key={folder.id} 
@@ -79,14 +79,14 @@ export default function Gallery() {
                 )}
               </div>
               <CardHeader>
-                <div className="flex items-center justify-between">
-                  <div className="flex-1">
-                    <CardTitle className="text-lg">{folder.name}</CardTitle>
+                <div className="flex flex-col xs:flex-row xs:items-center xs:justify-between gap-3">
+                  <div className="flex-1 min-w-0">
+                    <CardTitle className="text-base sm:text-lg break-words">{folder.name}</CardTitle>
                     {folder.description && (
-                      <p className="text-sm text-muted-foreground">{folder.description}</p>
+                      <p className="text-sm text-muted-foreground break-words">{folder.description}</p>
                     )}
                   </div>
-                  {canManage && <UploadMediaDialog folderId={folder.id} />}
+                  {canManage && <div className="self-start xs:self-auto"><UploadMediaDialog folderId={folder.id} /></div>}
                 </div>
               </CardHeader>
               <CardContent>

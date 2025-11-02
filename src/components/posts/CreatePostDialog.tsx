@@ -127,7 +127,7 @@ export function CreatePostDialog() {
           Criar Nova Postagem
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto px-4 sm:px-6">
         <DialogHeader>
           <DialogTitle>Nova Postagem</DialogTitle>
         </DialogHeader>
@@ -228,16 +228,17 @@ export function CreatePostDialog() {
             )}
           </div>
 
-          <div className="flex gap-3 justify-end">
+          <div className="flex flex-col sm:flex-row gap-3 sm:justify-end">
             <Button
               type="button"
               variant="outline"
               onClick={() => setOpen(false)}
               disabled={isSubmitting}
+              className="w-full sm:w-auto"
             >
               Cancelar
             </Button>
-            <Button type="submit" disabled={isSubmitting}>
+            <Button type="submit" disabled={isSubmitting} className="w-full sm:w-auto">
               {isSubmitting ? 'Criando...' : 'Criar Postagem'}
             </Button>
           </div>

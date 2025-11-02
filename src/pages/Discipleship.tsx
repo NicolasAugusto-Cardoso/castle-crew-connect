@@ -41,13 +41,13 @@ export default function Discipleship() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-6 max-w-6xl">
-      <div className="mb-8">
-        <div className="flex items-center gap-3 mb-2">
-          <Users className="w-8 h-8 text-primary" />
-          <h1 className="text-3xl font-bold gradient-text">Discipulado</h1>
+    <div className="container mx-auto px-3 xs:px-4 sm:px-6 py-4 xs:py-5 sm:py-6 max-w-6xl">
+      <div className="mb-6 xs:mb-7 sm:mb-8">
+        <div className="flex items-center gap-2 xs:gap-3 mb-2">
+          <Users className="w-6 xs:w-7 sm:w-8 h-6 xs:h-7 sm:h-8 text-primary flex-shrink-0" />
+          <h1 className="text-2xl xs:text-2xl sm:text-3xl font-bold gradient-text">Discipulado</h1>
         </div>
-        <p className="text-muted-foreground">
+        <p className="text-sm xs:text-base text-muted-foreground">
           {isCollaborator 
             ? 'Acompanhe as pessoas sob sua responsabilidade' 
             : 'Gerencie contatos e acompanhamentos'}
@@ -86,37 +86,37 @@ export default function Discipleship() {
           {filteredContacts.map((contact) => (
           <Card key={contact.id} className="card-elevated">
             <CardHeader>
-              <div className="flex items-start justify-between">
-                <div>
-                  <CardTitle className="text-lg">{contact.name}</CardTitle>
-                  <div className="flex flex-wrap gap-3 mt-2 text-sm text-muted-foreground">
+              <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+                <div className="flex-1 min-w-0">
+                  <CardTitle className="text-base sm:text-lg break-words">{contact.name}</CardTitle>
+                  <div className="flex flex-col xs:flex-row xs:flex-wrap gap-2 xs:gap-3 mt-2 text-sm text-muted-foreground">
                     <span className="flex items-center gap-1">
-                      <Phone className="w-4 h-4" />
-                      {contact.phone}
+                      <Phone className="w-4 h-4 flex-shrink-0" />
+                      <span className="break-all">{contact.phone}</span>
                     </span>
                     {contact.email && (
                       <span className="flex items-center gap-1">
-                        <Mail className="w-4 h-4" />
-                        {contact.email}
+                        <Mail className="w-4 h-4 flex-shrink-0" />
+                        <span className="break-all">{contact.email}</span>
                       </span>
                     )}
                     <span className="flex items-center gap-1">
-                      <MapPin className="w-4 h-4" />
-                      {contact.neighborhood}
+                      <MapPin className="w-4 h-4 flex-shrink-0" />
+                      <span className="break-words">{contact.neighborhood}</span>
                     </span>
                   </div>
                 </div>
-                <Badge className="bg-primary">
+                <Badge className="bg-primary whitespace-nowrap self-start">
                   {statusLabels[contact.status]}
                 </Badge>
               </div>
             </CardHeader>
             <CardContent>
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div className="text-sm text-muted-foreground space-y-1">
+              <div className="flex flex-col gap-4">
+                <div className="text-xs sm:text-sm text-muted-foreground space-y-1">
                   {contact.age && <p>Idade: {contact.age} anos</p>}
                   {contact.assigned_collaborator_name && (
-                    <p>Responsável: {contact.assigned_collaborator_name}</p>
+                    <p className="break-words">Responsável: {contact.assigned_collaborator_name}</p>
                   )}
                   <p>Cadastrado em: {new Date(contact.created_at).toLocaleDateString('pt-BR')}</p>
                 </div>
@@ -125,7 +125,7 @@ export default function Discipleship() {
                   onValueChange={(value) => handleStatusChange(contact.id, value)}
                   disabled={updateContactStatus.isPending || !canUpdateStatus}
                 >
-                  <SelectTrigger className="w-full sm:w-[200px]">
+                  <SelectTrigger className="w-full">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>

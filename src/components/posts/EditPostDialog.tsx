@@ -84,7 +84,7 @@ export function EditPostDialog({ post }: EditPostDialogProps) {
       </Button>
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto px-4 sm:px-6">
           <DialogHeader>
             <DialogTitle>Editar Postagem</DialogTitle>
           </DialogHeader>
@@ -126,26 +126,28 @@ export function EditPostDialog({ post }: EditPostDialogProps) {
               />
             </div>
 
-            <div className="flex gap-3 justify-between">
+            <div className="flex flex-col sm:flex-row gap-3 sm:justify-between">
               <Button
                 type="button"
                 variant="destructive"
                 onClick={() => setDeleteOpen(true)}
                 disabled={isSubmitting}
+                className="w-full sm:w-auto"
               >
                 <Trash2 className="w-4 h-4 mr-2" />
                 Excluir
               </Button>
-              <div className="flex gap-3">
+              <div className="flex flex-col xs:flex-row gap-3 w-full sm:w-auto">
                 <Button
                   type="button"
                   variant="outline"
                   onClick={() => setOpen(false)}
                   disabled={isSubmitting}
+                  className="w-full xs:w-auto"
                 >
                   Cancelar
                 </Button>
-                <Button type="submit" disabled={isSubmitting}>
+                <Button type="submit" disabled={isSubmitting} className="w-full xs:w-auto">
                   {isSubmitting ? 'Salvando...' : 'Salvar Alterações'}
                 </Button>
               </div>

@@ -45,13 +45,13 @@ export default function Testimonials() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-6 max-w-4xl">
-      <div className="mb-8">
-        <div className="flex items-center gap-3 mb-2">
-          <Sparkles className="w-8 h-8 text-accent" />
-          <h1 className="text-3xl font-bold gradient-text">Testemunhos</h1>
+    <div className="container mx-auto px-3 xs:px-4 sm:px-6 py-4 xs:py-5 sm:py-6 max-w-4xl">
+      <div className="mb-6 xs:mb-7 sm:mb-8">
+        <div className="flex items-center gap-2 xs:gap-3 mb-2">
+          <Sparkles className="w-6 xs:w-7 sm:w-8 h-6 xs:h-7 sm:h-8 text-accent flex-shrink-0" />
+          <h1 className="text-2xl xs:text-2xl sm:text-3xl font-bold gradient-text">Testemunhos</h1>
         </div>
-        <p className="text-muted-foreground">
+        <p className="text-sm xs:text-base text-muted-foreground">
           Histórias reais de transformação através de Jesus
         </p>
       </div>
@@ -77,20 +77,20 @@ export default function Testimonials() {
           </CardContent>
         </Card>
       ) : (
-        <div className="grid gap-6 md:grid-cols-2">
+        <div className="grid gap-4 xs:gap-5 sm:gap-6 grid-cols-1 md:grid-cols-2">
           {testimonials.map((testimonial) => (
             <Card key={testimonial.id} className="card-elevated">
               <CardHeader>
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <CardTitle className="text-xl">{testimonial.title}</CardTitle>
+                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+                  <div className="flex-1 min-w-0">
+                    <CardTitle className="text-lg sm:text-xl break-words">{testimonial.title}</CardTitle>
                     <p className="text-sm font-semibold text-primary mt-1">
                       {testimonial.author_name || 'Anônimo'}
                     </p>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 flex-shrink-0">
                     {canManageTestimonials && (
-                      <Badge variant={testimonial.status === 'published' ? 'default' : 'secondary'}>
+                      <Badge variant={testimonial.status === 'published' ? 'default' : 'secondary'} className="whitespace-nowrap">
                         {testimonial.status === 'published' ? 'Publicado' : 'Rascunho'}
                       </Badge>
                     )}
@@ -98,7 +98,7 @@ export default function Testimonials() {
                     {user?.id === testimonial.created_by && testimonial.status === 'draft' && (
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <button className="p-2 hover:bg-secondary rounded-lg transition-colors">
+                          <button className="p-1.5 sm:p-2 hover:bg-secondary rounded-lg transition-colors">
                             <MoreVertical className="w-4 h-4" />
                           </button>
                         </DropdownMenuTrigger>
@@ -116,7 +116,7 @@ export default function Testimonials() {
                           setTestimonialToDelete(testimonial.id);
                           setDeleteOpen(true);
                         }}
-                        className="hover:bg-destructive/10 hover:text-destructive"
+                        className="hover:bg-destructive/10 hover:text-destructive h-8 w-8 sm:h-10 sm:w-10"
                       >
                         <Trash2 className="w-4 h-4" />
                       </Button>
@@ -125,7 +125,7 @@ export default function Testimonials() {
                 </div>
               </CardHeader>
               <CardContent>
-                <p className="text-foreground leading-relaxed">{testimonial.content}</p>
+                <p className="text-sm sm:text-base text-foreground leading-relaxed break-words">{testimonial.content}</p>
                 <p className="text-xs text-muted-foreground mt-4">
                   {new Date(testimonial.created_at).toLocaleDateString('pt-BR')}
                 </p>

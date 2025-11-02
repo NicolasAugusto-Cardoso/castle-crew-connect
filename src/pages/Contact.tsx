@@ -127,21 +127,21 @@ export default function Contact() {
   return (
     <div className="min-h-screen flex flex-col">
       {/* Padding Superior com fundo branco */}
-      <div className="bg-white dark:bg-card py-6">
-        <div className="container mx-auto px-4 max-w-4xl">
-          <div className="flex items-center gap-3 mb-2">
-            <Mail className="w-8 h-8 text-primary" />
-            <h1 className="text-3xl font-bold gradient-text">Contato</h1>
+      <div className="bg-white dark:bg-card py-4 xs:py-5 sm:py-6">
+        <div className="container mx-auto px-3 xs:px-4 max-w-4xl">
+          <div className="flex items-center gap-2 xs:gap-3 mb-2">
+            <Mail className="w-6 xs:w-7 sm:w-8 h-6 xs:h-7 sm:h-8 text-primary flex-shrink-0" />
+            <h1 className="text-2xl xs:text-2xl sm:text-3xl font-bold gradient-text">Contato</h1>
           </div>
-          <p className="text-muted-foreground">
+          <p className="text-sm xs:text-base text-muted-foreground">
             {canManageMessages ? 'Gerencie as mensagens recebidas' : 'Entre em contato conosco'}
           </p>
         </div>
       </div>
 
       {/* Área de Conteúdo Principal */}
-      <div className="flex-1 bg-transparent py-6">
-        <div className="container mx-auto px-4 max-w-4xl">
+      <div className="flex-1 bg-transparent py-4 xs:py-5 sm:py-6">
+        <div className="container mx-auto px-3 xs:px-4 max-w-4xl">
           {!canManageMessages && displayedMessages.length === 0 && (
         <Card className="mb-6 card-elevated">
           <CardHeader>
@@ -230,37 +230,37 @@ export default function Contact() {
                 </Card>
               ) : (
                 messages.map((msg) => (
-                  <Card key={msg.id} className="card-elevated hover:shadow-lg transition-shadow cursor-pointer" onClick={() => setSelectedMessage(msg)}>
+                <Card key={msg.id} className="card-elevated hover:shadow-lg transition-shadow cursor-pointer" onClick={() => setSelectedMessage(msg)}>
                     <CardHeader>
-                      <div className="flex items-start justify-between">
-                        <div>
-                          <CardTitle className="text-lg">{msg.name}</CardTitle>
-                          <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground">
+                      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+                        <div className="flex-1 min-w-0">
+                          <CardTitle className="text-base sm:text-lg break-words">{msg.name}</CardTitle>
+                          <div className="flex flex-col xs:flex-row xs:items-center gap-2 xs:gap-4 mt-2 text-sm text-muted-foreground">
                             <span className="flex items-center gap-1">
-                              <Phone className="w-4 h-4" />
-                              {msg.phone}
+                              <Phone className="w-4 h-4 flex-shrink-0" />
+                              <span className="break-all">{msg.phone}</span>
                             </span>
                             {msg.email && (
                               <span className="flex items-center gap-1">
-                                <Mail className="w-4 h-4" />
-                                {msg.email}
+                                <Mail className="w-4 h-4 flex-shrink-0" />
+                                <span className="break-all">{msg.email}</span>
                               </span>
                             )}
                           </div>
                         </div>
-                        <Badge className={getStatusColor(msg.status)}>
+                        <Badge className={`${getStatusColor(msg.status)} whitespace-nowrap`}>
                           {getStatusLabel(msg.status)}
                         </Badge>
                       </div>
                     </CardHeader>
                     <CardContent>
-                      <p className="text-foreground leading-relaxed mb-4 line-clamp-2">{msg.message}</p>
-                      <div className="flex items-center justify-between">
+                      <p className="text-sm sm:text-base text-foreground leading-relaxed mb-4 line-clamp-2 break-words">{msg.message}</p>
+                      <div className="flex flex-col xs:flex-row xs:items-center xs:justify-between gap-3">
                         <p className="text-xs text-muted-foreground">
                           Recebida em {new Date(msg.created_at).toLocaleString('pt-BR')}
                         </p>
                         <Button
-                          className="btn-gradient"
+                          className="btn-gradient w-full xs:w-auto"
                           size="sm"
                           onClick={(e) => {
                             e.stopPropagation();
@@ -293,21 +293,21 @@ export default function Contact() {
               {messages.map((msg) => (
                 <Card key={msg.id} className="card-elevated hover:shadow-lg transition-shadow cursor-pointer" onClick={() => setSelectedMessage(msg)}>
                   <CardHeader>
-                    <div className="flex items-start justify-between">
-                      <CardTitle className="text-lg">Mensagem para Administração</CardTitle>
-                      <Badge className={getStatusColor(msg.status)}>
+                    <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+                      <CardTitle className="text-base sm:text-lg break-words flex-1">Mensagem para Administração</CardTitle>
+                      <Badge className={`${getStatusColor(msg.status)} whitespace-nowrap`}>
                         {getStatusLabel(msg.status)}
                       </Badge>
                     </div>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-foreground leading-relaxed mb-4 line-clamp-2">{msg.message}</p>
-                    <div className="flex items-center justify-between">
+                    <p className="text-sm sm:text-base text-foreground leading-relaxed mb-4 line-clamp-2 break-words">{msg.message}</p>
+                    <div className="flex flex-col xs:flex-row xs:items-center xs:justify-between gap-3">
                       <p className="text-xs text-muted-foreground">
                         Enviada em {new Date(msg.created_at).toLocaleString('pt-BR')}
                       </p>
                       <Button
-                        className="btn-gradient"
+                        className="btn-gradient w-full xs:w-auto"
                         size="sm"
                         onClick={(e) => {
                           e.stopPropagation();
@@ -329,11 +329,11 @@ export default function Contact() {
       </div>
 
       {/* Padding Inferior com fundo azul/gradient */}
-      <div className="bg-gradient-to-r from-primary/20 via-primary/10 to-accent/20 py-8">
-        <div className="container mx-auto px-4 max-w-4xl">
+      <div className="bg-gradient-to-r from-primary/20 via-primary/10 to-accent/20 py-6 xs:py-7 sm:py-8">
+        <div className="container mx-auto px-3 xs:px-4 max-w-4xl">
           <div className="text-center">
-            <Mail className="w-8 h-8 mx-auto mb-2 text-primary opacity-70" />
-            <p className="text-sm text-muted-foreground">
+            <Mail className="w-6 xs:w-7 sm:w-8 h-6 xs:h-7 sm:h-8 mx-auto mb-2 text-primary opacity-70" />
+            <p className="text-xs xs:text-sm text-muted-foreground">
               Estamos aqui para ajudar você
             </p>
           </div>

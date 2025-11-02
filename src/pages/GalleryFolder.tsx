@@ -49,22 +49,22 @@ export default function GalleryFolder() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-6 max-w-6xl">
-      <div className="mb-6">
+    <div className="container mx-auto px-3 xs:px-4 sm:px-6 py-4 xs:py-5 sm:py-6 max-w-6xl">
+      <div className="mb-5 xs:mb-6">
         <Button 
           variant="ghost" 
           onClick={() => navigate('/gallery')}
-          className="mb-4 hover:bg-muted hover:text-foreground"
+          className="mb-3 xs:mb-4 hover:bg-muted hover:text-foreground"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
           Voltar
         </Button>
 
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <h1 className="text-3xl font-bold gradient-text mb-2">{folder?.name}</h1>
+        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+          <div className="flex-1 min-w-0">
+            <h1 className="text-2xl xs:text-2xl sm:text-3xl font-bold gradient-text mb-2 break-words">{folder?.name}</h1>
             {folder?.description && (
-              <p className="text-muted-foreground">{folder.description}</p>
+              <p className="text-sm xs:text-base text-muted-foreground break-words">{folder.description}</p>
             )}
             {folder?.event_date && (
               <div className="flex items-center gap-2 text-sm text-muted-foreground mt-2">
@@ -74,7 +74,7 @@ export default function GalleryFolder() {
             )}
           </div>
           {canManage && (
-            <div className="flex gap-2">
+            <div className="flex gap-2 flex-shrink-0">
               {folder && <EditFolderDialog folder={folder} />}
               {folderId && <UploadMediaDialog folderId={folderId} />}
             </div>
@@ -95,7 +95,7 @@ export default function GalleryFolder() {
           </CardContent>
         </Card>
       ) : (
-        <div className="grid gap-4 grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+        <div className="grid gap-3 xs:gap-4 grid-cols-2 sm:grid-cols-3 lg:grid-cols-4">
           {media.map((item, index) => (
             <Card 
               key={item.id} 

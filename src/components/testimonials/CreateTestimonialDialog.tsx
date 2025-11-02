@@ -55,7 +55,7 @@ export function CreateTestimonialDialog() {
           Adicionar Testemunho
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto px-4 sm:px-6">
         <DialogHeader>
           <DialogTitle>Novo Testemunho</DialogTitle>
         </DialogHeader>
@@ -124,16 +124,17 @@ export function CreateTestimonialDialog() {
             </Label>
           </div>
 
-          <div className="flex gap-3 justify-end">
+          <div className="flex flex-col sm:flex-row gap-3 sm:justify-end">
             <Button
               type="button"
               variant="outline"
               onClick={() => setOpen(false)}
               disabled={isSubmitting}
+              className="w-full sm:w-auto"
             >
               Cancelar
             </Button>
-            <Button type="submit" disabled={isSubmitting}>
+            <Button type="submit" disabled={isSubmitting} className="w-full sm:w-auto">
               {isSubmitting ? 'Salvando...' : 'Salvar Testemunho'}
             </Button>
           </div>

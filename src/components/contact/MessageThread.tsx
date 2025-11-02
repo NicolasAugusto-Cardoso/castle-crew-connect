@@ -129,15 +129,15 @@ export const MessageThread = ({ message, onClose }: MessageThreadProps) => {
 
   return (
     <Card className="card-elevated">
-      <CardContent className="p-6">
+      <CardContent className="p-3 xs:p-4 sm:p-6">
         {/* Header */}
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold">Conversa com {message.name}</h3>
+        <div className="flex items-center justify-between gap-2 mb-4">
+          <h3 className="text-base xs:text-lg font-semibold break-words flex-1">Conversa com {message.name}</h3>
           <Button 
             variant="ghost" 
             size="sm" 
             onClick={onClose}
-            className="hover:bg-destructive hover:text-destructive-foreground"
+            className="hover:bg-destructive hover:text-destructive-foreground flex-shrink-0 text-xs xs:text-sm"
           >
             ✕ Fechar
           </Button>
@@ -146,25 +146,25 @@ export const MessageThread = ({ message, onClose }: MessageThreadProps) => {
         {/* Messages Container */}
         <div
           ref={scrollRef}
-          className="space-y-4 mb-4 max-h-96 overflow-y-auto scroll-smooth"
+          className="space-y-3 xs:space-y-4 mb-4 max-h-[60vh] xs:max-h-96 overflow-y-auto scroll-smooth"
         >
           {/* Original Message */}
-          <div className="flex gap-3">
-            <Avatar className="h-10 w-10 shrink-0">
-              <AvatarFallback className="bg-primary text-primary-foreground">
+          <div className="flex gap-2 xs:gap-3">
+            <Avatar className="h-8 w-8 xs:h-10 xs:w-10 shrink-0">
+              <AvatarFallback className="bg-primary text-primary-foreground text-sm xs:text-base">
                 {message.name.charAt(0).toUpperCase()}
               </AvatarFallback>
             </Avatar>
-            <div className="flex-1">
-              <div className="flex items-baseline gap-2 mb-1">
-                <span className="font-medium text-sm">{message.name}</span>
-                <span className="text-xs text-muted-foreground">
+            <div className="flex-1 min-w-0">
+              <div className="flex flex-col xs:flex-row xs:items-baseline gap-0.5 xs:gap-2 mb-1">
+                <span className="font-medium text-xs xs:text-sm break-words">{message.name}</span>
+                <span className="text-[10px] xs:text-xs text-muted-foreground">
                   {new Date(message.created_at).toLocaleString('pt-BR')}
                 </span>
               </div>
               <Card className="bg-muted">
-                <CardContent className="p-3">
-                  <p className="text-sm">{message.message}</p>
+                <CardContent className="p-2 xs:p-3">
+                  <p className="text-xs xs:text-sm break-words">{message.message}</p>
                 </CardContent>
               </Card>
             </div>
@@ -300,23 +300,23 @@ export const MessageThread = ({ message, onClose }: MessageThreadProps) => {
         </div>
 
         {/* Reply Input */}
-        <div className="flex gap-2">
+        <div className="flex flex-col xs:flex-row gap-2">
           <Textarea
             value={replyText}
             onChange={(e) => setReplyText(e.target.value)}
             onKeyDown={handleKeyPress}
             placeholder={
               isAdmin
-                ? 'Digite sua resposta... (Enter para enviar)'
-                : 'Digite sua mensagem... (Enter para enviar)'
+                ? 'Digite sua resposta...'
+                : 'Digite sua mensagem...'
             }
-            className="min-h-[80px] resize-none"
+            className="min-h-[60px] xs:min-h-[80px] resize-none text-sm xs:text-base"
             disabled={createReply.isPending}
           />
           <Button
             onClick={handleSendReply}
             disabled={!replyText.trim() || createReply.isPending}
-            className="btn-gradient shrink-0"
+            className="btn-gradient shrink-0 w-full xs:w-auto"
             size="icon"
           >
             {createReply.isPending ? (
