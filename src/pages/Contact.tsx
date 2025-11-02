@@ -136,7 +136,7 @@ export default function Contact() {
         </p>
       </div>
 
-      {!canManageMessages && (
+      {!canManageMessages && displayedMessages.length === 0 && (
         <Card className="mb-6 card-elevated">
           <CardHeader>
             <CardTitle>Envie uma Mensagem</CardTitle>
@@ -274,7 +274,7 @@ export default function Contact() {
         </div>
       )}
 
-      {!canManageMessages && messages.length > 0 && (
+      {!canManageMessages && displayedMessages.length > 0 && (
         <div className="mt-8">
           <h2 className="text-xl font-bold mb-4">Minhas Mensagens</h2>
           {selectedMessage ? (
