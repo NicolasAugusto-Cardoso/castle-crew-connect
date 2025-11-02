@@ -51,7 +51,7 @@ export const Splash: React.FC<SplashProps> = ({ onComplete }) => {
 
             {/* SVG Crown - Graffiti Style */}
             <motion.svg
-              viewBox="0 0 200 200"
+              viewBox="0 0 160 180"
               className="w-48 h-48 md:w-56 md:h-56 relative z-10"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -89,7 +89,7 @@ export const Splash: React.FC<SplashProps> = ({ onComplete }) => {
 
               {/* Crown base - left side */}
               <motion.path
-                d="M 60 120 L 70 80 L 80 120"
+                d="M 40 140 L 50 70 L 65 140"
                 stroke="url(#blueGradient)"
                 strokeWidth="5"
                 strokeLinecap="round"
@@ -102,7 +102,7 @@ export const Splash: React.FC<SplashProps> = ({ onComplete }) => {
 
               {/* Crown base - center */}
               <motion.path
-                d="M 85 120 L 100 60 L 115 120"
+                d="M 70 140 L 80 40 L 90 140"
                 stroke="url(#goldGradient)"
                 strokeWidth="6"
                 strokeLinecap="round"
@@ -115,7 +115,7 @@ export const Splash: React.FC<SplashProps> = ({ onComplete }) => {
 
               {/* Crown base - right side */}
               <motion.path
-                d="M 120 120 L 130 80 L 140 120"
+                d="M 95 140 L 110 70 L 120 140"
                 stroke="url(#blueGradient)"
                 strokeWidth="5"
                 strokeLinecap="round"
@@ -128,7 +128,7 @@ export const Splash: React.FC<SplashProps> = ({ onComplete }) => {
 
               {/* Crown bottom line */}
               <motion.path
-                d="M 55 125 L 145 125"
+                d="M 35 145 L 125 145"
                 stroke="url(#goldGradient)"
                 strokeWidth="7"
                 strokeLinecap="round"
@@ -140,8 +140,8 @@ export const Splash: React.FC<SplashProps> = ({ onComplete }) => {
 
               {/* Decorative jewels */}
               <motion.circle
-                cx="70"
-                cy="80"
+                cx="50"
+                cy="70"
                 r="4"
                 fill="url(#goldGradient)"
                 initial={{ scale: 0, opacity: 0 }}
@@ -149,8 +149,8 @@ export const Splash: React.FC<SplashProps> = ({ onComplete }) => {
                 transition={{ duration: 0.3, delay: 1.2 }}
               />
               <motion.circle
-                cx="100"
-                cy="60"
+                cx="80"
+                cy="40"
                 r="5"
                 fill="url(#goldGradient)"
                 filter="url(#glow)"
@@ -159,8 +159,8 @@ export const Splash: React.FC<SplashProps> = ({ onComplete }) => {
                 transition={{ duration: 0.3, delay: 1.3 }}
               />
               <motion.circle
-                cx="130"
-                cy="80"
+                cx="110"
+                cy="70"
                 r="4"
                 fill="url(#goldGradient)"
                 initial={{ scale: 0, opacity: 0 }}
@@ -170,7 +170,7 @@ export const Splash: React.FC<SplashProps> = ({ onComplete }) => {
 
               {/* Fill effect - appears after stroke */}
               <motion.path
-                d="M 60 120 L 70 80 L 80 120 M 85 120 L 100 60 L 115 120 M 120 120 L 130 80 L 140 120 M 55 125 L 145 125"
+                d="M 40 140 L 50 70 L 65 140 M 70 140 L 80 40 L 90 140 M 95 140 L 110 70 L 120 140 M 35 145 L 125 145"
                 stroke="none"
                 fill="url(#goldGradient)"
                 fillOpacity="0.15"
@@ -182,7 +182,7 @@ export const Splash: React.FC<SplashProps> = ({ onComplete }) => {
 
               {/* Final glow overlay */}
               <motion.path
-                d="M 60 120 L 70 80 L 80 120 M 85 120 L 100 60 L 115 120 M 120 120 L 130 80 L 140 120"
+                d="M 40 140 L 50 70 L 65 140 M 70 140 L 80 40 L 90 140 M 95 140 L 110 70 L 120 140"
                 stroke="url(#goldGradient)"
                 strokeWidth="8"
                 strokeLinecap="round"
