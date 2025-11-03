@@ -35,7 +35,7 @@ export const Layout = () => {
   return (
     <div className="min-h-screen bg-background flex flex-col overflow-x-hidden">
       {/* Header */}
-      <header className="sticky top-0 z-40 bg-gradient-to-r from-primary-light to-primary-dark shadow-lg">
+      <header className="sticky top-0 z-40 bg-white shadow-sm">
         <div className="w-full px-2 xs:px-3 sm:px-4 py-1 sm:py-0.5 flex items-center justify-between md:px-8">
           <div className="w-8 xs:w-16 sm:w-24 md:w-32"></div>
           
@@ -46,7 +46,7 @@ export const Layout = () => {
           <div className="flex items-center gap-1 xs:gap-2 sm:gap-4 w-8 xs:w-16 sm:w-24 md:w-32 justify-end">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button className="flex items-center gap-1 xs:gap-1.5 sm:gap-2 text-white hover:text-accent transition-colors p-1.5 xs:p-2">
+                <button className="flex items-center gap-1 xs:gap-1.5 sm:gap-2 text-foreground hover:text-primary transition-colors p-1.5 xs:p-2">
                   <UserCircle className="w-4 xs:w-4.5 sm:w-5 h-4 xs:h-4.5 sm:h-5 flex-shrink-0" />
                   <span className="hidden sm:inline font-medium text-xs sm:text-sm md:text-base truncate max-w-[80px] md:max-w-none">{displayName}</span>
                 </button>
@@ -80,6 +80,8 @@ export const Layout = () => {
             </DropdownMenu>
           </div>
         </div>
+        {/* Faixa divisória em gradiente azul */}
+        <div className="h-2 w-full bg-gradient-to-r from-[#33C2FF] to-[#2367FF]" />
       </header>
 
       {/* Sidebar Navigation (Desktop) */}
@@ -125,22 +127,22 @@ export const Layout = () => {
       </main>
 
       {/* Bottom Navigation (Mobile) */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-card border-t border-border md:hidden z-30 safe-area-bottom">
-        <div className="flex justify-around items-center py-1.5 xs:py-2">
+      <nav className="fixed bottom-0 left-0 right-0 bg-gradient-to-r from-[#33C2FF] to-[#2367FF] md:hidden z-30" style={{ paddingBottom: 'calc(0.5rem + env(safe-area-inset-bottom))' }}>
+        <div className="flex justify-around items-center py-2">
           {visibleNavItems.map((item) => {
             const isActive = location.pathname === item.path;
             return (
               <button
                 key={item.path}
                 onClick={() => navigate(item.path)}
-                className={`flex flex-col items-center gap-0.5 xs:gap-1 px-1.5 xs:px-2 sm:px-3 py-1.5 xs:py-2 transition-colors relative ${
+                className={`flex flex-col items-center gap-0.5 xs:gap-1 px-1.5 xs:px-2 sm:px-3 py-1.5 xs:py-2 transition-all relative min-w-[44px] min-h-[44px] ${
                   isActive 
-                    ? 'text-primary' 
-                    : 'text-muted-foreground hover:text-foreground'
+                    ? 'text-white' 
+                    : 'text-white/80 hover:text-white'
                 }`}
               >
                 <div className="relative">
-                  <item.icon className="w-4.5 xs:w-5 sm:w-5.5 h-4.5 xs:h-5 sm:h-5.5" />
+                  <item.icon className={`w-5 xs:w-5.5 h-5 xs:h-5.5 ${isActive ? 'drop-shadow-[0_0_4px_rgba(255,255,255,0.3)]' : ''}`} />
                   {item.path === '/contact' && unreadCount > 0 && (
                     <Badge 
                       variant="destructive" 
@@ -150,7 +152,8 @@ export const Layout = () => {
                     </Badge>
                   )}
                 </div>
-                <span className="text-[10px] xs:text-xs leading-tight">{item.label}</span>
+                <span className="text-[10px] xs:text-xs leading-tight font-medium">{item.label}</span>
+                {isActive && <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-8 h-0.5 bg-white/30 rounded-full" />}
               </button>
             );
           })}
