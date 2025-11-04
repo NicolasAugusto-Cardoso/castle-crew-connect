@@ -116,7 +116,10 @@ export default function Discipleship() {
                 <div className="text-xs sm:text-sm text-muted-foreground space-y-1">
                   {contact.age && <p>Idade: {contact.age} anos</p>}
                   {contact.assigned_collaborator_name && (
-                    <p className="break-words">Responsável: {contact.assigned_collaborator_name}</p>
+                    <p className="break-words">
+                      Responsável: {contact.assigned_collaborator_name}
+                      {contact.distance_km && ` (${contact.distance_km.toFixed(1)} km)`}
+                    </p>
                   )}
                   <p>Cadastrado em: {new Date(contact.created_at).toLocaleDateString('pt-BR')}</p>
                 </div>

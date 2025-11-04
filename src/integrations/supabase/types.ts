@@ -16,39 +16,63 @@ export type Database = {
     Tables: {
       collaborator_profiles: {
         Row: {
+          accepting_new: boolean | null
           bio: string | null
           church: string | null
           city: string | null
           created_at: string
           id: string
+          latitude: number | null
+          longitude: number | null
           neighborhood: string | null
           position: string | null
+          postal_code: string | null
           region: string | null
+          state: string | null
+          street: string | null
+          street_number: string | null
           updated_at: string
+          updated_by: string | null
           user_id: string
         }
         Insert: {
+          accepting_new?: boolean | null
           bio?: string | null
           church?: string | null
           city?: string | null
           created_at?: string
           id?: string
+          latitude?: number | null
+          longitude?: number | null
           neighborhood?: string | null
           position?: string | null
+          postal_code?: string | null
           region?: string | null
+          state?: string | null
+          street?: string | null
+          street_number?: string | null
           updated_at?: string
+          updated_by?: string | null
           user_id: string
         }
         Update: {
+          accepting_new?: boolean | null
           bio?: string | null
           church?: string | null
           city?: string | null
           created_at?: string
           id?: string
+          latitude?: number | null
+          longitude?: number | null
           neighborhood?: string | null
           position?: string | null
+          postal_code?: string | null
           region?: string | null
+          state?: string | null
+          street?: string | null
+          street_number?: string | null
           updated_at?: string
+          updated_by?: string | null
           user_id?: string
         }
         Relationships: []
@@ -135,13 +159,20 @@ export type Database = {
           assigned_collaborator_id: string | null
           city: string | null
           created_at: string
+          distance_km: number | null
           email: string | null
           id: string
+          latitude: number | null
+          longitude: number | null
           name: string
           neighborhood: string | null
           phone: string
+          postal_code: string | null
           registered_by: string
+          state: string | null
           status: string
+          street: string | null
+          street_number: string | null
           updated_at: string
         }
         Insert: {
@@ -151,13 +182,20 @@ export type Database = {
           assigned_collaborator_id?: string | null
           city?: string | null
           created_at?: string
+          distance_km?: number | null
           email?: string | null
           id?: string
+          latitude?: number | null
+          longitude?: number | null
           name: string
           neighborhood?: string | null
           phone: string
+          postal_code?: string | null
           registered_by: string
+          state?: string | null
           status?: string
+          street?: string | null
+          street_number?: string | null
           updated_at?: string
         }
         Update: {
@@ -167,13 +205,20 @@ export type Database = {
           assigned_collaborator_id?: string | null
           city?: string | null
           created_at?: string
+          distance_km?: number | null
           email?: string | null
           id?: string
+          latitude?: number | null
+          longitude?: number | null
           name?: string
           neighborhood?: string | null
           phone?: string
+          postal_code?: string | null
           registered_by?: string
+          state?: string | null
           status?: string
+          street?: string | null
+          street_number?: string | null
           updated_at?: string
         }
         Relationships: []
@@ -474,9 +519,25 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      calculate_distance: {
+        Args: { lat1: number; lat2: number; lon1: number; lon2: number }
+        Returns: number
+      }
       find_nearest_collaborator: {
         Args: { p_city: string; p_neighborhood: string }
         Returns: string
+      }
+      find_nearest_collaborator_geo: {
+        Args: {
+          p_city?: string
+          p_latitude: number
+          p_longitude: number
+          p_neighborhood?: string
+        }
+        Returns: {
+          collaborator_id: string
+          distance_km: number
+        }[]
       }
       has_role: {
         Args: {

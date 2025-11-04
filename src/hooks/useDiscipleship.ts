@@ -19,6 +19,7 @@ export interface DiscipleshipContact {
   registered_by: string;
   created_at: string;
   updated_at: string;
+  distance_km?: number | null;
   assigned_collaborator_name?: string;
 }
 
@@ -142,13 +143,18 @@ export function useDiscipleship() {
   });
 
   const createContact = useMutation({
-    mutationFn: async (contact: {
+    mutationFn: async (contactData: {
       name: string;
       phone: string;
-      email?: string;
-      age?: number;
-      city?: string;
-      neighborhood?: string;
+      age: number;
+      city: string;
+      neighborhood: string;
+      street?: string;
+      street_number?: string;
+      state?: string;
+      postal_code?: string;
+      latitude?: number | null;
+      longitude?: number | null;
     }) => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
@@ -156,7 +162,7 @@ export function useDiscipleship() {
       const { data, error } = await supabase
         .from('discipleship_contacts')
         .insert({
-          ...contact,
+          ...contactData,
           registered_by: user.id
         })
         .select()
