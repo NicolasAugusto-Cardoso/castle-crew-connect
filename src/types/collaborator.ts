@@ -14,6 +14,7 @@ export interface CollaboratorProfile {
   latitude: number | null;
   longitude: number | null;
   accepting_new: boolean;
+  age: number | null;
   created_at: string;
   updated_at: string;
   updated_by: string | null;
@@ -33,4 +34,5 @@ export interface CollaboratorProfileForm {
   state: string;
   postal_code: string;
   accepting_new: boolean;
+  age: string;
 }

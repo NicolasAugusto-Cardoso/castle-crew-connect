@@ -30,6 +30,7 @@ export default function CollaboratorProfile() {
     state: '',
     postal_code: '',
     accepting_new: true,
+    age: '',
   });
 
   useEffect(() => {
@@ -67,6 +68,7 @@ export default function CollaboratorProfile() {
           state: data.state || '',
           postal_code: data.postal_code || '',
           accepting_new: data.accepting_new ?? true,
+          age: data.age?.toString() || '',
         });
       }
     } catch (error: any) {
@@ -122,9 +124,22 @@ export default function CollaboratorProfile() {
       // Geocodificar endereço
       const coordinates = await geocodeAddress();
 
+      // Converter age de string para número
+      const ageNumber = formData.age ? parseInt(formData.age, 10) : null;
+
       const profileData = {
         user_id: user.id,
-        ...formData,
+        church: formData.church,
+        position: formData.position,
+        bio: formData.bio,
+        street: formData.street,
+        street_number: formData.street_number,
+        neighborhood: formData.neighborhood,
+        city: formData.city,
+        state: formData.state,
+        postal_code: formData.postal_code,
+        accepting_new: formData.accepting_new,
+        age: ageNumber,
         latitude: coordinates?.latitude || null,
         longitude: coordinates?.longitude || null,
         updated_by: user.id,
@@ -195,17 +210,20 @@ export default function CollaboratorProfile() {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Igreja e Cargo */}
+            {/* Igreja */}
+            <div className="space-y-2">
+              <Label htmlFor="church">Igreja *</Label>
+              <Input
+                id="church"
+                value={formData.church}
+                onChange={(e) => setFormData({ ...formData, church: e.target.value })}
+                placeholder="Nome da igreja"
+                required
+              />
+            </div>
+
+            {/* Cargo e Idade */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="church">Igreja</Label>
-                <Input
-                  id="church"
-                  value={formData.church}
-                  onChange={(e) => setFormData({ ...formData, church: e.target.value })}
-                  placeholder="Nome da igreja"
-                />
-              </div>
               <div className="space-y-2">
                 <Label htmlFor="position">Cargo</Label>
                 <Input
@@ -213,6 +231,19 @@ export default function CollaboratorProfile() {
                   value={formData.position}
                   onChange={(e) => setFormData({ ...formData, position: e.target.value })}
                   placeholder="Ex: Pastor, Líder, etc"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="age">Idade *</Label>
+                <Input
+                  id="age"
+                  type="number"
+                  min="18"
+                  max="120"
+                  value={formData.age}
+                  onChange={(e) => setFormData({ ...formData, age: e.target.value })}
+                  placeholder="Ex: 30"
+                  required
                 />
               </div>
             </div>

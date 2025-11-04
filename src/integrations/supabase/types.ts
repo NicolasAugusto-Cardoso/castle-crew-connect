@@ -17,6 +17,7 @@ export type Database = {
       collaborator_profiles: {
         Row: {
           accepting_new: boolean | null
+          age: number | null
           bio: string | null
           church: string | null
           city: string | null
@@ -37,6 +38,7 @@ export type Database = {
         }
         Insert: {
           accepting_new?: boolean | null
+          age?: number | null
           bio?: string | null
           church?: string | null
           city?: string | null
@@ -57,6 +59,7 @@ export type Database = {
         }
         Update: {
           accepting_new?: boolean | null
+          age?: number | null
           bio?: string | null
           church?: string | null
           city?: string | null

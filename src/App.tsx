@@ -15,6 +15,7 @@ import Gallery from "./pages/Gallery";
 import GalleryFolder from "./pages/GalleryFolder";
 import Discipleship from "./pages/Discipleship";
 import CollaboratorProfile from "./pages/CollaboratorProfile";
+import Collaborators from "./pages/Collaborators";
 import Users from "./pages/Users";
 import NotFound from "./pages/NotFound";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
@@ -78,6 +79,7 @@ const App = () => {
                 <Route path="/contact" element={<Contact />} />
                 <Route path="/gallery" element={<Gallery />} />
                 <Route path="/gallery/:folderId" element={<GalleryFolder />} />
+                <Route path="/colaboradores" element={<Collaborators />} />
                 <Route path="/discipleship" element={
                   <ProtectedRoute allowedRoles={['admin', 'social_media', 'collaborator']}>
                     <Discipleship />

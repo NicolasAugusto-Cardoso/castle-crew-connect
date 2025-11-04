@@ -2,6 +2,7 @@ import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { Home, MessageSquare, Users, FolderOpen, BookOpen, LogOut, UserCircle, Settings } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useUnreadReplies } from '@/hooks/useUnreadReplies';
+import { useShowCollaboratorsTab } from '@/hooks/useCollaborators';
 import castleLogo from '@/assets/castle-logo-final.png';
 import { Badge } from '@/components/ui/badge';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
@@ -11,6 +12,7 @@ export const Layout = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { unreadCount } = useUnreadReplies(user?.id);
+  const { data: showCollaboratorsTab } = useShowCollaboratorsTab();
 
   const handleLogout = async () => {
     await signOut();
@@ -22,13 +24,23 @@ export const Layout = () => {
     { icon: BookOpen, label: 'Testemunhos', path: '/testimonials', roles: ['admin', 'social_media', 'collaborator', 'user'] },
     { icon: MessageSquare, label: 'Contato', path: '/contact', roles: ['admin', 'social_media', 'collaborator', 'user'] },
     { icon: FolderOpen, label: 'Galeria', path: '/gallery', roles: ['admin', 'social_media', 'user'] },
+    { icon: Users, label: 'Colaboradores', path: '/colaboradores', roles: ['user'], showWhen: showCollaboratorsTab },
     { icon: Users, label: 'Discipulado', path: '/discipleship', roles: ['admin', 'social_media', 'collaborator'] },
     { icon: UserCircle, label: 'Meu Perfil', path: '/collaborator/profile', roles: ['collaborator'] },
   ];
 
-  const visibleNavItems = navItems.filter(item => 
-    hasRole(item.roles as any)
-  );
+  const visibleNavItems = navItems.filter(item => {
+    // Primeiro verifica se o usuário tem a role necessária
+    const hasRequiredRole = hasRole(item.roles as any);
+    if (!hasRequiredRole) return false;
+    
+    // Se tem condição showWhen, verifica ela também
+    if ('showWhen' in item) {
+      return item.showWhen === true;
+    }
+    
+    return true;
+  });
 
   // Get user name from metadata or email
   const displayName = user?.user_metadata?.name || user?.email?.split('@')[0] || 'Usuário';
