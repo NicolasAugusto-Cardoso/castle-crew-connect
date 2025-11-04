@@ -9,7 +9,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
-import { Loader2, MapPin, CheckCircle2 } from 'lucide-react';
+import { Loader2, MapPin, CheckCircle2, Upload } from 'lucide-react';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import type { CollaboratorProfile, CollaboratorProfileForm } from '@/types/collaborator';
 
 export default function CollaboratorProfile() {
@@ -18,7 +19,10 @@ export default function CollaboratorProfile() {
   const [profileLoading, setProfileLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [geocoding, setGeocoding] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [profile, setProfile] = useState<CollaboratorProfile | null>(null);
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [formData, setFormData] = useState<CollaboratorProfileForm>({
     church: '',
     position: '',
@@ -55,6 +59,15 @@ export default function CollaboratorProfile() {
 
       if (error && error.code !== 'PGRST116') throw error;
 
+      // Buscar avatar do usuário
+      const { data: userData, error: userError } = await supabase
+        .from('profiles')
+        .select('avatar_url')
+        .eq('id', user.id)
+        .single();
+
+      if (userError) console.error('Erro ao carregar avatar:', userError);
+
       if (data) {
         setProfile(data);
         setFormData({
@@ -68,8 +81,13 @@ export default function CollaboratorProfile() {
           state: data.state || '',
           postal_code: data.postal_code || '',
           accepting_new: data.accepting_new ?? true,
-          age: data.age?.toString() || '',
+          age: data.age !== null && data.age !== undefined ? data.age.toString() : '',
         });
+      }
+
+      // Carregar preview do avatar atual
+      if (userData?.avatar_url) {
+        setAvatarPreview(userData.avatar_url);
       }
     } catch (error: any) {
       toast.error('Erro ao carregar perfil: ' + error.message);
@@ -115,18 +133,111 @@ export default function CollaboratorProfile() {
     }
   };
 
+  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validar tipo de arquivo
+    if (!file.type.startsWith('image/')) {
+      toast.error('Por favor, selecione apenas imagens');
+      return;
+    }
+
+    // Validar tamanho (máx 2MB)
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error('A imagem deve ter no máximo 2MB');
+      return;
+    }
+
+    setAvatarFile(file);
+    
+    // Criar preview
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setAvatarPreview(reader.result as string);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const uploadAvatar = async (): Promise<string | null> => {
+    if (!avatarFile || !user) return null;
+
+    setUploading(true);
+    try {
+      // Gerar nome único para o arquivo
+      const fileExt = avatarFile.name.split('.').pop();
+      const fileName = `${user.id}/${Date.now()}.${fileExt}`;
+
+      // Upload para o Supabase Storage
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(fileName, avatarFile, {
+          cacheControl: '3600',
+          upsert: false,
+        });
+
+      if (uploadError) throw uploadError;
+
+      // Obter URL pública
+      const { data: { publicUrl } } = supabase.storage
+        .from('avatars')
+        .getPublicUrl(fileName);
+
+      return publicUrl;
+    } catch (error: any) {
+      console.error('Upload error:', error);
+      toast.error('Erro ao fazer upload da foto: ' + error.message);
+      return null;
+    } finally {
+      setUploading(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
 
     setSaving(true);
     try {
-      // Geocodificar endereço
+      // 1. Upload de avatar (se houver)
+      let avatarUrl = null;
+      if (avatarFile) {
+        avatarUrl = await uploadAvatar();
+        if (!avatarUrl) {
+          setSaving(false);
+          return;
+        }
+      }
+
+      // 2. Geocodificar endereço
       const coordinates = await geocodeAddress();
 
-      // Converter age de string para número
-      const ageNumber = formData.age ? parseInt(formData.age, 10) : null;
+      // 3. Validar e converter idade
+      const ageValue = formData.age.trim();
+      if (ageValue === '') {
+        toast.error('Idade é obrigatória');
+        setSaving(false);
+        return;
+      }
 
+      const ageNumber = parseInt(ageValue, 10);
+      if (isNaN(ageNumber) || ageNumber < 18 || ageNumber > 120) {
+        toast.error('Idade deve ser um número entre 18 e 120');
+        setSaving(false);
+        return;
+      }
+
+      // 4. Atualizar avatar no profiles (se fez upload)
+      if (avatarUrl) {
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .update({ avatar_url: avatarUrl })
+          .eq('id', user.id);
+
+        if (profileError) throw profileError;
+      }
+
+      // 5. Salvar dados do colaborador
       const profileData = {
         user_id: user.id,
         church: formData.church,
@@ -147,7 +258,6 @@ export default function CollaboratorProfile() {
       };
 
       if (profile) {
-        // Atualizar perfil existente
         const { error } = await supabase
           .from('collaborator_profiles')
           .update(profileData)
@@ -155,7 +265,6 @@ export default function CollaboratorProfile() {
 
         if (error) throw error;
       } else {
-        // Criar novo perfil
         const { error } = await supabase
           .from('collaborator_profiles')
           .insert(profileData);
@@ -164,6 +273,7 @@ export default function CollaboratorProfile() {
       }
 
       toast.success('Perfil salvo com sucesso!');
+      setAvatarFile(null);
       loadProfile();
     } catch (error: any) {
       toast.error('Erro ao salvar perfil: ' + error.message);
@@ -210,6 +320,40 @@ export default function CollaboratorProfile() {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Avatar */}
+            <div className="space-y-4 pb-6 border-b">
+              <Label>Foto de Perfil *</Label>
+              <div className="flex items-center gap-6">
+                {/* Preview do Avatar */}
+                <div className="relative">
+                  <Avatar className="w-24 h-24">
+                    {avatarPreview ? (
+                      <AvatarImage src={avatarPreview} alt="Preview" />
+                    ) : (
+                      <AvatarFallback>
+                        <Upload className="w-8 h-8 text-muted-foreground" />
+                      </AvatarFallback>
+                    )}
+                  </Avatar>
+                </div>
+                
+                {/* Input de Upload */}
+                <div className="flex-1">
+                  <Input
+                    id="avatar"
+                    type="file"
+                    accept="image/*"
+                    onChange={handleAvatarChange}
+                    disabled={uploading || saving}
+                    className="cursor-pointer"
+                  />
+                  <p className="text-sm text-muted-foreground mt-2">
+                    JPG, PNG ou WEBP. Máximo 2MB.
+                  </p>
+                </div>
+              </div>
+            </div>
+
             {/* Igreja */}
             <div className="space-y-2">
               <Label htmlFor="church">Igreja *</Label>
@@ -237,11 +381,17 @@ export default function CollaboratorProfile() {
                 <Label htmlFor="age">Idade *</Label>
                 <Input
                   id="age"
-                  type="number"
-                  min="18"
-                  max="120"
+                  type="text"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
                   value={formData.age}
-                  onChange={(e) => setFormData({ ...formData, age: e.target.value })}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    // Permitir apenas números e campo vazio
+                    if (value === '' || /^\d+$/.test(value)) {
+                      setFormData({ ...formData, age: value });
+                    }
+                  }}
                   placeholder="Ex: 30"
                   required
                 />
@@ -352,12 +502,17 @@ export default function CollaboratorProfile() {
                 type="button"
                 variant="outline"
                 onClick={() => navigate('/discipleship')}
-                disabled={saving || geocoding}
+                disabled={saving || geocoding || uploading}
               >
                 Cancelar
               </Button>
-              <Button type="submit" disabled={saving || geocoding}>
-                {saving ? (
+              <Button type="submit" disabled={saving || geocoding || uploading}>
+                {uploading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Fazendo upload...
+                  </>
+                ) : saving ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     Salvando...
