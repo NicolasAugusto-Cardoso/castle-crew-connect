@@ -35,7 +35,7 @@ export const Layout = () => {
   return (
     <div className="min-h-screen bg-background flex flex-col overflow-x-hidden">
       {/* Header */}
-      <header className="sticky top-0 z-40 bg-white shadow-[0_2px_8px_rgba(0,0,0,0.08)]">
+      <header className="sticky top-0 z-40 bg-white shadow-[0_2px_10px_rgba(0,0,0,0.10)]">
         <div className="w-full px-2 xs:px-3 sm:px-4 py-1 sm:py-0.5 flex items-center justify-between md:px-8">
           <div className="w-8 xs:w-16 sm:w-24 md:w-32"></div>
           
