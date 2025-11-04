@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Switch } from '@/components/ui/switch';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
 import { Loader2, MapPin, CheckCircle2 } from 'lucide-react';
@@ -305,10 +305,10 @@ export default function CollaboratorProfile() {
 
             {/* Disponibilidade */}
             <div className="flex items-center space-x-2 pt-4 border-t">
-              <Switch
+              <Checkbox
                 id="accepting_new"
                 checked={formData.accepting_new}
-                onCheckedChange={(checked) => setFormData({ ...formData, accepting_new: checked })}
+                onCheckedChange={(checked) => setFormData({ ...formData, accepting_new: checked === true })}
               />
               <Label htmlFor="accepting_new" className="cursor-pointer">
                 Aceitar novos discipulados
