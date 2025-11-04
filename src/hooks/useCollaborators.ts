@@ -104,11 +104,15 @@ export function useShowCollaboratorsTab() {
     queryFn: async () => {
       const { count, error } = await supabase
         .from('collaborator_profiles')
-        .select('id', { count: 'exact', head: true })
+        .select(`
+          id,
+          profiles!inner(avatar_url)
+        `, { count: 'exact', head: true })
         .not('church', 'is', null)
         .not('city', 'is', null)
         .not('state', 'is', null)
-        .not('age', 'is', null);
+        .not('age', 'is', null)
+        .not('profiles.avatar_url', 'is', null);
 
       if (error) throw error;
       

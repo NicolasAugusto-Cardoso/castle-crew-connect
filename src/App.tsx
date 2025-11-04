@@ -79,7 +79,11 @@ const App = () => {
                 <Route path="/contact" element={<Contact />} />
                 <Route path="/gallery" element={<Gallery />} />
                 <Route path="/gallery/:folderId" element={<GalleryFolder />} />
-                <Route path="/colaboradores" element={<Collaborators />} />
+                <Route path="/colaboradores" element={
+                  <ProtectedRoute allowedRoles={['user', 'admin']}>
+                    <Collaborators />
+                  </ProtectedRoute>
+                } />
                 <Route path="/discipleship" element={
                   <ProtectedRoute allowedRoles={['admin', 'social_media', 'collaborator']}>
                     <Discipleship />
