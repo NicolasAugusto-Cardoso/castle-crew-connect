@@ -13,9 +13,9 @@ import { Loader2, MapPin, CheckCircle2 } from 'lucide-react';
 import type { CollaboratorProfile, CollaboratorProfileForm } from '@/types/collaborator';
 
 export default function CollaboratorProfile() {
-  const { user, hasRole } = useAuth();
+  const { user, hasRole, loading: authLoading } = useAuth();
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(true);
+  const [profileLoading, setProfileLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [geocoding, setGeocoding] = useState(false);
   const [profile, setProfile] = useState<CollaboratorProfile | null>(null);
@@ -33,12 +33,14 @@ export default function CollaboratorProfile() {
   });
 
   useEffect(() => {
+    if (authLoading) return;
+    
     if (!hasRole(['collaborator', 'admin'])) {
       navigate('/');
       return;
     }
     loadProfile();
-  }, [user, hasRole, navigate]);
+  }, [user, hasRole, navigate, authLoading]);
 
   const loadProfile = async () => {
     if (!user) return;
@@ -70,7 +72,7 @@ export default function CollaboratorProfile() {
     } catch (error: any) {
       toast.error('Erro ao carregar perfil: ' + error.message);
     } finally {
-      setLoading(false);
+      setProfileLoading(false);
     }
   };
 
@@ -155,7 +157,7 @@ export default function CollaboratorProfile() {
     }
   };
 
-  if (loading) {
+  if (authLoading || profileLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <Loader2 className="h-8 w-8 animate-spin" />
