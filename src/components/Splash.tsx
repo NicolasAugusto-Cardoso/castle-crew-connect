@@ -12,7 +12,7 @@ export const Splash: React.FC<SplashProps> = ({ onComplete }) => {
     const timer = setTimeout(() => {
       setShow(false);
       setTimeout(onComplete, 500);
-    }, 2900);
+    }, 1800);
 
     return () => clearTimeout(timer);
   }, [onComplete]);
@@ -50,156 +50,93 @@ export const Splash: React.FC<SplashProps> = ({ onComplete }) => {
               />
             ))}
 
-            {/* SVG Crown - Graffiti Style */}
+            {/* SVG Crown - Clean Gold Style */}
             <motion.svg
-              viewBox="0 0 160 180"
+              viewBox="0 0 512 384"
               className="w-32 h-32 xs:w-40 xs:h-40 sm:w-48 sm:h-48 md:w-56 md:h-56 lg:w-64 lg:h-64 relative z-10 mx-auto"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ duration: 0.3 }}
+              transition={{ duration: 0.25 }}
+              role="img"
+              aria-label="Coroa Castle Movement"
             >
               <defs>
-                {/* Glow filter */}
-                <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
-                  <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
+                {/* Glow MUITO sutil (opcional) */}
+                <filter id="softGlow" x="-50%" y="-50%" width="200%" height="200%">
+                  <feGaussianBlur stdDeviation="2" result="blur" />
                   <feMerge>
-                    <feMergeNode in="coloredBlur"/>
-                    <feMergeNode in="SourceGraphic"/>
+                    <feMergeNode in="blur" />
+                    <feMergeNode in="SourceGraphic" />
                   </feMerge>
                 </filter>
-                
-                {/* Grunge texture */}
-                <filter id="grunge" x="0%" y="0%" width="100%" height="100%">
-                  <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="4" result="noise"/>
-                  <feDisplacementMap in="SourceGraphic" in2="noise" scale="2" />
-                </filter>
-
-                {/* Gold gradient */}
-                <linearGradient id="goldGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" style={{ stopColor: '#FFD700', stopOpacity: 1 }} />
-                  <stop offset="50%" style={{ stopColor: '#FFA500', stopOpacity: 1 }} />
-                  <stop offset="100%" style={{ stopColor: '#FF8C00', stopOpacity: 1 }} />
-                </linearGradient>
-
-                {/* Blue gradient */}
-                <linearGradient id="blueGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" style={{ stopColor: '#4A90E2', stopOpacity: 1 }} />
-                  <stop offset="100%" style={{ stopColor: '#2E7EBF', stopOpacity: 1 }} />
-                </linearGradient>
               </defs>
 
-              {/* Crown base - left side */}
-              <motion.path
-                d="M 40 140 L 50 70 L 65 140"
-                stroke="url(#blueGradient)"
-                strokeWidth="5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                fill="none"
-                initial={{ pathLength: 0, opacity: 0 }}
-                animate={{ pathLength: 1, opacity: 1 }}
-                transition={{ duration: 0.4, delay: 0.2, ease: 'easeInOut' }}
-              />
-
-              {/* Crown base - center */}
-              <motion.path
-                d="M 70 140 L 80 40 L 90 140"
-                stroke="url(#goldGradient)"
-                strokeWidth="6"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                fill="none"
-                initial={{ pathLength: 0, opacity: 0 }}
-                animate={{ pathLength: 1, opacity: 1 }}
-                transition={{ duration: 0.5, delay: 0.4, ease: 'easeInOut' }}
-              />
-
-              {/* Crown base - right side */}
-              <motion.path
-                d="M 95 140 L 110 70 L 120 140"
-                stroke="url(#blueGradient)"
-                strokeWidth="5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                fill="none"
-                initial={{ pathLength: 0, opacity: 0 }}
-                animate={{ pathLength: 1, opacity: 1 }}
-                transition={{ duration: 0.4, delay: 0.6, ease: 'easeInOut' }}
-              />
-
-              {/* Crown bottom line */}
-              <motion.path
-                d="M 35 145 L 125 145"
-                stroke="url(#goldGradient)"
-                strokeWidth="7"
-                strokeLinecap="round"
-                fill="none"
-                initial={{ pathLength: 0, opacity: 0 }}
-                animate={{ pathLength: 1, opacity: 1 }}
-                transition={{ duration: 0.6, delay: 0.8, ease: 'easeInOut' }}
-              />
-
-              {/* Decorative jewels */}
-              <motion.circle
-                cx="50"
-                cy="70"
-                r="4"
-                fill="url(#goldGradient)"
-                initial={{ scale: 0, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                transition={{ duration: 0.3, delay: 1.2 }}
-              />
-              <motion.circle
-                cx="80"
-                cy="40"
-                r="5"
-                fill="url(#goldGradient)"
-                filter="url(#glow)"
-                initial={{ scale: 0, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                transition={{ duration: 0.3, delay: 1.3 }}
-              />
-              <motion.circle
-                cx="110"
-                cy="70"
-                r="4"
-                fill="url(#goldGradient)"
-                initial={{ scale: 0, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                transition={{ duration: 0.3, delay: 1.4 }}
-              />
-
-              {/* Fill effect - appears after stroke */}
-              <motion.path
-                d="M 40 140 L 50 70 L 65 140 M 70 140 L 80 40 L 90 140 M 95 140 L 110 70 L 120 140 M 35 145 L 125 145"
-                stroke="none"
-                fill="url(#goldGradient)"
-                fillOpacity="0.15"
-                filter="url(#grunge)"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: [0, 0.3, 0.15] }}
-                transition={{ duration: 0.8, delay: 1.5 }}
-              />
-
-              {/* Final glow overlay */}
-              <motion.path
-                d="M 40 140 L 50 70 L 65 140 M 70 140 L 80 40 L 90 140 M 95 140 L 110 70 L 120 140"
-                stroke="url(#goldGradient)"
-                strokeWidth="8"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                fill="none"
-                opacity="0"
-                filter="url(#glow)"
-                animate={{ 
-                  opacity: [0, 0.6, 0.3],
+              {/* COR PRINCIPAL */}
+              <motion.g
+                initial="hidden"
+                animate="show"
+                variants={{
+                  hidden: { opacity: 1 },
+                  show: { opacity: 1, transition: { staggerChildren: 0.08 } }
                 }}
-                transition={{ 
-                  duration: 0.8,
-                  delay: 2.0,
-                  ease: 'easeInOut'
-                }}
-              />
+                fill="#F4B63A"
+              >
+                {/* Silhueta principal da coroa (forma cheia, topo curvo) */}
+                <motion.path
+                  d="
+                    M 56 264
+                    L 96 96
+                    Q 176 160 256 160
+                    Q 336 160 416 96
+                    L 456 264
+                    Z
+                  "
+                  stroke="rgba(0,0,0,0.08)"
+                  strokeWidth="2"
+                  initial={{ pathLength: 0 }}
+                  animate={{ pathLength: 1 }}
+                  transition={{ duration: 0.38, ease: 'easeInOut' }}
+                />
+
+                {/* Base retangular */}
+                <motion.rect
+                  x="96" y="264" width="320" height="36" rx="2"
+                  initial={{ opacity: 0, scaleY: 0.9 }}
+                  animate={{ opacity: 1, scaleY: 1 }}
+                  transition={{ duration: 0.28, ease: 'easeOut' }}
+                />
+
+                {/* Barra inferior (pequena) – pode ser trapézio se preferir */}
+                <motion.path
+                  d="M 128 310 L 384 310 L 376 330 L 136 330 Z"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.22, ease: 'easeOut', delay: 0.1 }}
+                />
+
+                {/* Esferas das pontas (esq, centro, dir) */}
+                <motion.circle
+                  cx="72" cy="120" r="24"
+                  filter="url(#softGlow)"
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ type: 'spring', stiffness: 320, damping: 18, delay: 0.45 }}
+                />
+                <motion.circle
+                  cx="256" cy="88" r="26"
+                  filter="url(#softGlow)"
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ type: 'spring', stiffness: 320, damping: 18, delay: 0.55 }}
+                />
+                <motion.circle
+                  cx="440" cy="120" r="24"
+                  filter="url(#softGlow)"
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ type: 'spring', stiffness: 320, damping: 18, delay: 0.65 }}
+                />
+              </motion.g>
             </motion.svg>
 
             {/* Text fade in with delay */}
