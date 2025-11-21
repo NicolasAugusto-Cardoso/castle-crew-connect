@@ -138,8 +138,8 @@ export const Layout = () => {
       </main>
 
       {/* Bottom Navigation (Mobile) */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-gradient-to-r from-[#33C2FF] to-[#2367FF] md:hidden z-30" style={{ paddingBottom: 'calc(0.5rem + env(safe-area-inset-bottom))' }}>
-        <div className="flex justify-around items-center py-2">
+      <nav className="fixed bottom-0 left-0 right-0 bg-gradient-to-r from-[#33C2FF] to-[#2367FF] md:hidden z-30" style={{ paddingBottom: 'calc(0.25rem + env(safe-area-inset-bottom))' }}>
+        <div className="flex justify-around items-center py-1.5">
           {visibleNavItems.map((item) => {
             const isActive = location.pathname === item.path;
             return (
@@ -153,7 +153,7 @@ export const Layout = () => {
                 }`}
               >
                 <div className="relative">
-                  <item.icon className={`w-5 xs:w-5.5 h-5 xs:h-5.5 ${isActive ? 'drop-shadow-[0_0_4px_rgba(255,255,255,0.3)]' : ''}`} />
+                  <item.icon className={`w-6 xs:w-6.5 h-6 xs:h-6.5 ${isActive ? 'drop-shadow-[0_0_4px_rgba(255,255,255,0.3)]' : ''}`} />
                   {item.path === '/contact' && unreadCount > 0 && (
                     <Badge 
                       variant="destructive" 
@@ -163,7 +163,7 @@ export const Layout = () => {
                     </Badge>
                   )}
                 </div>
-                <span className="text-[10px] xs:text-xs leading-tight font-medium">{item.label}</span>
+                <span className="text-xs xs:text-sm leading-tight font-medium">{item.label}</span>
                 {isActive && <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-8 h-0.5 bg-white/30 rounded-full" />}
               </button>
             );
