@@ -50,40 +50,26 @@ export const Splash: React.FC<SplashProps> = ({ onComplete }) => {
               />
             ))}
 
-            {/* SVG Crown - Outline Only (Reference Design) */}
+            {/* Minimalist Crown Icon */}
             <motion.svg
               viewBox="0 0 640 480"
               className="w-32 h-32 xs:w-40 xs:h-40 sm:w-48 sm:h-48 md:w-56 md:h-56 lg:w-64 lg:h-64 relative z-10 mx-auto"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.3 }}
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.6, delay: 0.3, ease: 'easeOut' }}
             >
-              <defs>
-                {/* Glow filter for subtle shine */}
-                <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
-                  <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
-                  <feMerge>
-                    <feMergeNode in="coloredBlur"/>
-                    <feMergeNode in="SourceGraphic"/>
-                  </feMerge>
-                </filter>
-              </defs>
-
-              {/* Main crown silhouette path - drawn progressively */}
-              <motion.path
+              {/* Main crown silhouette */}
+              <path
                 d="M 110 380 L 110 420 L 530 420 L 530 380 M 120 410 L 520 410 L 480 280 L 480 200 Q 480 180 460 180 L 420 180 Q 410 180 400 200 Q 370 260 320 260 Q 270 260 240 200 Q 230 180 220 180 L 180 180 Q 160 180 160 200 L 160 280 L 120 410 Z"
                 stroke="#F4B63A"
                 strokeWidth="10"
                 strokeLinecap="round"
                 strokeLinejoin="round"
                 fill="none"
-                initial={{ pathLength: 0, opacity: 0 }}
-                animate={{ pathLength: 1, opacity: 1 }}
-                transition={{ duration: 0.8, delay: 0.2, ease: 'easeInOut' }}
               />
 
-              {/* Base bar - bottom rectangle */}
-              <motion.rect
+              {/* Base bar */}
+              <rect
                 x="115"
                 y="425"
                 width="410"
@@ -93,76 +79,12 @@ export const Splash: React.FC<SplashProps> = ({ onComplete }) => {
                 strokeWidth="10"
                 strokeLinecap="round"
                 fill="none"
-                initial={{ pathLength: 0, opacity: 0 }}
-                animate={{ pathLength: 1, opacity: 1 }}
-                transition={{ duration: 0.4, delay: 0.8, ease: 'easeInOut' }}
               />
 
-              {/* Left circle - ornament */}
-              <motion.circle
-                cx="65"
-                cy="200"
-                r="35"
-                stroke="#F4B63A"
-                strokeWidth="10"
-                fill="none"
-                initial={{ scale: 0, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                transition={{ duration: 0.3, delay: 1.0 }}
-              />
-
-              {/* Center circle - ornament (top) */}
-              <motion.circle
-                cx="320"
-                cy="85"
-                r="40"
-                stroke="#F4B63A"
-                strokeWidth="10"
-                fill="none"
-                filter="url(#glow)"
-                initial={{ scale: 0, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                transition={{ duration: 0.3, delay: 1.1 }}
-              />
-
-              {/* Right circle - ornament */}
-              <motion.circle
-                cx="575"
-                cy="200"
-                r="35"
-                stroke="#F4B63A"
-                strokeWidth="10"
-                fill="none"
-                initial={{ scale: 0, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                transition={{ duration: 0.3, delay: 1.2 }}
-              />
-
-              {/* Subtle glow on entire crown at the end */}
-              <motion.g
-                opacity="0"
-                animate={{ 
-                  opacity: [0, 0.3, 0.15],
-                }}
-                transition={{ 
-                  duration: 0.8,
-                  delay: 1.4,
-                  ease: 'easeInOut'
-                }}
-              >
-                <path
-                  d="M 110 380 L 110 420 L 530 420 L 530 380 M 120 410 L 520 410 L 480 280 L 480 200 Q 480 180 460 180 L 420 180 Q 410 180 400 200 Q 370 260 320 260 Q 270 260 240 200 Q 230 180 220 180 L 180 180 Q 160 180 160 200 L 160 280 L 120 410 Z"
-                  stroke="#F4B63A"
-                  strokeWidth="14"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  fill="none"
-                  filter="url(#glow)"
-                />
-                <circle cx="65" cy="200" r="35" stroke="#F4B63A" strokeWidth="14" fill="none" filter="url(#glow)" />
-                <circle cx="320" cy="85" r="40" stroke="#F4B63A" strokeWidth="14" fill="none" filter="url(#glow)" />
-                <circle cx="575" cy="200" r="35" stroke="#F4B63A" strokeWidth="14" fill="none" filter="url(#glow)" />
-              </motion.g>
+              {/* Ornament circles */}
+              <circle cx="65" cy="200" r="35" stroke="#F4B63A" strokeWidth="10" fill="none" />
+              <circle cx="320" cy="85" r="40" stroke="#F4B63A" strokeWidth="10" fill="none" />
+              <circle cx="575" cy="200" r="35" stroke="#F4B63A" strokeWidth="10" fill="none" />
             </motion.svg>
 
             {/* Text fade in with delay */}
