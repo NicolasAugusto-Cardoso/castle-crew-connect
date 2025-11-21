@@ -30,12 +30,11 @@ export const Splash: React.FC<SplashProps> = ({ onComplete }) => {
           <div className="relative flex flex-col items-center justify-center">
             {/* Crown Icon */}
             <motion.div
-              className="-mt-8 sm:-mt-12"
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.6, delay: 0.3, ease: 'easeOut' }}
             >
-              <svg className="w-24 h-24 xs:w-28 xs:h-28 sm:w-32 sm:h-32 md:w-36 md:h-36 lg:w-40 lg:h-40" style={{ filter: 'drop-shadow(0 0 12px rgba(255, 215, 0, 0.6)) drop-shadow(0 0 24px rgba(255, 165, 0, 0.4))' }}>
+              <svg className="w-40 h-40 xs:w-44 xs:h-44 sm:w-52 sm:h-52 md:w-60 md:h-60 lg:w-64 lg:h-64" style={{ filter: 'drop-shadow(0 0 12px rgba(255, 215, 0, 0.6)) drop-shadow(0 0 24px rgba(255, 165, 0, 0.4))' }}>
                 <defs>
                   <linearGradient id="crownGradient" x1="0%" y1="0%" x2="100%" y2="100%">
                     <stop offset="0%" style={{ stopColor: '#FFD700', stopOpacity: 1 }} />
