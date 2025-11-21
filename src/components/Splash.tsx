@@ -50,16 +50,16 @@ export const Splash: React.FC<SplashProps> = ({ onComplete }) => {
               />
             ))}
 
-            {/* SVG Crown - Minimalist Design */}
+            {/* SVG Crown - Outline Only (Reference Design) */}
             <motion.svg
-              viewBox="0 0 200 200"
+              viewBox="0 0 640 480"
               className="w-32 h-32 xs:w-40 xs:h-40 sm:w-48 sm:h-48 md:w-56 md:h-56 lg:w-64 lg:h-64 relative z-10 mx-auto"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.3 }}
             >
               <defs>
-                {/* Glow filter */}
+                {/* Glow filter for subtle shine */}
                 <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
                   <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
                   <feMerge>
@@ -67,155 +67,101 @@ export const Splash: React.FC<SplashProps> = ({ onComplete }) => {
                     <feMergeNode in="SourceGraphic"/>
                   </feMerge>
                 </filter>
-
-                {/* Gold gradient */}
-                <linearGradient id="goldGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" style={{ stopColor: '#FFD700', stopOpacity: 1 }} />
-                  <stop offset="50%" style={{ stopColor: '#FFA500', stopOpacity: 1 }} />
-                  <stop offset="100%" style={{ stopColor: '#FF8C00', stopOpacity: 1 }} />
-                </linearGradient>
-
-                {/* Blue gradient */}
-                <linearGradient id="blueGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" style={{ stopColor: '#4A90E2', stopOpacity: 1 }} />
-                  <stop offset="100%" style={{ stopColor: '#2E7EBF', stopOpacity: 1 }} />
-                </linearGradient>
               </defs>
 
-              {/* Base curva */}
+              {/* Main crown silhouette path - drawn progressively */}
               <motion.path
-                d="M 50 150 Q 100 145 150 150"
-                stroke="url(#goldGradient)"
-                strokeWidth="6"
+                d="M 110 380 L 110 420 L 530 420 L 530 380 M 120 410 L 520 410 L 480 280 L 480 200 Q 480 180 460 180 L 420 180 Q 410 180 400 200 Q 370 260 320 260 Q 270 260 240 200 Q 230 180 220 180 L 180 180 Q 160 180 160 200 L 160 280 L 120 410 Z"
+                stroke="#F4B63A"
+                strokeWidth="10"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                fill="none"
+                initial={{ pathLength: 0, opacity: 0 }}
+                animate={{ pathLength: 1, opacity: 1 }}
+                transition={{ duration: 0.8, delay: 0.2, ease: 'easeInOut' }}
+              />
+
+              {/* Base bar - bottom rectangle */}
+              <motion.rect
+                x="115"
+                y="425"
+                width="410"
+                height="30"
+                rx="5"
+                stroke="#F4B63A"
+                strokeWidth="10"
                 strokeLinecap="round"
                 fill="none"
                 initial={{ pathLength: 0, opacity: 0 }}
                 animate={{ pathLength: 1, opacity: 1 }}
-                transition={{ duration: 0.5, delay: 0.2, ease: 'easeInOut' }}
+                transition={{ duration: 0.4, delay: 0.8, ease: 'easeInOut' }}
               />
 
-              {/* Pico 1 - Externo Esquerdo (pequeno) */}
-              <motion.path
-                d="M 60 150 L 60 100"
-                stroke="url(#goldGradient)"
-                strokeWidth="5"
-                strokeLinecap="round"
-                fill="none"
-                initial={{ pathLength: 0, opacity: 0 }}
-                animate={{ pathLength: 1, opacity: 1 }}
-                transition={{ duration: 0.4, delay: 0.4, ease: 'easeInOut' }}
-              />
-
-              {/* Pico 2 - Interno Esquerdo (médio) */}
-              <motion.path
-                d="M 80 150 L 80 80"
-                stroke="url(#blueGradient)"
-                strokeWidth="5"
-                strokeLinecap="round"
-                fill="none"
-                initial={{ pathLength: 0, opacity: 0 }}
-                animate={{ pathLength: 1, opacity: 1 }}
-                transition={{ duration: 0.4, delay: 0.6, ease: 'easeInOut' }}
-              />
-
-              {/* Pico 3 - Central (grande) */}
-              <motion.path
-                d="M 100 150 L 100 60"
-                stroke="url(#goldGradient)"
-                strokeWidth="6"
-                strokeLinecap="round"
-                fill="none"
-                initial={{ pathLength: 0, opacity: 0 }}
-                animate={{ pathLength: 1, opacity: 1 }}
-                transition={{ duration: 0.5, delay: 0.8, ease: 'easeInOut' }}
-              />
-
-              {/* Pico 4 - Interno Direito (médio) */}
-              <motion.path
-                d="M 120 150 L 120 80"
-                stroke="url(#blueGradient)"
-                strokeWidth="5"
-                strokeLinecap="round"
-                fill="none"
-                initial={{ pathLength: 0, opacity: 0 }}
-                animate={{ pathLength: 1, opacity: 1 }}
-                transition={{ duration: 0.4, delay: 1.0, ease: 'easeInOut' }}
-              />
-
-              {/* Pico 5 - Externo Direito (pequeno) */}
-              <motion.path
-                d="M 140 150 L 140 100"
-                stroke="url(#goldGradient)"
-                strokeWidth="5"
-                strokeLinecap="round"
-                fill="none"
-                initial={{ pathLength: 0, opacity: 0 }}
-                animate={{ pathLength: 1, opacity: 1 }}
-                transition={{ duration: 0.4, delay: 1.2, ease: 'easeInOut' }}
-              />
-
-              {/* Joia esquerda */}
+              {/* Left circle - ornament */}
               <motion.circle
-                cx="80"
-                cy="80"
-                r="5"
-                fill="url(#goldGradient)"
+                cx="65"
+                cy="200"
+                r="35"
+                stroke="#F4B63A"
+                strokeWidth="10"
+                fill="none"
                 initial={{ scale: 0, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
-                transition={{ duration: 0.3, delay: 1.4 }}
+                transition={{ duration: 0.3, delay: 1.0 }}
               />
 
-              {/* Joia central - com brilho */}
+              {/* Center circle - ornament (top) */}
               <motion.circle
-                cx="100"
-                cy="60"
-                r="6"
-                fill="url(#goldGradient)"
+                cx="320"
+                cy="85"
+                r="40"
+                stroke="#F4B63A"
+                strokeWidth="10"
+                fill="none"
                 filter="url(#glow)"
                 initial={{ scale: 0, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
-                transition={{ duration: 0.3, delay: 1.5 }}
+                transition={{ duration: 0.3, delay: 1.1 }}
               />
 
-              {/* Joia direita */}
+              {/* Right circle - ornament */}
               <motion.circle
-                cx="120"
-                cy="80"
-                r="5"
-                fill="url(#goldGradient)"
+                cx="575"
+                cy="200"
+                r="35"
+                stroke="#F4B63A"
+                strokeWidth="10"
+                fill="none"
                 initial={{ scale: 0, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
-                transition={{ duration: 0.3, delay: 1.6 }}
+                transition={{ duration: 0.3, delay: 1.2 }}
               />
 
-              {/* Brilho final sutil em toda a coroa */}
+              {/* Subtle glow on entire crown at the end */}
               <motion.g
                 opacity="0"
                 animate={{ 
-                  opacity: [0, 0.4, 0.2],
+                  opacity: [0, 0.3, 0.15],
                 }}
                 transition={{ 
                   duration: 0.8,
-                  delay: 1.8,
+                  delay: 1.4,
                   ease: 'easeInOut'
                 }}
               >
                 <path
-                  d="M 50 150 Q 100 145 150 150"
-                  stroke="url(#goldGradient)"
-                  strokeWidth="8"
+                  d="M 110 380 L 110 420 L 530 420 L 530 380 M 120 410 L 520 410 L 480 280 L 480 200 Q 480 180 460 180 L 420 180 Q 410 180 400 200 Q 370 260 320 260 Q 270 260 240 200 Q 230 180 220 180 L 180 180 Q 160 180 160 200 L 160 280 L 120 410 Z"
+                  stroke="#F4B63A"
+                  strokeWidth="14"
                   strokeLinecap="round"
+                  strokeLinejoin="round"
                   fill="none"
                   filter="url(#glow)"
                 />
-                <path
-                  d="M 60 150 L 60 100 M 80 150 L 80 80 M 100 150 L 100 60 M 120 150 L 120 80 M 140 150 L 140 100"
-                  stroke="url(#goldGradient)"
-                  strokeWidth="7"
-                  strokeLinecap="round"
-                  fill="none"
-                  filter="url(#glow)"
-                />
+                <circle cx="65" cy="200" r="35" stroke="#F4B63A" strokeWidth="14" fill="none" filter="url(#glow)" />
+                <circle cx="320" cy="85" r="40" stroke="#F4B63A" strokeWidth="14" fill="none" filter="url(#glow)" />
+                <circle cx="575" cy="200" r="35" stroke="#F4B63A" strokeWidth="14" fill="none" filter="url(#glow)" />
               </motion.g>
             </motion.svg>
 
