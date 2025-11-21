@@ -27,29 +27,6 @@ export const Splash: React.FC<SplashProps> = ({ onComplete }) => {
           className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-gradient-to-br from-primary-light via-primary to-primary-dark overflow-hidden"
         >
           <div className="relative flex flex-col items-center justify-center">
-            {/* Graffiti spray particles */}
-            {[...Array(8)].map((_, i) => (
-              <motion.div
-                key={i}
-                className="absolute w-1 h-1 rounded-full bg-accent"
-                style={{
-                  left: `calc(50% + ${Math.cos((i * Math.PI * 2) / 8) * 80}px)`,
-                  top: `calc(50% + ${Math.sin((i * Math.PI * 2) / 8) * 80}px)`,
-                  transform: 'translate(-50%, -50%)'
-                }}
-                initial={{ opacity: 0, scale: 0 }}
-                animate={{ 
-                  opacity: [0, 0.8, 0],
-                  scale: [0, 1.5, 0],
-                }}
-                transition={{
-                  duration: 0.8,
-                  delay: 0.5 + i * 0.1,
-                  ease: 'easeOut'
-                }}
-              />
-            ))}
-
             {/* Minimalist Crown Icon */}
             <motion.svg
               viewBox="0 0 640 480"
