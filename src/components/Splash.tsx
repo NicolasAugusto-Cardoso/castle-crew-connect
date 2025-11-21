@@ -50,9 +50,9 @@ export const Splash: React.FC<SplashProps> = ({ onComplete }) => {
               />
             ))}
 
-            {/* SVG Crown - Graffiti Style */}
+            {/* SVG Crown - Minimalist Design */}
             <motion.svg
-              viewBox="0 0 160 180"
+              viewBox="0 0 200 200"
               className="w-32 h-32 xs:w-40 xs:h-40 sm:w-48 sm:h-48 md:w-56 md:h-56 lg:w-64 lg:h-64 relative z-10 mx-auto"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -66,12 +66,6 @@ export const Splash: React.FC<SplashProps> = ({ onComplete }) => {
                     <feMergeNode in="coloredBlur"/>
                     <feMergeNode in="SourceGraphic"/>
                   </feMerge>
-                </filter>
-                
-                {/* Grunge texture */}
-                <filter id="grunge" x="0%" y="0%" width="100%" height="100%">
-                  <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="4" result="noise"/>
-                  <feDisplacementMap in="SourceGraphic" in2="noise" scale="2" />
                 </filter>
 
                 {/* Gold gradient */}
@@ -88,118 +82,141 @@ export const Splash: React.FC<SplashProps> = ({ onComplete }) => {
                 </linearGradient>
               </defs>
 
-              {/* Crown base - left side */}
+              {/* Base curva */}
               <motion.path
-                d="M 40 140 L 50 70 L 65 140"
-                stroke="url(#blueGradient)"
-                strokeWidth="5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                fill="none"
-                initial={{ pathLength: 0, opacity: 0 }}
-                animate={{ pathLength: 1, opacity: 1 }}
-                transition={{ duration: 0.4, delay: 0.2, ease: 'easeInOut' }}
-              />
-
-              {/* Crown base - center */}
-              <motion.path
-                d="M 70 140 L 80 40 L 90 140"
+                d="M 50 150 Q 100 145 150 150"
                 stroke="url(#goldGradient)"
                 strokeWidth="6"
                 strokeLinecap="round"
-                strokeLinejoin="round"
                 fill="none"
                 initial={{ pathLength: 0, opacity: 0 }}
                 animate={{ pathLength: 1, opacity: 1 }}
-                transition={{ duration: 0.5, delay: 0.4, ease: 'easeInOut' }}
+                transition={{ duration: 0.5, delay: 0.2, ease: 'easeInOut' }}
               />
 
-              {/* Crown base - right side */}
+              {/* Pico 1 - Externo Esquerdo (pequeno) */}
               <motion.path
-                d="M 95 140 L 110 70 L 120 140"
+                d="M 60 150 L 60 100"
+                stroke="url(#goldGradient)"
+                strokeWidth="5"
+                strokeLinecap="round"
+                fill="none"
+                initial={{ pathLength: 0, opacity: 0 }}
+                animate={{ pathLength: 1, opacity: 1 }}
+                transition={{ duration: 0.4, delay: 0.4, ease: 'easeInOut' }}
+              />
+
+              {/* Pico 2 - Interno Esquerdo (médio) */}
+              <motion.path
+                d="M 80 150 L 80 80"
                 stroke="url(#blueGradient)"
                 strokeWidth="5"
                 strokeLinecap="round"
-                strokeLinejoin="round"
                 fill="none"
                 initial={{ pathLength: 0, opacity: 0 }}
                 animate={{ pathLength: 1, opacity: 1 }}
                 transition={{ duration: 0.4, delay: 0.6, ease: 'easeInOut' }}
               />
 
-              {/* Crown bottom line */}
+              {/* Pico 3 - Central (grande) */}
               <motion.path
-                d="M 35 145 L 125 145"
+                d="M 100 150 L 100 60"
                 stroke="url(#goldGradient)"
-                strokeWidth="7"
+                strokeWidth="6"
                 strokeLinecap="round"
                 fill="none"
                 initial={{ pathLength: 0, opacity: 0 }}
                 animate={{ pathLength: 1, opacity: 1 }}
-                transition={{ duration: 0.6, delay: 0.8, ease: 'easeInOut' }}
+                transition={{ duration: 0.5, delay: 0.8, ease: 'easeInOut' }}
               />
 
-              {/* Decorative jewels */}
-              <motion.circle
-                cx="50"
-                cy="70"
-                r="4"
-                fill="url(#goldGradient)"
-                initial={{ scale: 0, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                transition={{ duration: 0.3, delay: 1.2 }}
+              {/* Pico 4 - Interno Direito (médio) */}
+              <motion.path
+                d="M 120 150 L 120 80"
+                stroke="url(#blueGradient)"
+                strokeWidth="5"
+                strokeLinecap="round"
+                fill="none"
+                initial={{ pathLength: 0, opacity: 0 }}
+                animate={{ pathLength: 1, opacity: 1 }}
+                transition={{ duration: 0.4, delay: 1.0, ease: 'easeInOut' }}
               />
+
+              {/* Pico 5 - Externo Direito (pequeno) */}
+              <motion.path
+                d="M 140 150 L 140 100"
+                stroke="url(#goldGradient)"
+                strokeWidth="5"
+                strokeLinecap="round"
+                fill="none"
+                initial={{ pathLength: 0, opacity: 0 }}
+                animate={{ pathLength: 1, opacity: 1 }}
+                transition={{ duration: 0.4, delay: 1.2, ease: 'easeInOut' }}
+              />
+
+              {/* Joia esquerda */}
               <motion.circle
                 cx="80"
-                cy="40"
+                cy="80"
                 r="5"
-                fill="url(#goldGradient)"
-                filter="url(#glow)"
-                initial={{ scale: 0, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                transition={{ duration: 0.3, delay: 1.3 }}
-              />
-              <motion.circle
-                cx="110"
-                cy="70"
-                r="4"
                 fill="url(#goldGradient)"
                 initial={{ scale: 0, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 transition={{ duration: 0.3, delay: 1.4 }}
               />
 
-              {/* Fill effect - appears after stroke */}
-              <motion.path
-                d="M 40 140 L 50 70 L 65 140 M 70 140 L 80 40 L 90 140 M 95 140 L 110 70 L 120 140 M 35 145 L 125 145"
-                stroke="none"
+              {/* Joia central - com brilho */}
+              <motion.circle
+                cx="100"
+                cy="60"
+                r="6"
                 fill="url(#goldGradient)"
-                fillOpacity="0.15"
-                filter="url(#grunge)"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: [0, 0.3, 0.15] }}
-                transition={{ duration: 0.8, delay: 1.5 }}
+                filter="url(#glow)"
+                initial={{ scale: 0, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ duration: 0.3, delay: 1.5 }}
               />
 
-              {/* Final glow overlay */}
-              <motion.path
-                d="M 40 140 L 50 70 L 65 140 M 70 140 L 80 40 L 90 140 M 95 140 L 110 70 L 120 140"
-                stroke="url(#goldGradient)"
-                strokeWidth="8"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                fill="none"
+              {/* Joia direita */}
+              <motion.circle
+                cx="120"
+                cy="80"
+                r="5"
+                fill="url(#goldGradient)"
+                initial={{ scale: 0, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ duration: 0.3, delay: 1.6 }}
+              />
+
+              {/* Brilho final sutil em toda a coroa */}
+              <motion.g
                 opacity="0"
-                filter="url(#glow)"
                 animate={{ 
-                  opacity: [0, 0.6, 0.3],
+                  opacity: [0, 0.4, 0.2],
                 }}
                 transition={{ 
                   duration: 0.8,
-                  delay: 2.0,
+                  delay: 1.8,
                   ease: 'easeInOut'
                 }}
-              />
+              >
+                <path
+                  d="M 50 150 Q 100 145 150 150"
+                  stroke="url(#goldGradient)"
+                  strokeWidth="8"
+                  strokeLinecap="round"
+                  fill="none"
+                  filter="url(#glow)"
+                />
+                <path
+                  d="M 60 150 L 60 100 M 80 150 L 80 80 M 100 150 L 100 60 M 120 150 L 120 80 M 140 150 L 140 100"
+                  stroke="url(#goldGradient)"
+                  strokeWidth="7"
+                  strokeLinecap="round"
+                  fill="none"
+                  filter="url(#glow)"
+                />
+              </motion.g>
             </motion.svg>
 
             {/* Text fade in with delay */}
