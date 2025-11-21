@@ -34,21 +34,10 @@ export const Splash: React.FC<SplashProps> = ({ onComplete }) => {
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.6, delay: 0.3, ease: 'easeOut' }}
             >
-              <svg className="w-40 h-40 xs:w-44 xs:h-44 sm:w-52 sm:h-52 md:w-60 md:h-60 lg:w-64 lg:h-64" style={{ filter: 'drop-shadow(0 0 12px rgba(255, 215, 0, 0.6)) drop-shadow(0 0 24px rgba(255, 165, 0, 0.4))' }}>
-                <defs>
-                  <linearGradient id="crownGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" style={{ stopColor: '#FFD700', stopOpacity: 1 }} />
-                    <stop offset="50%" style={{ stopColor: '#FFA500', stopOpacity: 1 }} />
-                    <stop offset="100%" style={{ stopColor: '#FF8C00', stopOpacity: 1 }} />
-                  </linearGradient>
-                </defs>
-                <Crown 
-                  className="w-full h-full"
-                  stroke="url(#crownGradient)"
-                  strokeWidth={1.5}
-                  fill="none"
-                />
-              </svg>
+              <Crown 
+                className="w-32 h-32 xs:w-40 xs:h-40 sm:w-48 sm:h-48 md:w-56 md:h-56 lg:w-64 lg:h-64 text-accent"
+                strokeWidth={1.5}
+              />
             </motion.div>
 
             {/* Text fade in with delay */}
