@@ -30,14 +30,26 @@ export const Splash: React.FC<SplashProps> = ({ onComplete }) => {
           <div className="relative flex flex-col items-center justify-center">
             {/* Crown Icon */}
             <motion.div
+              className="-mt-8 sm:-mt-12"
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.6, delay: 0.3, ease: 'easeOut' }}
             >
-              <Crown 
-                className="w-32 h-32 xs:w-40 xs:h-40 sm:w-48 sm:h-48 md:w-56 md:h-56 lg:w-64 lg:h-64 text-accent"
-                strokeWidth={1.5}
-              />
+              <svg className="w-24 h-24 xs:w-28 xs:h-28 sm:w-32 sm:h-32 md:w-36 md:h-36 lg:w-40 lg:h-40" style={{ filter: 'drop-shadow(0 0 12px rgba(255, 215, 0, 0.6)) drop-shadow(0 0 24px rgba(255, 165, 0, 0.4))' }}>
+                <defs>
+                  <linearGradient id="crownGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" style={{ stopColor: '#FFD700', stopOpacity: 1 }} />
+                    <stop offset="50%" style={{ stopColor: '#FFA500', stopOpacity: 1 }} />
+                    <stop offset="100%" style={{ stopColor: '#FF8C00', stopOpacity: 1 }} />
+                  </linearGradient>
+                </defs>
+                <Crown 
+                  className="w-full h-full"
+                  stroke="url(#crownGradient)"
+                  strokeWidth={1.5}
+                  fill="none"
+                />
+              </svg>
             </motion.div>
 
             {/* Text fade in with delay */}
