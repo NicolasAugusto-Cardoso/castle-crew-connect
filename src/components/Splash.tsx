@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Crown } from 'lucide-react';
 
 interface SplashProps {
   onComplete: () => void;
@@ -27,42 +28,17 @@ export const Splash: React.FC<SplashProps> = ({ onComplete }) => {
           className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-gradient-to-br from-primary-light via-primary to-primary-dark overflow-hidden"
         >
           <div className="relative flex flex-col items-center justify-center">
-            {/* Minimalist Crown Icon */}
-            <motion.svg
-              viewBox="0 0 640 480"
-              className="w-32 h-32 xs:w-40 xs:h-40 sm:w-48 sm:h-48 md:w-56 md:h-56 lg:w-64 lg:h-64 relative z-10 mx-auto"
+            {/* Crown Icon */}
+            <motion.div
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.6, delay: 0.3, ease: 'easeOut' }}
             >
-              {/* Main crown silhouette */}
-              <path
-                d="M 110 380 L 110 420 L 530 420 L 530 380 M 120 410 L 520 410 L 480 280 L 480 200 Q 480 180 460 180 L 420 180 Q 410 180 400 200 Q 370 260 320 260 Q 270 260 240 200 Q 230 180 220 180 L 180 180 Q 160 180 160 200 L 160 280 L 120 410 Z"
-                stroke="#F4B63A"
-                strokeWidth="10"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                fill="none"
+              <Crown 
+                className="w-32 h-32 xs:w-40 xs:h-40 sm:w-48 sm:h-48 md:w-56 md:h-56 lg:w-64 lg:h-64 text-accent"
+                strokeWidth={1.5}
               />
-
-              {/* Base bar */}
-              <rect
-                x="115"
-                y="425"
-                width="410"
-                height="30"
-                rx="5"
-                stroke="#F4B63A"
-                strokeWidth="10"
-                strokeLinecap="round"
-                fill="none"
-              />
-
-              {/* Ornament circles */}
-              <circle cx="65" cy="200" r="35" stroke="#F4B63A" strokeWidth="10" fill="none" />
-              <circle cx="320" cy="85" r="40" stroke="#F4B63A" strokeWidth="10" fill="none" />
-              <circle cx="575" cy="200" r="35" stroke="#F4B63A" strokeWidth="10" fill="none" />
-            </motion.svg>
+            </motion.div>
 
             {/* Text fade in with delay */}
             <motion.div
