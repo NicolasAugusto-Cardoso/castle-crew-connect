@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
 import Map, { Marker, Source, Layer } from 'react-map-gl';
-import { MapPin, Loader2, AlertCircle } from 'lucide-react';
+import { MapPin, Loader2, AlertCircle, Navigation } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import 'mapbox-gl/dist/mapbox-gl.css';
 
@@ -27,87 +29,118 @@ export function CollaboratorRouteMap({
   const [collaboratorLocation, setCollaboratorLocation] = useState<[number, number] | null>(null);
   const [routeGeometry, setRouteGeometry] = useState<any>(null);
   const [routeInfo, setRouteInfo] = useState<{distance: string, duration: string} | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [permissionState, setPermissionState] = useState<'prompt' | 'requesting' | 'denied' | 'granted'>('prompt');
 
-  useEffect(() => {
-    const calculateRoute = async () => {
-      setLoading(true);
-      setError(null);
+  const requestLocation = async () => {
+    if (!navigator.geolocation) {
+      setError('Geolocalização não é suportada pelo seu navegador');
+      setPermissionState('denied');
+      return;
+    }
 
-      try {
-        // 1. Obter localização do usuário
-        if (!navigator.geolocation) {
-          setError('Geolocalização não é suportada pelo seu navegador');
-          setLoading(false);
-          return;
-        }
+    setPermissionState('requesting');
+    setLoading(true);
+    setError(null);
 
-        const userPosition = await new Promise<GeolocationPosition>((resolve, reject) => {
-          navigator.geolocation.getCurrentPosition(resolve, reject);
-        });
-
-        const userLat = userPosition.coords.latitude;
-        const userLng = userPosition.coords.longitude;
-        setUserLocation([userLng, userLat]);
-
-        // 2. Geocodificar endereço do colaborador
-        const { data: geoData, error: geoError } = await supabase.functions.invoke('geocode-address', {
-          body: {
-            street: collaboratorAddress.street,
-            streetNumber: collaboratorAddress.streetNumber,
-            neighborhood: collaboratorAddress.neighborhood,
-            city: collaboratorAddress.city,
-            state: collaboratorAddress.state,
-            postalCode: collaboratorAddress.postalCode
+    try {
+      // 1. Obter localização do usuário
+      const userPosition = await new Promise<GeolocationPosition>((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition(
+          resolve,
+          (error) => {
+            if (error.code === error.PERMISSION_DENIED) {
+              setPermissionState('denied');
+              setError('Permita o acesso à sua localização para calcular a rota');
+            } else {
+              setError('Erro ao obter sua localização');
+            }
+            reject(error);
           }
-        });
+        );
+      });
 
-        if (geoError || !geoData?.latitude || !geoData?.longitude) {
-          setError('Não foi possível encontrar o endereço do colaborador');
-          setLoading(false);
-          return;
+      const userLat = userPosition.coords.latitude;
+      const userLng = userPosition.coords.longitude;
+      setUserLocation([userLng, userLat]);
+      setPermissionState('granted');
+
+      // 2. Geocodificar endereço do colaborador
+      const { data: geoData, error: geoError } = await supabase.functions.invoke('geocode-address', {
+        body: {
+          street: collaboratorAddress.street,
+          streetNumber: collaboratorAddress.streetNumber,
+          neighborhood: collaboratorAddress.neighborhood,
+          city: collaboratorAddress.city,
+          state: collaboratorAddress.state,
+          postalCode: collaboratorAddress.postalCode
         }
+      });
 
-        const collabLat = geoData.latitude;
-        const collabLng = geoData.longitude;
-        setCollaboratorLocation([collabLng, collabLat]);
-
-        // 3. Calcular rota usando Mapbox Directions API
-        const url = `https://api.mapbox.com/directions/v5/mapbox/driving/${userLng},${userLat};${collabLng},${collabLat}?geometries=geojson&access_token=${import.meta.env.VITE_MAPBOX_TOKEN}`;
-        
-        const response = await fetch(url);
-        const data = await response.json();
-
-        if (data.routes && data.routes.length > 0) {
-          const route = data.routes[0];
-          setRouteGeometry(route.geometry);
-          
-          const distanceKm = (route.distance / 1000).toFixed(1);
-          const durationMin = Math.round(route.duration / 60);
-          setRouteInfo({
-            distance: `${distanceKm} km`,
-            duration: `${durationMin} min`
-          });
-        } else {
-          setError('Não foi possível calcular a rota');
-        }
-      } catch (err: any) {
-        if (err.message?.includes('User denied')) {
-          setError('Permita o acesso à sua localização para calcular a rota');
-        } else {
-          setError('Erro ao calcular rota');
-        }
-        console.error('Erro ao calcular rota:', err);
-      } finally {
+      if (geoError || !geoData?.latitude || !geoData?.longitude) {
+        setError('Não foi possível encontrar o endereço do colaborador');
         setLoading(false);
+        return;
       }
-    };
 
-    calculateRoute();
-  }, [collaboratorAddress]);
+      const collabLat = geoData.latitude;
+      const collabLng = geoData.longitude;
+      setCollaboratorLocation([collabLng, collabLat]);
 
-  if (loading) {
+      // 3. Calcular rota usando Mapbox Directions API
+      const url = `https://api.mapbox.com/directions/v5/mapbox/driving/${userLng},${userLat};${collabLng},${collabLat}?geometries=geojson&access_token=${import.meta.env.VITE_MAPBOX_TOKEN}`;
+      
+      const response = await fetch(url);
+      const data = await response.json();
+
+      if (data.routes && data.routes.length > 0) {
+        const route = data.routes[0];
+        setRouteGeometry(route.geometry);
+        
+        const distanceKm = (route.distance / 1000).toFixed(1);
+        const durationMin = Math.round(route.duration / 60);
+        setRouteInfo({
+          distance: `${distanceKm} km`,
+          duration: `${durationMin} min`
+        });
+      } else {
+        setError('Não foi possível calcular a rota');
+      }
+    } catch (err: any) {
+      console.error('Erro ao calcular rota:', err);
+      if (permissionState !== 'denied') {
+        setError('Erro ao calcular rota');
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (permissionState === 'prompt') {
+    return (
+      <div className="w-full h-full flex items-center justify-center p-6 bg-muted/20">
+        <Card className="max-w-md">
+          <CardContent className="p-6 text-center space-y-4">
+            <div className="w-16 h-16 mx-auto bg-primary/10 rounded-full flex items-center justify-center">
+              <Navigation className="w-8 h-8 text-primary" />
+            </div>
+            <h3 className="text-lg font-semibold">Permissão de Localização Necessária</h3>
+            <p className="text-sm text-muted-foreground">
+              Para calcular a rota até <span className="font-medium text-foreground">{collaboratorName}</span>, 
+              precisamos acessar sua localização atual.
+            </p>
+            <Button onClick={requestLocation} className="w-full" size="lg">
+              <Navigation className="w-4 h-4 mr-2" />
+              Permitir Acesso à Localização
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (loading || permissionState === 'requesting') {
     return (
       <div className="w-full h-full flex items-center justify-center bg-muted/20">
         <div className="text-center">
@@ -118,12 +151,41 @@ export function CollaboratorRouteMap({
     );
   }
 
-  if (error || !userLocation) {
+  if (permissionState === 'denied' || error) {
+    return (
+      <div className="w-full h-full flex items-center justify-center p-6 bg-muted/20">
+        <Card className="max-w-md">
+          <CardContent className="p-6 text-center space-y-4">
+            <div className="w-16 h-16 mx-auto bg-destructive/10 rounded-full flex items-center justify-center">
+              <AlertCircle className="w-8 h-8 text-destructive" />
+            </div>
+            <h3 className="text-lg font-semibold">Acesso Negado</h3>
+            <p className="text-sm text-muted-foreground">
+              {error || 'Permissão de localização negada. Para calcular a rota, é necessário permitir o acesso à sua localização.'}
+            </p>
+            <Button 
+              onClick={() => {
+                setPermissionState('prompt');
+                setError(null);
+              }} 
+              variant="outline" 
+              className="w-full"
+              size="lg"
+            >
+              Tentar Novamente
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (!userLocation) {
     return (
       <div className="w-full h-full flex items-center justify-center p-6">
         <Alert variant="destructive" className="max-w-md">
           <AlertCircle className="h-4 w-4" />
-          <AlertDescription>{error || 'Erro ao carregar mapa'}</AlertDescription>
+          <AlertDescription>Erro ao carregar mapa</AlertDescription>
         </Alert>
       </div>
     );
