@@ -31,8 +31,14 @@ export default function Collaborators() {
   const { data: collaborators, isLoading } = useCollaborators();
   const navigate = useNavigate();
   const [selectedRoute, setSelectedRoute] = useState<{
-    lat: number;
-    lng: number;
+    address: {
+      street: string;
+      streetNumber: string;
+      neighborhood: string;
+      city: string;
+      state: string;
+      postalCode: string;
+    };
     name: string;
   } | null>(null);
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
@@ -277,11 +283,17 @@ export default function Collaborators() {
                       Ver detalhes
                     </Button>
                     
-                    {collaborator.latitude && collaborator.longitude && (
+                    {collaborator.street && collaborator.city && (
                       <Button 
                         onClick={() => setSelectedRoute({
-                          lat: collaborator.latitude!,
-                          lng: collaborator.longitude!,
+                          address: {
+                            street: collaborator.street!,
+                            streetNumber: collaborator.street_number || '',
+                            neighborhood: collaborator.neighborhood || '',
+                            city: collaborator.city!,
+                            state: collaborator.state || '',
+                            postalCode: collaborator.postal_code || ''
+                          },
                           name: collaborator.name!
                         })}
                         variant="outline"
@@ -314,8 +326,7 @@ export default function Collaborators() {
         <RouteDialog
           open={!!selectedRoute}
           onOpenChange={(open) => !open && setSelectedRoute(null)}
-          collaboratorLat={selectedRoute.lat}
-          collaboratorLng={selectedRoute.lng}
+          collaboratorAddress={selectedRoute.address}
           collaboratorName={selectedRoute.name}
         />
       )}

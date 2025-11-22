@@ -199,15 +199,19 @@ export default function CollaboratorDetails() {
             )}
 
             {/* Seção: Localização no Mapa */}
-            {collaborator.latitude && collaborator.longitude && (
+            {collaborator.street && collaborator.city && (
               <div>
                 <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
                   <MapPin className="w-5 h-5 text-primary" />
                   Localização
                 </h3>
                 <CollaboratorMap
-                  latitude={collaborator.latitude}
-                  longitude={collaborator.longitude}
+                  street={collaborator.street}
+                  streetNumber={collaborator.street_number || ''}
+                  neighborhood={collaborator.neighborhood || ''}
+                  city={collaborator.city}
+                  state={collaborator.state || ''}
+                  postalCode={collaborator.postal_code || ''}
                   name={collaborator.name || 'Colaborador'}
                 />
               </div>
@@ -216,7 +220,7 @@ export default function CollaboratorDetails() {
             {/* Botões de Ação */}
             <div className="pt-4 flex flex-col sm:flex-row gap-3">
               {/* Botão Ver Trajeto */}
-              {collaborator.latitude && collaborator.longitude && (
+              {collaborator.street && collaborator.city && (
                 <Button 
                   onClick={() => setShowRoute(true)}
                   className="flex-1 sm:flex-none"
@@ -278,12 +282,18 @@ export default function CollaboratorDetails() {
       </Card>
 
       {/* Dialog de Rota */}
-      {showRoute && collaborator.latitude && collaborator.longitude && (
+      {showRoute && collaborator.street && collaborator.city && (
         <RouteDialog
           open={showRoute}
           onOpenChange={setShowRoute}
-          collaboratorLat={collaborator.latitude}
-          collaboratorLng={collaborator.longitude}
+          collaboratorAddress={{
+            street: collaborator.street,
+            streetNumber: collaborator.street_number || '',
+            neighborhood: collaborator.neighborhood || '',
+            city: collaborator.city,
+            state: collaborator.state || '',
+            postalCode: collaborator.postal_code || ''
+          }}
           collaboratorName={collaborator.name!}
         />
       )}
