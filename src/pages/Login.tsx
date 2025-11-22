@@ -6,12 +6,16 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
+import { Eye, EyeOff } from 'lucide-react';
 import castleLogo from '@/assets/castle-logo-main.png';
 import { loginSchema, signupSchema } from '@/lib/validations';
 
 export default function Login() {
   const { signIn, signUp, isAuthenticated } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
+  const [showLoginPassword, setShowLoginPassword] = useState(false);
+  const [showSignupPassword, setShowSignupPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   // Redirect if already logged in
   useEffect(() => {
@@ -194,16 +198,32 @@ export default function Login() {
 
                 <div className="space-y-1.5 xs:space-y-2">
                   <Label htmlFor="login-password" className="text-xs xs:text-sm">Senha</Label>
-                  <Input
-                    id="login-password"
-                    type="password"
-                    value={loginData.password}
-                    onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
-                    placeholder="••••••"
-                    className="h-10 xs:h-11 text-sm xs:text-base"
-                    required
-                    disabled={isLoading}
-                  />
+                  <div className="relative">
+                    <Input
+                      id="login-password"
+                      type={showLoginPassword ? "text" : "password"}
+                      value={loginData.password}
+                      onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
+                      placeholder="••••••"
+                      className="h-10 xs:h-11 text-sm xs:text-base pr-10"
+                      required
+                      disabled={isLoading}
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
+                      onClick={() => setShowLoginPassword(!showLoginPassword)}
+                      disabled={isLoading}
+                    >
+                      {showLoginPassword ? (
+                        <EyeOff className="h-4 w-4 text-muted-foreground" />
+                      ) : (
+                        <Eye className="h-4 w-4 text-muted-foreground" />
+                      )}
+                    </Button>
+                  </div>
                 </div>
 
                 <Button 
@@ -248,17 +268,33 @@ export default function Login() {
 
                  <div className="space-y-1.5 xs:space-y-2">
                   <Label htmlFor="signup-password" className="text-xs xs:text-sm">Senha</Label>
-                  <Input
-                    id="signup-password"
-                    type="password"
-                    value={signupData.password}
-                    onChange={(e) => setSignupData({ ...signupData, password: e.target.value })}
-                    placeholder="Mín. 8 caracteres"
-                    className="h-10 xs:h-11 text-sm xs:text-base"
-                    required
-                    minLength={8}
-                    disabled={isLoading}
-                  />
+                  <div className="relative">
+                    <Input
+                      id="signup-password"
+                      type={showSignupPassword ? "text" : "password"}
+                      value={signupData.password}
+                      onChange={(e) => setSignupData({ ...signupData, password: e.target.value })}
+                      placeholder="Mín. 8 caracteres"
+                      className="h-10 xs:h-11 text-sm xs:text-base pr-10"
+                      required
+                      minLength={8}
+                      disabled={isLoading}
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
+                      onClick={() => setShowSignupPassword(!showSignupPassword)}
+                      disabled={isLoading}
+                    >
+                      {showSignupPassword ? (
+                        <EyeOff className="h-4 w-4 text-muted-foreground" />
+                      ) : (
+                        <Eye className="h-4 w-4 text-muted-foreground" />
+                      )}
+                    </Button>
+                  </div>
                   <p className="text-[10px] xs:text-xs text-muted-foreground leading-tight">
                     Sua senha deve ter no mínimo 8 caracteres e conter: letra maiúscula, minúscula, número e caractere especial
                   </p>
@@ -266,17 +302,33 @@ export default function Login() {
 
                 <div className="space-y-1.5 xs:space-y-2">
                   <Label htmlFor="signup-confirm-password" className="text-xs xs:text-sm">Confirmar Senha</Label>
-                  <Input
-                    id="signup-confirm-password"
-                    type="password"
-                    value={signupData.confirmPassword}
-                    onChange={(e) => setSignupData({ ...signupData, confirmPassword: e.target.value })}
-                    placeholder="••••••"
-                    className="h-10 xs:h-11 text-sm xs:text-base"
-                    required
-                    minLength={6}
-                    disabled={isLoading}
-                  />
+                  <div className="relative">
+                    <Input
+                      id="signup-confirm-password"
+                      type={showConfirmPassword ? "text" : "password"}
+                      value={signupData.confirmPassword}
+                      onChange={(e) => setSignupData({ ...signupData, confirmPassword: e.target.value })}
+                      placeholder="••••••"
+                      className="h-10 xs:h-11 text-sm xs:text-base pr-10"
+                      required
+                      minLength={6}
+                      disabled={isLoading}
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      disabled={isLoading}
+                    >
+                      {showConfirmPassword ? (
+                        <EyeOff className="h-4 w-4 text-muted-foreground" />
+                      ) : (
+                        <Eye className="h-4 w-4 text-muted-foreground" />
+                      )}
+                    </Button>
+                  </div>
                 </div>
 
                 <Button 
