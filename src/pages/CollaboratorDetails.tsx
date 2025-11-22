@@ -39,22 +39,29 @@ export default function CollaboratorDetails() {
 
       if (profileError) throw profileError;
 
-      return {
-        id: collabData.id,
-        user_id: collabData.user_id,
-        church: collabData.church,
-        position: collabData.position,
-        bio: collabData.bio,
-        city: collabData.city,
-        state: collabData.state,
-        neighborhood: collabData.neighborhood,
-        street: collabData.street,
-        street_number: collabData.street_number,
-        age: collabData.age,
-        accepting_new: collabData.accepting_new,
-        name: profileData.name,
-        avatar_url: profileData.avatar_url,
-      } as CollaboratorProfile;
+        return {
+          id: collabData.id,
+          user_id: collabData.user_id,
+          church: collabData.church,
+          position: collabData.position,
+          bio: collabData.bio,
+          city: collabData.city,
+          state: collabData.state,
+          region: collabData.region,
+          neighborhood: collabData.neighborhood,
+          street: collabData.street,
+          street_number: collabData.street_number,
+          postal_code: collabData.postal_code,
+          latitude: collabData.latitude,
+          longitude: collabData.longitude,
+          age: collabData.age,
+          accepting_new: collabData.accepting_new,
+          created_at: collabData.created_at,
+          updated_at: collabData.updated_at,
+          updated_by: collabData.updated_by,
+          name: profileData.name,
+          avatar_url: profileData.avatar_url,
+        } as CollaboratorProfile;
     },
   });
 
