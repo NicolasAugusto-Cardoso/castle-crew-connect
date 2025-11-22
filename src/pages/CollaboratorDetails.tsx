@@ -44,6 +44,8 @@ export default function CollaboratorDetails() {
         city: collabData.city,
         state: collabData.state,
         neighborhood: collabData.neighborhood,
+        street: collabData.street,
+        street_number: collabData.street_number,
         age: collabData.age,
         accepting_new: collabData.accepting_new,
         name: profileData.name,
