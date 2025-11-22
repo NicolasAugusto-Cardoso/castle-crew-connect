@@ -1,11 +1,14 @@
 import { useCollaborators } from '@/hooks/useCollaborators';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Card, CardContent } from '@/components/ui/card';
-import { Loader2, MapPin, Church } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Loader2, MapPin, Church, Eye } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useNavigate } from 'react-router-dom';
 
 export default function Collaborators() {
   const { data: collaborators, isLoading } = useCollaborators();
+  const navigate = useNavigate();
 
   if (isLoading) {
     return (
@@ -131,6 +134,23 @@ export default function Collaborators() {
                       )}
                     </div>
                   </div>
+
+                  {/* Bio - resumo */}
+                  {collaborator.bio && (
+                    <p className="text-sm text-muted-foreground mt-4 line-clamp-2">
+                      {collaborator.bio}
+                    </p>
+                  )}
+
+                  {/* Botão Ver */}
+                  <Button 
+                    onClick={() => navigate(`/colaboradores/${collaborator.user_id}`)}
+                    className="w-full mt-4"
+                    variant="outline"
+                  >
+                    <Eye className="w-4 h-4 mr-2" />
+                    Ver detalhes
+                  </Button>
                 </CardContent>
               </Card>
             );
