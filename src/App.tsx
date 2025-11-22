@@ -48,7 +48,7 @@ const App = () => {
     // Preload critical resources in background
     const initApp = async () => {
       // Allow splash to show for minimum duration
-      const minSplashTime = new Promise(resolve => setTimeout(resolve, 2000));
+      const minSplashTime = new Promise(resolve => setTimeout(resolve, 100));
       
       // Wait for both splash time and any critical loads
       await Promise.all([
