@@ -33,6 +33,18 @@ export function CollaboratorRouteMap({
   const [error, setError] = useState<string | null>(null);
   const [permissionState, setPermissionState] = useState<'prompt' | 'requesting' | 'denied' | 'granted'>('prompt');
 
+  const mapboxToken = import.meta.env.VITE_MAPBOX_TOKEN;
+  
+  // Log de diagnóstico
+  console.log("CollaboratorRouteMap - Mapbox token:", mapboxToken ? "✓ Token presente" : "✗ Token undefined");
+  
+  useEffect(() => {
+    if (!mapboxToken) {
+      console.error("ERRO: VITE_MAPBOX_TOKEN está undefined. Verifique as variáveis de ambiente.");
+      setError("Token do Mapbox não configurado. Verifique VITE_MAPBOX_TOKEN nas variáveis de ambiente.");
+    }
+  }, [mapboxToken]);
+
   const requestLocation = async () => {
     if (!navigator.geolocation) {
       setError('Geolocalização não é suportada pelo seu navegador');
@@ -89,13 +101,31 @@ export function CollaboratorRouteMap({
       setCollaboratorLocation([collabLng, collabLat]);
 
       // 3. Calcular rota usando Mapbox Directions API
-      const url = `https://api.mapbox.com/directions/v5/mapbox/driving/${userLng},${userLat};${collabLng},${collabLat}?geometries=geojson&access_token=${import.meta.env.VITE_MAPBOX_TOKEN}`;
+      if (!mapboxToken) {
+        setError('Token do Mapbox não configurado');
+        setLoading(false);
+        return;
+      }
+
+      const url = `https://api.mapbox.com/directions/v5/mapbox/driving/${userLng},${userLat};${collabLng},${collabLat}?geometries=geojson&access_token=${mapboxToken}`;
       
+      console.log("CollaboratorRouteMap - Calculando rota...");
       const response = await fetch(url);
       const data = await response.json();
 
+      if (!response.ok) {
+        console.error("CollaboratorRouteMap - Erro da API Mapbox:", response.status, data);
+        if (response.status === 401) {
+          setError('Token do Mapbox inválido ou expirado. Verifique VITE_MAPBOX_TOKEN.');
+        } else {
+          setError(`Erro ao calcular rota (${response.status})`);
+        }
+        return;
+      }
+
       if (data.routes && data.routes.length > 0) {
         const route = data.routes[0];
+        console.log("CollaboratorRouteMap - Rota calculada:", route.distance, "m", route.duration, "s");
         setRouteGeometry(route.geometry);
         
         const distanceKm = (route.distance / 1000).toFixed(1);
@@ -105,6 +135,7 @@ export function CollaboratorRouteMap({
           duration: `${durationMin} min`
         });
       } else {
+        console.error("CollaboratorRouteMap - Nenhuma rota encontrada:", data);
         setError('Não foi possível calcular a rota');
       }
     } catch (err: any) {
@@ -191,22 +222,45 @@ export function CollaboratorRouteMap({
     );
   }
 
-  return (
-    <div className="relative w-full h-full">
-      <Map
-        initialViewState={{
-          longitude: userLocation && collaboratorLocation 
-            ? (userLocation[0] + collaboratorLocation[0]) / 2 
-            : userLocation?.[0] || 0,
-          latitude: userLocation && collaboratorLocation 
-            ? (userLocation[1] + collaboratorLocation[1]) / 2 
-            : userLocation?.[1] || 0,
-          zoom: 11
-        }}
-        style={{ width: '100%', height: '100%' }}
-        mapStyle="mapbox://styles/mapbox/streets-v12"
-        mapboxAccessToken={import.meta.env.VITE_MAPBOX_TOKEN}
-      >
+  if (!mapboxToken) {
+    return (
+      <div className="w-full h-full flex items-center justify-center p-6 bg-muted/20">
+        <Card className="max-w-md">
+          <CardContent className="p-6 text-center space-y-4">
+            <div className="w-16 h-16 mx-auto bg-destructive/10 rounded-full flex items-center justify-center">
+              <AlertCircle className="w-8 h-8 text-destructive" />
+            </div>
+            <h3 className="text-lg font-semibold">Token do Mapbox Não Configurado</h3>
+            <p className="text-sm text-muted-foreground">
+              A variável de ambiente VITE_MAPBOX_TOKEN não está configurada. Verifique as configurações do projeto.
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  try {
+    return (
+      <div className="relative w-full h-full min-h-[400px]">
+        <Map
+          initialViewState={{
+            longitude: userLocation && collaboratorLocation 
+              ? (userLocation[0] + collaboratorLocation[0]) / 2 
+              : userLocation?.[0] || 0,
+            latitude: userLocation && collaboratorLocation 
+              ? (userLocation[1] + collaboratorLocation[1]) / 2 
+              : userLocation?.[1] || 0,
+            zoom: 11
+          }}
+          style={{ width: '100%', height: '100%' }}
+          mapStyle="mapbox://styles/mapbox/streets-v12"
+          mapboxAccessToken={mapboxToken}
+          onError={(error) => {
+            console.error("CollaboratorRouteMap - Erro do Mapbox:", error);
+            setError("Erro ao renderizar o mapa");
+          }}
+        >
         {/* Marcador do usuário */}
         {userLocation && (
           <Marker 
@@ -257,20 +311,38 @@ export function CollaboratorRouteMap({
             />
           </Source>
         )}
-      </Map>
+        </Map>
 
-      {/* Info da rota */}
-      {routeInfo && (
-        <div className="absolute top-4 left-4 bg-background/95 backdrop-blur-sm border border-border rounded-lg px-4 py-3 shadow-lg">
-          <div className="flex items-center gap-3 text-sm">
-            <div>
-              <span className="font-semibold">{routeInfo.distance}</span>
-              <span className="text-muted-foreground"> • </span>
-              <span className="font-semibold">{routeInfo.duration}</span>
+        {/* Info da rota */}
+        {routeInfo && (
+          <div className="absolute top-4 left-4 bg-background/95 backdrop-blur-sm border border-border rounded-lg px-4 py-3 shadow-lg">
+            <div className="flex items-center gap-3 text-sm">
+              <div>
+                <span className="font-semibold">{routeInfo.distance}</span>
+                <span className="text-muted-foreground"> • </span>
+                <span className="font-semibold">{routeInfo.duration}</span>
+              </div>
             </div>
           </div>
-        </div>
-      )}
-    </div>
-  );
+        )}
+      </div>
+    );
+  } catch (error) {
+    console.error("CollaboratorRouteMap - Erro ao renderizar:", error);
+    return (
+      <div className="w-full h-full flex items-center justify-center p-6 bg-muted/20">
+        <Card className="max-w-md">
+          <CardContent className="p-6 text-center space-y-4">
+            <div className="w-16 h-16 mx-auto bg-destructive/10 rounded-full flex items-center justify-center">
+              <AlertCircle className="w-8 h-8 text-destructive" />
+            </div>
+            <h3 className="text-lg font-semibold">Erro ao Carregar Mapa</h3>
+            <p className="text-sm text-muted-foreground">
+              Ocorreu um erro ao renderizar o mapa. Verifique o console para mais detalhes.
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 }
