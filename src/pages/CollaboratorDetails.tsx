@@ -8,6 +8,7 @@ import { Loader2, MapPin, Church, User, Calendar, ArrowLeft, MessageCircle } fro
 import { CollaboratorProfile } from '@/types/collaborator';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
+import { CollaboratorMap } from '@/components/CollaboratorMap';
 
 export default function CollaboratorDetails() {
   const { userId } = useParams<{ userId: string }>();
@@ -184,6 +185,21 @@ export default function CollaboratorDetails() {
                 <p className="text-muted-foreground leading-relaxed whitespace-pre-wrap">
                   {collaborator.bio}
                 </p>
+              </div>
+            )}
+
+            {/* Seção: Localização no Mapa */}
+            {collaborator.latitude && collaborator.longitude && (
+              <div>
+                <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+                  <MapPin className="w-5 h-5 text-primary" />
+                  Localização
+                </h3>
+                <CollaboratorMap
+                  latitude={collaborator.latitude}
+                  longitude={collaborator.longitude}
+                  name={collaborator.name || 'Colaborador'}
+                />
               </div>
             )}
 
