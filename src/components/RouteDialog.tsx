@@ -7,19 +7,26 @@ import {
 } from '@/components/ui/dialog';
 import { CollaboratorRouteMap } from './CollaboratorRouteMap';
 
+interface CollaboratorAddress {
+  street: string;
+  streetNumber: string;
+  neighborhood: string;
+  city: string;
+  state: string;
+  postalCode: string;
+}
+
 interface RouteDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  collaboratorLat: number;
-  collaboratorLng: number;
+  collaboratorAddress: CollaboratorAddress;
   collaboratorName: string;
 }
 
 export function RouteDialog({
   open,
   onOpenChange,
-  collaboratorLat,
-  collaboratorLng,
+  collaboratorAddress,
   collaboratorName,
 }: RouteDialogProps) {
   return (
@@ -33,8 +40,7 @@ export function RouteDialog({
         </DialogHeader>
         <div className="flex-1 w-full h-[calc(80vh-100px)]">
           <CollaboratorRouteMap 
-            collaboratorLat={collaboratorLat}
-            collaboratorLng={collaboratorLng}
+            collaboratorAddress={collaboratorAddress}
             collaboratorName={collaboratorName}
           />
         </div>
