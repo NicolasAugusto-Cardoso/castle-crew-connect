@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
+import { useSearchParams } from 'react-router-dom';
 import { useContactMessages, ContactMessage } from '@/hooks/useContactMessages';
 import { useUserRepliesNotifications } from '@/hooks/useContactReplies';
 import { useUnreadReplies } from '@/hooks/useUnreadReplies';
@@ -24,12 +25,26 @@ export default function Contact() {
   const [message, setMessage] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [selectedMessage, setSelectedMessage] = useState<ContactMessage | null>(null);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const messageIdFromUrl = searchParams.get('messageId');
 
   // Subscribe to realtime notifications for new replies
   useUserRepliesNotifications();
   
   // Initialize unread replies hook
   useUnreadReplies(user?.id);
+
+  // Auto-abrir thread se houver messageId na URL
+  useEffect(() => {
+    if (messageIdFromUrl && messages.length > 0 && !selectedMessage) {
+      const messageToOpen = messages.find(m => m.id === messageIdFromUrl);
+      if (messageToOpen) {
+        setSelectedMessage(messageToOpen);
+        // Remover parâmetro da URL após abrir
+        setSearchParams({});
+      }
+    }
+  }, [messageIdFromUrl, messages, selectedMessage, setSearchParams]);
 
   const canManageMessages = hasRole(['admin', 'social_media']);
   
