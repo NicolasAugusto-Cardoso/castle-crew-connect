@@ -102,21 +102,30 @@ export function useShowCollaboratorsTab() {
   return useQuery({
     queryKey: ['show-collaborators-tab'],
     queryFn: async () => {
-      const { count, error } = await supabase
+      // Buscar colaboradores com perfis completos
+      const { data, error } = await supabase
         .from('collaborator_profiles')
-        .select(`
-          id,
-          profiles!inner(avatar_url)
-        `, { count: 'exact', head: true })
+        .select('user_id')
         .not('church', 'is', null)
         .not('city', 'is', null)
         .not('state', 'is', null)
-        .not('age', 'is', null)
-        .not('profiles.avatar_url', 'is', null);
+        .not('age', 'is', null);
 
       if (error) throw error;
       
-      return (count || 0) > 0;
+      if (!data || data.length === 0) return false;
+
+      // Verificar quais desses têm avatar
+      const userIds = data.map(c => c.user_id);
+      const { data: profilesWithAvatar, error: profileError } = await supabase
+        .from('profiles')
+        .select('id')
+        .in('id', userIds)
+        .not('avatar_url', 'is', null);
+
+      if (profileError) throw profileError;
+      
+      return (profilesWithAvatar || []).length > 0;
     },
   });
 }
