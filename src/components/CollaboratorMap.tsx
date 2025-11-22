@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import Map, { Marker } from 'react-map-gl';
 import { MapPin, Loader2, AlertCircle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { MAPBOX_TOKEN } from '@/config/mapbox';
 import 'mapbox-gl/dist/mapbox-gl.css';
 
 interface CollaboratorMapProps {
@@ -27,22 +28,9 @@ export function CollaboratorMap({
   const [loading, setLoading] = useState(true);
   const [mapError, setMapError] = useState<string | null>(null);
   
-  const mapboxToken = import.meta.env.VITE_MAPBOX_TOKEN;
-  
-  // Log de diagnóstico
-  console.log("CollaboratorMap - Mapbox token:", mapboxToken ? "✓ Token presente" : "✗ Token undefined");
-  
-  useEffect(() => {
-    if (!mapboxToken) {
-      console.error("ERRO: VITE_MAPBOX_TOKEN está undefined. Verifique as variáveis de ambiente.");
-      setMapError("Token do Mapbox não configurado");
-      setLoading(false);
-      return;
-    }
-  }, [mapboxToken]);
+  const mapboxToken = MAPBOX_TOKEN;
 
   useEffect(() => {
-    if (!mapboxToken) return;
     
     const geocodeAddress = async () => {
       try {
@@ -72,8 +60,8 @@ export function CollaboratorMap({
       }
     };
 
-    geocodeAddress();
-  }, [street, streetNumber, neighborhood, city, state, postalCode, mapboxToken]);
+      geocodeAddress();
+  }, [street, streetNumber, neighborhood, city, state, postalCode]);
 
   if (loading) {
     return (
@@ -83,15 +71,12 @@ export function CollaboratorMap({
     );
   }
 
-  if (mapError || !mapboxToken) {
+  if (mapError) {
     return (
       <div className="relative w-full min-h-[240px] h-[300px] rounded-lg overflow-hidden border border-border shadow-md flex flex-col items-center justify-center gap-2 bg-muted/20 p-4">
         <AlertCircle className="w-6 h-6 text-destructive" />
         <p className="text-sm text-muted-foreground text-center">
-          {mapError || "Token do Mapbox não configurado"}
-        </p>
-        <p className="text-xs text-muted-foreground text-center max-w-md">
-          Verifique se VITE_MAPBOX_TOKEN está configurado corretamente nas variáveis de ambiente
+          {mapError}
         </p>
       </div>
     );

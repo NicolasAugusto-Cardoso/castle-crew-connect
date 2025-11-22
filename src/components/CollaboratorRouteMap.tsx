@@ -5,6 +5,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
+import { MAPBOX_TOKEN } from '@/config/mapbox';
 import 'mapbox-gl/dist/mapbox-gl.css';
 
 interface CollaboratorAddress {
@@ -33,17 +34,7 @@ export function CollaboratorRouteMap({
   const [error, setError] = useState<string | null>(null);
   const [permissionState, setPermissionState] = useState<'prompt' | 'requesting' | 'denied' | 'granted'>('prompt');
 
-  const mapboxToken = import.meta.env.VITE_MAPBOX_TOKEN;
-  
-  // Log de diagnóstico
-  console.log("CollaboratorRouteMap - Mapbox token:", mapboxToken ? "✓ Token presente" : "✗ Token undefined");
-  
-  useEffect(() => {
-    if (!mapboxToken) {
-      console.error("ERRO: VITE_MAPBOX_TOKEN está undefined. Verifique as variáveis de ambiente.");
-      setError("Token do Mapbox não configurado. Verifique VITE_MAPBOX_TOKEN nas variáveis de ambiente.");
-    }
-  }, [mapboxToken]);
+  const mapboxToken = MAPBOX_TOKEN;
 
   const requestLocation = async () => {
     if (!navigator.geolocation) {
@@ -101,12 +92,6 @@ export function CollaboratorRouteMap({
       setCollaboratorLocation([collabLng, collabLat]);
 
       // 3. Calcular rota usando Mapbox Directions API
-      if (!mapboxToken) {
-        setError('Token do Mapbox não configurado');
-        setLoading(false);
-        return;
-      }
-
       const url = `https://api.mapbox.com/directions/v5/mapbox/driving/${userLng},${userLat};${collabLng},${collabLat}?geometries=geojson&access_token=${mapboxToken}`;
       
       console.log("CollaboratorRouteMap - Calculando rota...");
@@ -115,11 +100,7 @@ export function CollaboratorRouteMap({
 
       if (!response.ok) {
         console.error("CollaboratorRouteMap - Erro da API Mapbox:", response.status, data);
-        if (response.status === 401) {
-          setError('Token do Mapbox inválido ou expirado. Verifique VITE_MAPBOX_TOKEN.');
-        } else {
-          setError(`Erro ao calcular rota (${response.status})`);
-        }
+        setError(`Erro ao calcular rota (${response.status})`);
         return;
       }
 
@@ -218,24 +199,6 @@ export function CollaboratorRouteMap({
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>Erro ao carregar mapa</AlertDescription>
         </Alert>
-      </div>
-    );
-  }
-
-  if (!mapboxToken) {
-    return (
-      <div className="w-full h-full flex items-center justify-center p-6 bg-muted/20">
-        <Card className="max-w-md">
-          <CardContent className="p-6 text-center space-y-4">
-            <div className="w-16 h-16 mx-auto bg-destructive/10 rounded-full flex items-center justify-center">
-              <AlertCircle className="w-8 h-8 text-destructive" />
-            </div>
-            <h3 className="text-lg font-semibold">Token do Mapbox Não Configurado</h3>
-            <p className="text-sm text-muted-foreground">
-              A variável de ambiente VITE_MAPBOX_TOKEN não está configurada. Verifique as configurações do projeto.
-            </p>
-          </CardContent>
-        </Card>
       </div>
     );
   }
