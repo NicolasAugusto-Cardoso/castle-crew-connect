@@ -1,3 +1,7 @@
+import Map, { Marker } from 'react-map-gl';
+import { MapPin } from 'lucide-react';
+import 'mapbox-gl/dist/mapbox-gl.css';
+
 interface CollaboratorMapProps {
   latitude: number;
   longitude: number;
@@ -5,18 +9,33 @@ interface CollaboratorMapProps {
 }
 
 export function CollaboratorMap({ latitude, longitude, name }: CollaboratorMapProps) {
-  // Usar OpenStreetMap via iframe (não requer API key)
-  const mapUrl = `https://www.openstreetmap.org/export/embed.html?bbox=${longitude - 0.01},${latitude - 0.01},${longitude + 0.01},${latitude + 0.01}&layer=mapnik&marker=${latitude},${longitude}`;
-
   return (
     <div className="relative w-full h-[300px] rounded-lg overflow-hidden border border-border shadow-md">
-      <iframe
-        title={`Localização de ${name}`}
-        src={mapUrl}
-        className="absolute inset-0 w-full h-full"
-        style={{ border: 0 }}
-        loading="lazy"
-      />
+      <Map
+        initialViewState={{
+          longitude: longitude,
+          latitude: latitude,
+          zoom: 14
+        }}
+        style={{ width: '100%', height: '100%' }}
+        mapStyle="mapbox://styles/mapbox/streets-v12"
+        mapboxAccessToken={import.meta.env.VITE_MAPBOX_TOKEN}
+      >
+        <Marker 
+          longitude={longitude} 
+          latitude={latitude} 
+          anchor="bottom"
+        >
+          <div className="flex flex-col items-center">
+            <div className="bg-primary rounded-full p-2 shadow-lg">
+              <MapPin className="w-6 h-6 text-primary-foreground" fill="currentColor" />
+            </div>
+            <div className="bg-primary text-primary-foreground text-xs px-2 py-1 rounded mt-1 shadow-lg whitespace-nowrap">
+              {name}
+            </div>
+          </div>
+        </Marker>
+      </Map>
     </div>
   );
 }
