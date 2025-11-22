@@ -168,9 +168,9 @@ export default function Login() {
         </CardHeader>
         <CardContent className="px-4 xs:px-6 pb-6 xs:pb-8">
           <Tabs defaultValue="login" className="w-full">
-            <TabsList className="grid w-full grid-cols-2 mb-5 xs:mb-6 h-9 xs:h-10">
-              <TabsTrigger value="login" className="text-xs xs:text-sm">Login</TabsTrigger>
-              <TabsTrigger value="signup" className="text-xs xs:text-sm">Criar Conta</TabsTrigger>
+            <TabsList className="grid w-full grid-cols-2 mb-5 xs:mb-6">
+              <TabsTrigger value="login">Login</TabsTrigger>
+              <TabsTrigger value="signup">Criar Conta</TabsTrigger>
             </TabsList>
             
             <TabsContent value="login">
