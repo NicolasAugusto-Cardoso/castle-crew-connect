@@ -1,14 +1,21 @@
+import { useState } from 'react';
 import { useCollaborators } from '@/hooks/useCollaborators';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Loader2, MapPin, Church, Eye } from 'lucide-react';
+import { Loader2, MapPin, Church, Eye, Navigation } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useNavigate } from 'react-router-dom';
+import { RouteDialog } from '@/components/RouteDialog';
 
 export default function Collaborators() {
   const { data: collaborators, isLoading } = useCollaborators();
   const navigate = useNavigate();
+  const [selectedRoute, setSelectedRoute] = useState<{
+    lat: number;
+    lng: number;
+    name: string;
+  } | null>(null);
 
   if (isLoading) {
     return (
@@ -142,21 +149,49 @@ export default function Collaborators() {
                     </p>
                   )}
 
-                  {/* Botão Ver */}
-                  <Button 
-                    onClick={() => navigate(`/colaboradores/${collaborator.user_id}`)}
-                    className="w-full mt-4"
-                    variant="outline"
-                  >
-                    <Eye className="w-4 h-4 mr-2" />
-                    Ver detalhes
-                  </Button>
+                  {/* Botões de ação */}
+                  <div className="flex gap-2 mt-4">
+                    <Button 
+                      onClick={() => navigate(`/colaboradores/${collaborator.user_id}`)}
+                      className="flex-1"
+                      variant="outline"
+                    >
+                      <Eye className="w-4 h-4 mr-2" />
+                      Ver detalhes
+                    </Button>
+                    
+                    {collaborator.latitude && collaborator.longitude && (
+                      <Button 
+                        onClick={() => setSelectedRoute({
+                          lat: collaborator.latitude!,
+                          lng: collaborator.longitude!,
+                          name: collaborator.name!
+                        })}
+                        variant="outline"
+                        size="icon"
+                        title="Ver trajeto"
+                      >
+                        <Navigation className="w-4 h-4" />
+                      </Button>
+                    )}
+                  </div>
                 </CardContent>
               </Card>
             );
           })}
         </div>
       </div>
+
+      {/* Dialog de Rota */}
+      {selectedRoute && (
+        <RouteDialog
+          open={!!selectedRoute}
+          onOpenChange={(open) => !open && setSelectedRoute(null)}
+          collaboratorLat={selectedRoute.lat}
+          collaboratorLng={selectedRoute.lng}
+          collaboratorName={selectedRoute.name}
+        />
+      )}
     </div>
   );
 }

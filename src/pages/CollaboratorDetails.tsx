@@ -1,19 +1,22 @@
+import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Loader2, MapPin, Church, User, Calendar, ArrowLeft, MessageCircle } from 'lucide-react';
+import { Loader2, MapPin, Church, User, Calendar, ArrowLeft, MessageCircle, Navigation } from 'lucide-react';
 import { CollaboratorProfile } from '@/types/collaborator';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 import { CollaboratorMap } from '@/components/CollaboratorMap';
+import { RouteDialog } from '@/components/RouteDialog';
 
 export default function CollaboratorDetails() {
   const { userId } = useParams<{ userId: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const [showRoute, setShowRoute] = useState(false);
 
   const { data: collaborator, isLoading } = useQuery({
     queryKey: ['collaborator-details', userId],
@@ -203,9 +206,23 @@ export default function CollaboratorDetails() {
               </div>
             )}
 
-            {/* Botão Entrar em Contato */}
-            <div className="pt-4">
-              <Button 
+            {/* Botões de Ação */}
+            <div className="pt-4 flex flex-col sm:flex-row gap-3">
+              {/* Botão Ver Trajeto */}
+              {collaborator.latitude && collaborator.longitude && (
+                <Button 
+                  onClick={() => setShowRoute(true)}
+                  className="flex-1 sm:flex-none"
+                  variant="outline"
+                  size="lg"
+                >
+                  <Navigation className="w-5 h-5 mr-2" />
+                  Ver trajeto
+                </Button>
+              )}
+
+              {/* Botão Entrar em Contato */}
+              <Button
                 onClick={async () => {
                   try {
                     // Buscar ou criar mensagem de contato com este colaborador
@@ -240,19 +257,30 @@ export default function CollaboratorDetails() {
                     navigate(`/contact?messageId=${messageId}`);
                   } catch (error) {
                     console.error('Erro ao iniciar conversa:', error);
-                    toast.error('Erro ao iniciar conversa');
-                  }
-                }}
-                className="w-full md:w-auto bg-gradient-to-r from-primary to-accent hover:opacity-90"
-                size="lg"
-              >
-                <MessageCircle className="w-5 h-5 mr-2" />
-                Entrar em contato
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+                  toast.error('Erro ao iniciar conversa');
+                }
+              }}
+              className="flex-1 sm:flex-none bg-gradient-to-r from-primary to-accent hover:opacity-90"
+              size="lg"
+            >
+              <MessageCircle className="w-5 h-5 mr-2" />
+              Entrar em contato
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Dialog de Rota */}
+      {showRoute && collaborator.latitude && collaborator.longitude && (
+        <RouteDialog
+          open={showRoute}
+          onOpenChange={setShowRoute}
+          collaboratorLat={collaborator.latitude}
+          collaboratorLng={collaborator.longitude}
+          collaboratorName={collaborator.name!}
+        />
+      )}
     </div>
-  );
+  </div>
+);
 }
