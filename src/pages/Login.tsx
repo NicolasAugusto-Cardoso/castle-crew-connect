@@ -138,12 +138,15 @@ export default function Login() {
       }
     } catch (error: any) {
       console.error('[SIGNUP] Exceção:', error);
-      if (error.errors) {
-        // Erros de validação Zod
-        const firstError = error.errors[0];
-        toast.error(firstError.message);
+      if (error.errors && Array.isArray(error.errors)) {
+        // Erros de validação Zod - mostrar TODOS os erros
+        error.errors.forEach((err: any) => {
+          toast.error(err.message);
+        });
+      } else if (error.message) {
+        toast.error(error.message);
       } else {
-        toast.error('Erro inesperado ao validar dados. Verifique os campos.');
+        toast.error('Erro ao validar dados. Verifique se a senha tem maiúscula, minúscula, número e caractere especial.');
       }
     } finally {
       setIsLoading(false);
