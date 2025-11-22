@@ -22,9 +22,10 @@ export const Splash: React.FC<SplashProps> = ({ onComplete }) => {
     <AnimatePresence>
       {show && (
         <motion.div
-          initial={{ opacity: 1 }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 0.5, ease: 'easeInOut' }}
+          transition={{ duration: 0.6, ease: 'easeOut' }}
           className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-gradient-to-br from-primary-light via-primary to-primary-dark overflow-hidden"
         >
           <div className="relative flex flex-col items-center justify-center">
