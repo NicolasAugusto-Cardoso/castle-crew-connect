@@ -3,12 +3,14 @@ import { useCollaborators } from '@/hooks/useCollaborators';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Loader2, MapPin, Church, Eye, Navigation, ArrowUpDown } from 'lucide-react';
+import { Loader2, MapPin, Church, Eye, Navigation, ArrowUpDown, Map as MapIcon, Grid3x3 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useNavigate } from 'react-router-dom';
 import { RouteDialog } from '@/components/RouteDialog';
+import { CollaboratorsMapView } from '@/components/CollaboratorsMapView';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { CollaboratorProfile } from '@/types/collaborator';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 
 // Função para calcular distância entre dois pontos (Haversine)
 function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
@@ -35,6 +37,7 @@ export default function Collaborators() {
   } | null>(null);
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [sortBy, setSortBy] = useState<'default' | 'distance'>('default');
+  const [viewMode, setViewMode] = useState<'grid' | 'map'>('grid');
 
   // Obter localização do usuário
   useEffect(() => {
@@ -141,30 +144,48 @@ export default function Collaborators() {
           </p>
         </div>
 
-        {/* Filtros */}
-        <div className="mb-6 flex items-center gap-3">
-          <ArrowUpDown className="w-5 h-5 text-muted-foreground" />
-          <Select value={sortBy} onValueChange={(value: 'default' | 'distance') => setSortBy(value)}>
-            <SelectTrigger className="w-[280px]">
-              <SelectValue placeholder="Ordenar por" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="default">Padrão (por cidade)</SelectItem>
-              <SelectItem value="distance" disabled={!userLocation}>
-                Por distância {!userLocation && '(localização desativada)'}
-              </SelectItem>
-            </SelectContent>
-          </Select>
-          {sortBy === 'distance' && userLocation && (
-            <span className="text-sm text-muted-foreground">
-              Mostrando do mais próximo ao mais distante
-            </span>
-          )}
-        </div>
+        {/* Tabs de visualização */}
+        <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as 'grid' | 'map')} className="w-full">
+          <div className="mb-6 flex flex-col sm:flex-row gap-4 sm:items-center justify-between">
+            <TabsList>
+              <TabsTrigger value="grid" className="gap-2">
+                <Grid3x3 className="w-4 h-4" />
+                Grade
+              </TabsTrigger>
+              <TabsTrigger value="map" className="gap-2">
+                <MapIcon className="w-4 h-4" />
+                Mapa
+              </TabsTrigger>
+            </TabsList>
 
-        {/* Grid de Colaboradores */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-          {sortedCollaborators.map((collaborator) => {
+            {/* Filtros - apenas na visualização de grade */}
+            {viewMode === 'grid' && (
+              <div className="flex items-center gap-3">
+                <ArrowUpDown className="w-5 h-5 text-muted-foreground" />
+                <Select value={sortBy} onValueChange={(value: 'default' | 'distance') => setSortBy(value)}>
+                  <SelectTrigger className="w-[280px]">
+                    <SelectValue placeholder="Ordenar por" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="default">Padrão (por cidade)</SelectItem>
+                    <SelectItem value="distance" disabled={!userLocation}>
+                      Por distância {!userLocation && '(localização desativada)'}
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+                {sortBy === 'distance' && userLocation && (
+                  <span className="text-sm text-muted-foreground">
+                    Mostrando do mais próximo ao mais distante
+                  </span>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Visualização em Grade */}
+          <TabsContent value="grid" className="mt-0">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+              {sortedCollaborators.map((collaborator) => {
             const initials = collaborator.name
               ?.split(' ')
               .map((n) => n[0])
@@ -275,7 +296,17 @@ export default function Collaborators() {
               </Card>
             );
           })}
-        </div>
+            </div>
+          </TabsContent>
+
+          {/* Visualização em Mapa */}
+          <TabsContent value="map" className="mt-0">
+            <CollaboratorsMapView 
+              collaborators={sortedCollaborators}
+              userLocation={userLocation}
+            />
+          </TabsContent>
+        </Tabs>
       </div>
 
       {/* Dialog de Rota */}

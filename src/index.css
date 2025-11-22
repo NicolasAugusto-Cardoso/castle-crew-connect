@@ -258,3 +258,33 @@ All colors MUST be HSL.
     content-visibility: auto;
   }
 }
+
+/* Custom styles for Mapbox popups */
+.mapboxgl-popup-content {
+  padding: 0 !important;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  border-radius: 0.5rem;
+  background: hsl(var(--background));
+  color: hsl(var(--foreground));
+}
+
+.mapboxgl-popup-close-button {
+  right: 8px;
+  top: 8px;
+  font-size: 20px;
+  color: hsl(var(--muted-foreground));
+}
+
+.mapboxgl-popup-close-button:hover {
+  background-color: transparent;
+  color: hsl(var(--foreground));
+}
+
+.mapboxgl-popup-tip {
+  border-top-color: hsl(var(--background)) !important;
+}
+
+.dark .mapboxgl-popup-tip {
+  border-top-color: hsl(var(--background)) !important;
+}
+
