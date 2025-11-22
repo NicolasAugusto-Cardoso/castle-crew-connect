@@ -6,10 +6,13 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Loader2, MapPin, Church, User, Calendar, ArrowLeft, MessageCircle } from 'lucide-react';
 import { CollaboratorProfile } from '@/types/collaborator';
+import { useAuth } from '@/hooks/useAuth';
+import { toast } from 'sonner';
 
 export default function CollaboratorDetails() {
   const { userId } = useParams<{ userId: string }>();
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   const { data: collaborator, isLoading } = useQuery({
     queryKey: ['collaborator-details', userId],
@@ -79,7 +82,14 @@ export default function CollaboratorDetails() {
     .toUpperCase()
     .slice(0, 2) || '??';
 
-  const location = [collaborator.neighborhood, collaborator.city, collaborator.state]
+  const location = [
+    collaborator.street && collaborator.street_number 
+      ? `${collaborator.street}, ${collaborator.street_number}` 
+      : null,
+    collaborator.neighborhood,
+    collaborator.city,
+    collaborator.state
+  ]
     .filter(Boolean)
     .join(', ');
 
@@ -105,6 +115,7 @@ export default function CollaboratorDetails() {
                 <AvatarImage 
                   src={collaborator.avatar_url || ''} 
                   alt={collaborator.name || 'Colaborador'}
+                  className="object-cover"
                 />
                 <AvatarFallback className="text-3xl font-bold bg-primary/20 text-primary">
                   {initials}
@@ -177,7 +188,43 @@ export default function CollaboratorDetails() {
             {/* Botão Entrar em Contato */}
             <div className="pt-4">
               <Button 
-                onClick={() => navigate(`/colaboradores/${collaborator.user_id}/chat`)}
+                onClick={async () => {
+                  try {
+                    // Buscar ou criar mensagem de contato com este colaborador
+                    const { data: existing, error: searchError } = await supabase
+                      .from('contact_messages')
+                      .select('id')
+                      .eq('user_id', user?.id)
+                      .eq('name', `Chat com ${collaborator.name}`)
+                      .maybeSingle();
+
+                    let messageId = existing?.id;
+
+                    if (!existing) {
+                      // Criar nova mensagem de contato
+                      const { data: newMessage, error: createError } = await supabase
+                        .from('contact_messages')
+                        .insert({
+                          user_id: user?.id,
+                          name: `Chat com ${collaborator.name}`,
+                          phone: 'N/A',
+                          message: `Conversa iniciada com ${collaborator.name}`,
+                          status: 'in_progress',
+                        })
+                        .select('id')
+                        .single();
+
+                      if (createError) throw createError;
+                      messageId = newMessage.id;
+                    }
+
+                    // Navegar para a aba Contato com o ID da mensagem
+                    navigate(`/contact?messageId=${messageId}`);
+                  } catch (error) {
+                    console.error('Erro ao iniciar conversa:', error);
+                    toast.error('Erro ao iniciar conversa');
+                  }
+                }}
                 className="w-full md:w-auto bg-gradient-to-r from-primary to-accent hover:opacity-90"
                 size="lg"
               >
