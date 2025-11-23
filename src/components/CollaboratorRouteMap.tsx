@@ -300,7 +300,7 @@ export function CollaboratorRouteMap({
                 <Globe className="w-5 h-5 flex-shrink-0" />
                 <span className="font-semibold break-words text-sm sm:text-base">Localização Aproximada (IP)</span>
               </div>
-              <span className="text-[11px] sm:text-xs opacity-90 font-normal text-left break-words">
+              <span className="text-[11px] sm:text-xs opacity-90 font-normal text-left break-words whitespace-normal leading-relaxed">
                 Baseado na sua conexão • Pode ter diferença de alguns km
               </span>
             </Button>
