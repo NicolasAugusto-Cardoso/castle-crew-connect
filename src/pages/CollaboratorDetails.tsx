@@ -11,12 +11,14 @@ import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 import { CollaboratorMap } from '@/components/CollaboratorMap';
 import { RouteDialog } from '@/components/RouteDialog';
+import { CollaboratorContactDialog } from '@/components/CollaboratorContactDialog';
 
 export default function CollaboratorDetails() {
   const { userId } = useParams<{ userId: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
   const [showRoute, setShowRoute] = useState(false);
+  const [showContactDialog, setShowContactDialog] = useState(false);
 
   const { data: collaborator, isLoading } = useQuery({
     queryKey: ['collaborator-details', userId],
@@ -236,49 +238,13 @@ export default function CollaboratorDetails() {
 
               {/* Botão Entrar em Contato */}
               <Button
-                onClick={async () => {
-                  try {
-                    // Buscar ou criar mensagem de contato com este colaborador
-                    const { data: existing, error: searchError } = await supabase
-                      .from('contact_messages')
-                      .select('id')
-                      .eq('user_id', user?.id)
-                      .eq('name', `Chat com ${collaborator.name}`)
-                      .maybeSingle();
-
-                    let messageId = existing?.id;
-
-                    if (!existing) {
-                      // Criar nova mensagem de contato
-                      const { data: newMessage, error: createError } = await supabase
-                        .from('contact_messages')
-                        .insert({
-                          user_id: user?.id,
-                          name: `Chat com ${collaborator.name}`,
-                          phone: 'N/A',
-                          message: `Conversa iniciada com ${collaborator.name}`,
-                          status: 'in_progress',
-                        })
-                        .select('id')
-                        .single();
-
-                      if (createError) throw createError;
-                      messageId = newMessage.id;
-                    }
-
-                    // Navegar para a aba Contato com o ID da mensagem
-                    navigate(`/contact?messageId=${messageId}`);
-                  } catch (error) {
-                    console.error('Erro ao iniciar conversa:', error);
-                  toast.error('Erro ao iniciar conversa');
-                }
-              }}
-              className="flex-1 sm:flex-none bg-gradient-to-r from-primary to-accent hover:opacity-90"
-              size="lg"
-            >
-              <MessageCircle className="w-5 h-5 mr-2" />
-              Entrar em contato
-            </Button>
+                onClick={() => setShowContactDialog(true)}
+                className="flex-1 sm:flex-none bg-gradient-to-r from-primary to-accent hover:opacity-90"
+                size="lg"
+              >
+                <MessageCircle className="w-5 h-5 mr-2" />
+                Entrar em contato
+              </Button>
           </div>
         </CardContent>
       </Card>
@@ -302,6 +268,19 @@ export default function CollaboratorDetails() {
           collaboratorUserId={collaborator.user_id}
         />
       )}
+
+      {/* Dialog de Contato */}
+      <CollaboratorContactDialog
+        open={showContactDialog}
+        onOpenChange={setShowContactDialog}
+        collaborator={{
+          id: collaborator.id,
+          user_id: collaborator.user_id,
+          name: collaborator.name!,
+          avatar_url: collaborator.avatar_url,
+          church: collaborator.church,
+        }}
+      />
     </div>
   </div>
 );

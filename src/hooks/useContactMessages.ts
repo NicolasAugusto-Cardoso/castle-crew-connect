@@ -12,6 +12,7 @@ export interface ContactMessage {
   user_id: string | null;
   collaborator_id: string | null;
   collaborator_name?: string | null;
+  collaborator_avatar?: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -29,17 +30,18 @@ export function useContactMessages() {
           collaborator:collaborator_profiles(
             id,
             user_id,
-            profile:profiles(name)
+            profile:profiles(name, avatar_url)
           )
         `)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
       
-      // Transform data to include collaborator_name
+      // Transform data to include collaborator_name and collaborator_avatar
       return data.map((msg: any) => ({
         ...msg,
         collaborator_name: msg.collaborator?.profile?.name || null,
+        collaborator_avatar: msg.collaborator?.profile?.avatar_url || null,
         collaborator: undefined
       })) as ContactMessage[];
     }
