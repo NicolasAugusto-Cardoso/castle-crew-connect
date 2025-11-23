@@ -27,10 +27,13 @@ export function useContactMessages() {
         .from('contact_messages')
         .select(`
           *,
-          collaborator:collaborator_profiles(
+          collaborator_profile:collaborator_profiles!collaborator_id(
             id,
             user_id,
-            profile:profiles(name, avatar_url)
+            profiles!user_id(
+              name,
+              avatar_url
+            )
           )
         `)
         .order('created_at', { ascending: false });
@@ -40,9 +43,9 @@ export function useContactMessages() {
       // Transform data to include collaborator_name and collaborator_avatar
       return data.map((msg: any) => ({
         ...msg,
-        collaborator_name: msg.collaborator?.profile?.name || null,
-        collaborator_avatar: msg.collaborator?.profile?.avatar_url || null,
-        collaborator: undefined
+        collaborator_name: msg.collaborator_profile?.profiles?.name || null,
+        collaborator_avatar: msg.collaborator_profile?.profiles?.avatar_url || null,
+        collaborator_profile: undefined
       })) as ContactMessage[];
     }
   });

@@ -366,8 +366,8 @@ export default function Contact() {
                         <div className="flex items-center gap-3">
                           <Avatar className="h-10 w-10">
                             <AvatarImage src={msg.collaborator_avatar || undefined} />
-                            <AvatarFallback className="bg-primary text-primary-foreground">
-                              {msg.collaborator_name?.charAt(0).toUpperCase() || 'C'}
+                            <AvatarFallback className="bg-primary/10 text-primary">
+                              {msg.collaborator_name?.charAt(0)?.toUpperCase() || 'C'}
                             </AvatarFallback>
                           </Avatar>
                           <div className="flex-1">
