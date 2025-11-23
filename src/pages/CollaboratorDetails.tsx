@@ -213,6 +213,8 @@ export default function CollaboratorDetails() {
                   state={collaborator.state || ''}
                   postalCode={collaborator.postal_code || ''}
                   name={collaborator.name || 'Colaborador'}
+                  latitude={collaborator.latitude}
+                  longitude={collaborator.longitude}
                 />
               </div>
             )}
@@ -295,6 +297,8 @@ export default function CollaboratorDetails() {
             postalCode: collaborator.postal_code || ''
           }}
           collaboratorName={collaborator.name!}
+          collaboratorLatitude={collaborator.latitude}
+          collaboratorLongitude={collaborator.longitude}
         />
       )}
     </div>

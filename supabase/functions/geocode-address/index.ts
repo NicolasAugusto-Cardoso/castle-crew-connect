@@ -31,24 +31,23 @@ serve(async (req) => {
       );
     }
 
-    console.log('Geocoding address:', address);
+    console.log('Geocoding address with Mapbox:', address);
 
-    // Função auxiliar para tentar geocodificação
+    // Mapbox Access Token (público)
+    const MAPBOX_TOKEN = 'pk.eyJ1Ijoibmljay0xNyIsImEiOiJjbWlhc2R0NTMwOHNkMm1wdzZ3d250cDZ3In0.29vHKdadYBcdi4ioD_UIuQ';
+
+    // Função auxiliar para tentar geocodificação com Mapbox
     const tryGeocode = async (searchAddress: string): Promise<any> => {
-      const nominatimUrl = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(searchAddress)}&format=json&limit=1&countrycodes=br`;
+      const mapboxUrl = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(searchAddress)}.json?country=BR&access_token=${MAPBOX_TOKEN}&limit=1`;
       
-      const response = await fetch(nominatimUrl, {
-        headers: {
-          'User-Agent': 'Lovable-Church-App/1.0',
-        },
-      });
+      const response = await fetch(mapboxUrl);
 
       if (!response.ok) {
-        throw new Error(`Nominatim API error: ${response.statusText}`);
+        throw new Error(`Mapbox API error: ${response.statusText}`);
       }
 
       const data = await response.json();
-      return data && data.length > 0 ? data[0] : null;
+      return data && data.features && data.features.length > 0 ? data.features[0] : null;
     };
 
     // Estratégia de fallback progressivo
@@ -101,16 +100,17 @@ serve(async (req) => {
       );
     }
 
-    const latitude = parseFloat(location.lat);
-    const longitude = parseFloat(location.lon);
+    // Extrair coordenadas do Mapbox (formato: [longitude, latitude])
+    const [longitude, latitude] = location.center;
 
-    console.log('Geocoded coordinates:', { latitude, longitude });
+    console.log('Geocoded coordinates (Mapbox):', { latitude, longitude, place_name: location.place_name });
 
     return new Response(
       JSON.stringify({ 
         latitude,
         longitude,
-        displayName: location.display_name
+        displayName: location.place_name,
+        precision: 'high'
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );

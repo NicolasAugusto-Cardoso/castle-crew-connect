@@ -23,6 +23,7 @@ export default function CollaboratorProfile() {
   const [profile, setProfile] = useState<CollaboratorProfile | null>(null);
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const [previousAddress, setPreviousAddress] = useState<string>('');
   const [formData, setFormData] = useState<CollaboratorProfileForm>({
     church: '',
     position: '',
@@ -70,6 +71,16 @@ export default function CollaboratorProfile() {
 
       if (data) {
         setProfile(data);
+        const addressString = [
+          data.street || '',
+          data.street_number || '',
+          data.neighborhood || '',
+          data.city || '',
+          data.state || '',
+          data.postal_code || ''
+        ].join('|');
+        setPreviousAddress(addressString);
+        
         setFormData({
           church: data.church || '',
           position: data.position || '',
@@ -209,10 +220,29 @@ export default function CollaboratorProfile() {
         }
       }
 
-      // 2. Geocodificar endereço
-      const coordinates = await geocodeAddress();
+      // 2. Verificar se o endereço mudou
+      const currentAddress = [
+        formData.street,
+        formData.street_number,
+        formData.neighborhood,
+        formData.city,
+        formData.state,
+        formData.postal_code
+      ].join('|');
+      
+      const addressChanged = currentAddress !== previousAddress;
+      
+      // 3. Geocodificar apenas se o endereço mudou ou se não tem coordenadas
+      let coordinates = null;
+      if (addressChanged || !profile?.latitude || !profile?.longitude) {
+        console.log('CollaboratorProfile - Endereço mudou ou sem coordenadas, geocodificando...');
+        coordinates = await geocodeAddress();
+      } else {
+        console.log('CollaboratorProfile - Usando coordenadas existentes');
+        coordinates = { latitude: profile.latitude, longitude: profile.longitude };
+      }
 
-      // 3. Validar e converter idade
+      // 4. Validar e converter idade
       const ageValue = formData.age.trim();
       if (ageValue === '') {
         toast.error('Idade é obrigatória');
@@ -227,7 +257,7 @@ export default function CollaboratorProfile() {
         return;
       }
 
-      // 4. Atualizar avatar no profiles (se fez upload)
+      // 5. Atualizar avatar no profiles (se fez upload)
       if (avatarUrl) {
         const { error: profileError } = await supabase
           .from('profiles')
@@ -237,7 +267,7 @@ export default function CollaboratorProfile() {
         if (profileError) throw profileError;
       }
 
-      // 5. Salvar dados do colaborador
+      // 6. Salvar dados do colaborador
       const profileData = {
         user_id: user.id,
         church: formData.church,
