@@ -20,11 +20,15 @@ interface CollaboratorAddress {
 interface CollaboratorRouteMapProps {
   collaboratorAddress: CollaboratorAddress;
   collaboratorName: string;
+  collaboratorLatitude?: number | null;
+  collaboratorLongitude?: number | null;
 }
 
 export function CollaboratorRouteMap({ 
   collaboratorAddress,
-  collaboratorName 
+  collaboratorName,
+  collaboratorLatitude,
+  collaboratorLongitude
 }: CollaboratorRouteMapProps) {
   const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
   const [collaboratorLocation, setCollaboratorLocation] = useState<[number, number] | null>(null);
@@ -69,26 +73,37 @@ export function CollaboratorRouteMap({
       setUserLocation([userLng, userLat]);
       setPermissionState('granted');
 
-      // 2. Geocodificar endereço do colaborador
-      const { data: geoData, error: geoError } = await supabase.functions.invoke('geocode-address', {
-        body: {
-          street: collaboratorAddress.street,
-          streetNumber: collaboratorAddress.streetNumber,
-          neighborhood: collaboratorAddress.neighborhood,
-          city: collaboratorAddress.city,
-          state: collaboratorAddress.state,
-          postalCode: collaboratorAddress.postalCode
-        }
-      });
+      // 2. Obter coordenadas do colaborador (do banco ou geocodificando)
+      let collabLat: number;
+      let collabLng: number;
 
-      if (geoError || !geoData?.latitude || !geoData?.longitude) {
-        setError('Não foi possível encontrar o endereço do colaborador');
-        setLoading(false);
-        return;
+      if (collaboratorLatitude && collaboratorLongitude) {
+        console.log('CollaboratorRouteMap - Usando coordenadas do banco:', collaboratorLatitude, collaboratorLongitude);
+        collabLat = collaboratorLatitude;
+        collabLng = collaboratorLongitude;
+      } else {
+        console.log('CollaboratorRouteMap - Geocodificando endereço do colaborador...');
+        const { data: geoData, error: geoError } = await supabase.functions.invoke('geocode-address', {
+          body: {
+            street: collaboratorAddress.street,
+            streetNumber: collaboratorAddress.streetNumber,
+            neighborhood: collaboratorAddress.neighborhood,
+            city: collaboratorAddress.city,
+            state: collaboratorAddress.state,
+            postalCode: collaboratorAddress.postalCode
+          }
+        });
+
+        if (geoError || !geoData?.latitude || !geoData?.longitude) {
+          setError('Não foi possível encontrar o endereço do colaborador');
+          setLoading(false);
+          return;
+        }
+
+        collabLat = geoData.latitude;
+        collabLng = geoData.longitude;
       }
 
-      const collabLat = geoData.latitude;
-      const collabLng = geoData.longitude;
       setCollaboratorLocation([collabLng, collabLat]);
 
       // 3. Calcular rota usando Mapbox Directions API

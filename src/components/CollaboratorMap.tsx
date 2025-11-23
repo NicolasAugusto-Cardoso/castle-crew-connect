@@ -13,6 +13,8 @@ interface CollaboratorMapProps {
   state: string;
   postalCode: string;
   name: string;
+  latitude?: number | null;
+  longitude?: number | null;
 }
 
 export function CollaboratorMap({ 
@@ -22,7 +24,9 @@ export function CollaboratorMap({
   city, 
   state, 
   postalCode, 
-  name 
+  name,
+  latitude: propLatitude,
+  longitude: propLongitude
 }: CollaboratorMapProps) {
   const [coordinates, setCoordinates] = useState<{ lat: number; lng: number } | null>(null);
   const [loading, setLoading] = useState(true);
@@ -31,9 +35,18 @@ export function CollaboratorMap({
   const mapboxToken = MAPBOX_TOKEN;
 
   useEffect(() => {
-    
+    // Se já temos coordenadas do banco, usar elas diretamente
+    if (propLatitude && propLongitude) {
+      console.log("CollaboratorMap - Usando coordenadas do banco:", propLatitude, propLongitude);
+      setCoordinates({ lat: propLatitude, lng: propLongitude });
+      setLoading(false);
+      return;
+    }
+
+    // Caso contrário, geocodificar
     const geocodeAddress = async () => {
       try {
+        console.log("CollaboratorMap - Geocodificando endereço...");
         const { data, error } = await supabase.functions.invoke('geocode-address', {
           body: {
             street,
@@ -46,7 +59,7 @@ export function CollaboratorMap({
         });
 
         if (!error && data?.latitude && data?.longitude) {
-          console.log("CollaboratorMap - Coordenadas recebidas:", data.latitude, data.longitude);
+          console.log("CollaboratorMap - Coordenadas geocodificadas:", data.latitude, data.longitude);
           setCoordinates({ lat: data.latitude, lng: data.longitude });
         } else {
           console.error("CollaboratorMap - Erro na geocodificação:", error);
@@ -60,8 +73,8 @@ export function CollaboratorMap({
       }
     };
 
-      geocodeAddress();
-  }, [street, streetNumber, neighborhood, city, state, postalCode]);
+    geocodeAddress();
+  }, [street, streetNumber, neighborhood, city, state, postalCode, propLatitude, propLongitude]);
 
   if (loading) {
     return (
@@ -97,7 +110,7 @@ export function CollaboratorMap({
           initialViewState={{
             longitude: coordinates.lng,
             latitude: coordinates.lat,
-            zoom: 14
+            zoom: 15
           }}
           style={{ width: '100%', height: '100%' }}
           mapStyle="mapbox://styles/mapbox/streets-v12"
