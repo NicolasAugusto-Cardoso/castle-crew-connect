@@ -27,10 +27,10 @@ export function useContactMessages() {
         .from('contact_messages')
         .select(`
           *,
-          collaborator_profile:collaborator_profiles!collaborator_id(
+          collaborator_profile:collaborator_profiles!contact_messages_collaborator_id_fkey(
             id,
             user_id,
-            profiles!user_id(
+            profiles(
               name,
               avatar_url
             )
