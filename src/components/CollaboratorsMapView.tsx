@@ -33,8 +33,8 @@ export function CollaboratorsMapView({ collaborators, userLocation }: Collaborat
         zoom: 15,
         duration: 1000,
         padding: {
-          top: 150,
-          bottom: 250,
+          top: 100,
+          bottom: 380,
           left: 20,
           right: 20
         }
