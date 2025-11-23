@@ -384,9 +384,9 @@ export function CollaboratorRouteMap({
                 </div>
               </div>
 
-              <div>
-                <Label htmlFor="postalCode">CEP</Label>
-                <Input
+            <div>
+              <Label htmlFor="postalCode">CEP (opcional)</Label>
+              <Input
                   id="postalCode"
                   value={manualAddress.postalCode}
                   onChange={(e) => setManualAddress({...manualAddress, postalCode: e.target.value})}
