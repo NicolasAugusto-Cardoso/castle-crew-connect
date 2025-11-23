@@ -14,6 +14,28 @@ function calculateDistance(lon1: number, lat1: number, lon2: number, lat2: numbe
   return R * c;
 }
 
+// Função para validar se o resultado está na cidade correta
+function isInCorrectCity(result: any, expectedCity: string): boolean {
+  const placeName = result.place_name.toLowerCase();
+  const normalizedCity = expectedCity.toLowerCase();
+  
+  // Verificar se a cidade aparece no place_name
+  if (placeName.includes(normalizedCity)) {
+    return true;
+  }
+  
+  // Verificar no context (contexto administrativo)
+  if (result.context) {
+    for (const ctx of result.context) {
+      if (ctx.id.startsWith('place.') && ctx.text.toLowerCase() === normalizedCity) {
+        return true;
+      }
+    }
+  }
+  
+  return false;
+}
+
 // Gera variações do nome da rua para tentar geocoding
 function generateStreetVariations(street: string): string[] {
   if (!street) return [];
@@ -63,36 +85,21 @@ serve(async (req) => {
   try {
     const { street, streetNumber, neighborhood, city, state, postalCode } = await req.json();
 
-    // Construir query de endereço
-    const addressParts = [];
-    if (street && streetNumber) {
-      addressParts.push(`${street}, ${streetNumber}`);
-    } else if (street) {
-      addressParts.push(street);
-    }
-    if (neighborhood) addressParts.push(neighborhood);
-    if (city) addressParts.push(city);
-    if (state) addressParts.push(state);
-    if (postalCode) addressParts.push(postalCode);
-    addressParts.push('Brasil');
+    console.log('Geocoding address:', { street, streetNumber, neighborhood, city, state, postalCode });
 
-    const address = addressParts.join(', ');
-
-    if (!address || addressParts.length < 2) {
+    if (!city || !state) {
       return new Response(
-        JSON.stringify({ error: 'Endereço insuficiente para geolocalização' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        JSON.stringify({ error: 'Cidade e estado são obrigatórios para geocodificação' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
       );
     }
-
-    console.log('Geocoding address with Mapbox:', address);
 
     // Mapbox Access Token (público)
     const MAPBOX_TOKEN = 'pk.eyJ1Ijoibmljay0xNyIsImEiOiJjbWlhc2R0NTMwOHNkMm1wdzZ3d250cDZ3In0.29vHKdadYBcdi4ioD_UIuQ';
 
     // Função auxiliar para tentar geocodificação com Mapbox
     const tryGeocode = async (searchAddress: string, options: { types?: string, proximity?: string, bbox?: string } = {}): Promise<any> => {
-      let mapboxUrl = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(searchAddress)}.json?country=BR&access_token=${MAPBOX_TOKEN}&limit=1`;
+      let mapboxUrl = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(searchAddress)}.json?country=BR&access_token=${MAPBOX_TOKEN}&limit=5&language=pt`;
       
       // Adicionar parâmetros opcionais
       if (options.types) {
@@ -105,6 +112,8 @@ serve(async (req) => {
         mapboxUrl += `&bbox=${options.bbox}`;
       }
       
+      console.log('🔍 Tentando geocodificar:', searchAddress);
+      
       const response = await fetch(mapboxUrl);
 
       if (!response.ok) {
@@ -112,129 +121,177 @@ serve(async (req) => {
       }
 
       const data = await response.json();
-      return data && data.features && data.features.length > 0 ? data.features[0] : null;
+      
+      if (data.features && data.features.length > 0) {
+        // Filtrar resultados para incluir apenas aqueles na cidade correta
+        const validFeatures = data.features.filter((feature: any) => isInCorrectCity(feature, city));
+        
+        if (validFeatures.length > 0) {
+          console.log('✅ Resultado válido encontrado:', validFeatures[0].place_name);
+          return validFeatures[0];
+        } else {
+          console.log('❌ Nenhum resultado na cidade correta');
+        }
+      }
+      
+      return null;
     };
 
     // Obter coordenadas da cidade primeiro para validação
-    let cityLocation = null;
-    if (city && state) {
-      const cityAddress = `${city}, ${state}, Brasil`;
-      console.log('🔍 Obtendo coordenadas da cidade:', cityAddress);
-      cityLocation = await tryGeocode(cityAddress, { types: 'place' });
-      
-      if (cityLocation) {
-        const [cityLng, cityLat] = cityLocation.center;
-        console.log(`✅ Cidade localizada: ${cityLat}, ${cityLng}`);
-      }
-    }
-
+    const cityAddress = `${city}, ${state}, Brasil`;
+    console.log('🏙️ Obtendo coordenadas da cidade:', cityAddress);
+    const cityLocation = await tryGeocode(cityAddress, { types: 'place' });
+    
     if (!cityLocation) {
-      console.log('❌ Cidade não encontrada');
       return new Response(
-        JSON.stringify({ error: 'Cidade não encontrada' }),
+        JSON.stringify({ error: 'Não foi possível encontrar a cidade informada' }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
       );
     }
 
     const [cityLng, cityLat] = cityLocation.center;
+    const proximity = `${cityLng},${cityLat}`;
+    
+    // Criar bounding box ao redor da cidade (aproximadamente 30km de raio)
+    const bbox = `${cityLng - 0.3},${cityLat - 0.3},${cityLng + 0.3},${cityLat + 0.3}`;
 
-    // Estratégia de fallback progressivo com variações de rua
+    console.log('🏙️ Cidade encontrada:', cityLocation.place_name, { cityLat, cityLng });
+
     let location = null;
     let accuracy: 'exact' | 'approximate' | 'city' = 'city';
     
-    // Tentar 1: Endereço completo com variações de rua
-    if (street) {
+    // Limites de distância baseados na completude do endereço
+    const MAX_DISTANCE_WITH_NUMBER = 10;      // 10km para endereço com número
+    const MAX_DISTANCE_WITHOUT_NUMBER = 20;   // 20km para endereço sem número
+    const MAX_DISTANCE_NEIGHBORHOOD = 30;     // 30km para apenas bairro
+
+    // ESTRATÉGIA 1: Rua + Número + Cidade + Estado (SEM bairro) - MAIOR PRIORIDADE
+    if (street && streetNumber && !location) {
+      console.log('🎯 Tentativa 1: Rua + Número + Cidade (SEM bairro)');
       const streetVariations = generateStreetVariations(street);
-      console.log(`🔄 Tentando ${streetVariations.length} variações da rua: ${JSON.stringify(streetVariations)}`);
-
+      
       for (const streetVar of streetVariations) {
-        const fullAddress = [
-          streetNumber ? `${streetVar} ${streetNumber}` : streetVar,
-          neighborhood,
-          city,
-          state,
-          'Brasil'
-        ].filter(Boolean).join(', ');
-
-        console.log(`🔍 Tentativa com variação: ${fullAddress}`);
+        const address = `${streetVar} ${streetNumber}, ${city}, ${state}, Brasil`;
+        const testLocation = await tryGeocode(address, { types: 'address', proximity, bbox });
         
-        const proximity = `${cityLng},${cityLat}`;
-        const bbox = `${cityLng - 0.5},${cityLat - 0.5},${cityLng + 0.5},${cityLat + 0.5}`;
-        
-        const testLocation = await tryGeocode(fullAddress, { types: 'address,poi', proximity, bbox });
-
         if (testLocation) {
-          const [resultLng, resultLat] = testLocation.center;
-          const distance = calculateDistance(cityLng, cityLat, resultLng, resultLat);
-          console.log(`📏 Distância da cidade: ${distance.toFixed(2)} km`);
-
-          if (distance <= 50) {
+          const [lng, lat] = testLocation.center;
+          const distance = calculateDistance(cityLng, cityLat, lng, lat);
+          
+          console.log('📍 Resultado:', testLocation.place_name);
+          console.log('🏙️ Cidade esperada:', city);
+          console.log('✓ Cidade corresponde:', isInCorrectCity(testLocation, city));
+          console.log('📏 Distância:', distance.toFixed(2), 'km');
+          
+          if (distance < MAX_DISTANCE_WITH_NUMBER) {
             location = testLocation;
-            accuracy = streetNumber ? 'exact' : 'approximate';
-            console.log(`✅ Endereço encontrado com variação: ${streetVar} (${accuracy})`);
+            accuracy = 'exact';
+            console.log('✅ Endereço exato encontrado!');
             break;
-          } else {
-            console.warn(`⚠️ Resultado muito distante (${distance.toFixed(2)} km) - ignorando`);
           }
         }
       }
     }
     
-    // Tentar 2: Rua + Cidade + Estado (sem número e bairro)
-    if (!location && street) {
-      console.log('🔄 Tentando sem bairro...');
+    // ESTRATÉGIA 2: Rua + Cidade + Estado (sem número e sem bairro)
+    if (street && !location) {
+      console.log('🎯 Tentativa 2: Rua + Cidade (sem número)');
       const streetVariations = generateStreetVariations(street);
-
+      
       for (const streetVar of streetVariations) {
-        const streetCityAddress = [streetVar, city, state, 'Brasil'].filter(Boolean).join(', ');
-        console.log(`🔍 Tentativa sem bairro: ${streetCityAddress}`);
+        const address = `${streetVar}, ${city}, ${state}, Brasil`;
+        const testLocation = await tryGeocode(address, { types: 'address,place', proximity, bbox });
         
-        const proximity = `${cityLng},${cityLat}`;
-        const bbox = `${cityLng - 0.5},${cityLat - 0.5},${cityLng + 0.5},${cityLat + 0.5}`;
-        
-        const testLocation = await tryGeocode(streetCityAddress, { types: 'address,place', proximity, bbox });
-
         if (testLocation) {
-          const [resultLng, resultLat] = testLocation.center;
-          const distance = calculateDistance(cityLng, cityLat, resultLng, resultLat);
-
-          if (distance <= 50) {
+          const [lng, lat] = testLocation.center;
+          const distance = calculateDistance(cityLng, cityLat, lng, lat);
+          
+          console.log('📍 Resultado:', testLocation.place_name);
+          console.log('📏 Distância:', distance.toFixed(2), 'km');
+          
+          if (distance < MAX_DISTANCE_WITHOUT_NUMBER) {
             location = testLocation;
             accuracy = 'approximate';
-            console.log(`✅ Endereço encontrado sem bairro: ${streetVar}`);
+            console.log('⚠️ Endereço aproximado encontrado (sem número)');
             break;
           }
         }
       }
     }
     
-    // Tentar 3: Bairro + Cidade + Estado (aproximado)
-    if (!location && neighborhood) {
-      const neighborhoodAddress = `${neighborhood}, ${city}, ${state}, Brasil`;
-      console.log('🔍 Tentando apenas bairro:', neighborhoodAddress);
+    // ESTRATÉGIA 3: Rua + Número + Bairro + Cidade (com bairro)
+    if (street && streetNumber && neighborhood && !location) {
+      console.log('🎯 Tentativa 3: Rua + Número + Bairro + Cidade');
+      const streetVariations = generateStreetVariations(street);
       
-      const proximity = `${cityLng},${cityLat}`;
-      const bbox = `${cityLng - 0.5},${cityLat - 0.5},${cityLng + 0.5},${cityLat + 0.5}`;
-      
-      const testLocation = await tryGeocode(neighborhoodAddress, { types: 'locality,place,poi', proximity, bbox });
-
-      if (testLocation) {
-        const [resultLng, resultLat] = testLocation.center;
-        const distance = calculateDistance(cityLng, cityLat, resultLng, resultLat);
-
-        if (distance <= 50) {
-          location = testLocation;
-          accuracy = 'approximate';
-          console.log('✅ Bairro encontrado');
+      for (const streetVar of streetVariations) {
+        const address = `${streetVar} ${streetNumber}, ${neighborhood}, ${city}, ${state}, Brasil`;
+        const testLocation = await tryGeocode(address, { types: 'address', proximity, bbox });
+        
+        if (testLocation) {
+          const [lng, lat] = testLocation.center;
+          const distance = calculateDistance(cityLng, cityLat, lng, lat);
+          
+          console.log('📍 Resultado:', testLocation.place_name);
+          console.log('📏 Distância:', distance.toFixed(2), 'km');
+          
+          if (distance < MAX_DISTANCE_WITH_NUMBER) {
+            location = testLocation;
+            accuracy = 'exact';
+            console.log('✅ Endereço com bairro encontrado!');
+            break;
+          }
         }
       }
     }
     
-    // Tentar 4: Apenas cidade e estado (centro da cidade)
+    // ESTRATÉGIA 4: CEP (se fornecido)
+    if (postalCode && !location) {
+      console.log('🎯 Tentativa 4: CEP');
+      const address = `${postalCode}, ${city}, ${state}, Brasil`;
+      const testLocation = await tryGeocode(address, { types: 'postcode', proximity, bbox });
+      
+      if (testLocation) {
+        const [lng, lat] = testLocation.center;
+        const distance = calculateDistance(cityLng, cityLat, lng, lat);
+        
+        console.log('📍 Resultado:', testLocation.place_name);
+        console.log('📏 Distância:', distance.toFixed(2), 'km');
+        
+        if (distance < MAX_DISTANCE_WITHOUT_NUMBER) {
+          location = testLocation;
+          accuracy = 'approximate';
+          console.log('⚠️ Localização por CEP encontrada');
+        }
+      }
+    }
+    
+    // ESTRATÉGIA 5: Apenas bairro
+    if (neighborhood && !location) {
+      console.log('🎯 Tentativa 5: Apenas bairro');
+      const address = `${neighborhood}, ${city}, ${state}, Brasil`;
+      const testLocation = await tryGeocode(address, { types: 'neighborhood,place', proximity, bbox });
+      
+      if (testLocation) {
+        const [lng, lat] = testLocation.center;
+        const distance = calculateDistance(cityLng, cityLat, lng, lat);
+        
+        console.log('📍 Resultado:', testLocation.place_name);
+        console.log('📏 Distância:', distance.toFixed(2), 'km');
+        
+        if (distance < MAX_DISTANCE_NEIGHBORHOOD) {
+          location = testLocation;
+          accuracy = 'approximate';
+          console.log('⚠️ Localização por bairro encontrada');
+        }
+      }
+    }
+
+    // FALLBACK: Usar centro da cidade
     if (!location) {
-      console.log('⚠️ Usando centro da cidade como fallback');
       location = cityLocation;
       accuracy = 'city';
+      console.log('⚠️ FALLBACK: Usando centro da cidade');
     }
 
     // Extrair coordenadas do Mapbox (formato: [longitude, latitude])
