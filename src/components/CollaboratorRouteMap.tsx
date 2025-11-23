@@ -146,7 +146,11 @@ export function CollaboratorRouteMap({
       }
 
       const route = data.routes[0];
-      setRouteGeometry(route.geometry);
+      setRouteGeometry({
+        type: 'Feature',
+        properties: {},
+        geometry: route.geometry
+      });
       
       const distanceKm = (route.distance / 1000).toFixed(1);
       const durationMin = Math.round(route.duration / 60);
@@ -509,13 +513,29 @@ export function CollaboratorRouteMap({
             {/* Linha da rota */}
             {routeGeometry && (
               <Source id="route" type="geojson" data={routeGeometry}>
+                {/* Sombra da rota */}
+                <Layer
+                  id="route-shadow"
+                  type="line"
+                  paint={{
+                    'line-color': '#000000',
+                    'line-width': 7,
+                    'line-opacity': 0.2,
+                    'line-blur': 2
+                  }}
+                />
+                {/* Linha principal da rota */}
                 <Layer
                   id="route-layer"
                   type="line"
                   paint={{
-                    'line-color': 'hsl(var(--primary))',
-                    'line-width': 4,
-                    'line-opacity': 0.8
+                    'line-color': '#3b82f6',
+                    'line-width': 5,
+                    'line-opacity': 0.9
+                  }}
+                  layout={{
+                    'line-cap': 'round',
+                    'line-join': 'round'
                   }}
                 />
               </Source>
