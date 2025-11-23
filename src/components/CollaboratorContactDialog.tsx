@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
-import { supabase } from '@/integrations/supabase/client';
+import { useContactMessages } from '@/hooks/useContactMessages';
 import {
   Dialog,
   DialogContent,
@@ -15,6 +15,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Loader2, MessageCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 
 interface CollaboratorContactDialogProps {
   open: boolean;
@@ -36,8 +37,15 @@ export const CollaboratorContactDialog = ({
   const { user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { createMessage } = useContactMessages();
   const [message, setMessage] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Log quando o diálogo abre
+  console.log('🔵 CollaboratorContactDialog aberto:', {
+    open,
+    collaborator,
+    user: user?.id,
+  });
 
   // Buscar perfil do usuário atual
   const { data: userProfile } = useQuery({
@@ -58,6 +66,12 @@ export const CollaboratorContactDialog = ({
   });
 
   const handleSubmit = async () => {
+    console.log('🚀 Iniciando envio de mensagem...');
+    console.log('📝 Mensagem:', message);
+    console.log('👤 Usuário:', user?.id);
+    console.log('👥 Colaborador ID:', collaborator.id);
+    console.log('🔑 User ID do colaborador:', collaborator.user_id);
+    
     if (!message.trim() || message.trim().length < 10) {
       toast({
         title: 'Mensagem muito curta',
@@ -67,7 +81,8 @@ export const CollaboratorContactDialog = ({
       return;
     }
 
-    if (!user?.id || !userProfile) {
+    if (!user?.id) {
+      console.error('❌ Usuário não autenticado');
       toast({
         title: 'Erro',
         description: 'Você precisa estar autenticado para enviar mensagens.',
@@ -76,45 +91,50 @@ export const CollaboratorContactDialog = ({
       return;
     }
 
-    setIsSubmitting(true);
-
-    try {
-      const { data, error } = await supabase
-        .from('contact_messages')
-        .insert({
-          user_id: user.id,
-          collaborator_id: collaborator.id,
-          name: userProfile.name,
-          phone: 'N/A', // Phone is required in schema
-          email: user.email || null,
-          message: message.trim(),
-          status: 'new',
-        })
-        .select('id')
-        .single();
-
-      if (error) throw error;
-
+    if (!userProfile) {
+      console.error('❌ Perfil do usuário não encontrado');
       toast({
-        title: 'Mensagem enviada!',
-        description: `Sua conversa com ${collaborator.name} foi iniciada.`,
-      });
-
-      onOpenChange(false);
-      setMessage('');
-      
-      // Redirecionar para a página de contato com a mensagem aberta
-      navigate(`/contact?messageId=${data.id}`);
-    } catch (error) {
-      console.error('Erro ao enviar mensagem:', error);
-      toast({
-        title: 'Erro ao enviar',
-        description: 'Não foi possível enviar sua mensagem. Tente novamente.',
+        title: 'Erro',
+        description: 'Não foi possível carregar seu perfil. Tente novamente.',
         variant: 'destructive',
       });
-    } finally {
-      setIsSubmitting(false);
+      return;
     }
+
+    console.log('📤 Tentando criar mensagem via hook...');
+    
+    const messageData = {
+      name: userProfile.name,
+      phone: 'N/A', // Campo obrigatório no schema
+      email: user.email || undefined,
+      message: message.trim(),
+      collaborator_id: collaborator.id, // Importante: define que é uma mensagem para colaborador
+    };
+    
+    console.log('📦 Dados da mensagem:', messageData);
+
+    // Usar o hook para criar a mensagem (que já invalida o cache)
+    createMessage.mutate(messageData, {
+      onSuccess: (data) => {
+        console.log('✅ Mensagem criada com sucesso:', data);
+
+        onOpenChange(false);
+        setMessage('');
+        
+        // Redirecionar para a página de contato com a mensagem aberta
+        if (data?.id) {
+          console.log('🔀 Redirecionando para /contact?messageId=' + data.id);
+          navigate(`/contact?messageId=${data.id}`);
+        } else {
+          console.log('🔀 Redirecionando para /contact');
+          navigate('/contact');
+        }
+      },
+      onError: (error: any) => {
+        console.error('❌ Erro ao criar mensagem:', error);
+        // O hook já mostra toasts de erro
+      }
+    });
   };
 
   const initials = collaborator.name
@@ -164,7 +184,7 @@ export const CollaboratorContactDialog = ({
               onChange={(e) => setMessage(e.target.value)}
               placeholder="Digite sua mensagem aqui... (mínimo 10 caracteres)"
               className="min-h-[120px] resize-none"
-              disabled={isSubmitting}
+              disabled={createMessage.isPending}
             />
             <p className="text-xs text-muted-foreground">
               {message.length} / mínimo 10 caracteres
@@ -179,16 +199,16 @@ export const CollaboratorContactDialog = ({
                 onOpenChange(false);
                 setMessage('');
               }}
-              disabled={isSubmitting}
+              disabled={createMessage.isPending}
             >
               Cancelar
             </Button>
             <Button
               onClick={handleSubmit}
-              disabled={isSubmitting || message.trim().length < 10}
+              disabled={createMessage.isPending || message.trim().length < 10}
               className="btn-gradient"
             >
-              {isSubmitting ? (
+              {createMessage.isPending ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                   Enviando...
