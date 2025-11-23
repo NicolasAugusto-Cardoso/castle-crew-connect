@@ -82,6 +82,7 @@ export type Database = {
       }
       contact_messages: {
         Row: {
+          collaborator_id: string | null
           created_at: string
           email: string | null
           id: string
@@ -93,6 +94,7 @@ export type Database = {
           user_id: string | null
         }
         Insert: {
+          collaborator_id?: string | null
           created_at?: string
           email?: string | null
           id?: string
@@ -104,6 +106,7 @@ export type Database = {
           user_id?: string | null
         }
         Update: {
+          collaborator_id?: string | null
           created_at?: string
           email?: string | null
           id?: string
@@ -114,7 +117,15 @@ export type Database = {
           updated_at?: string
           user_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "contact_messages_collaborator_id_fkey"
+            columns: ["collaborator_id"]
+            isOneToOne: false
+            referencedRelation: "collaborator_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       contact_replies: {
         Row: {
