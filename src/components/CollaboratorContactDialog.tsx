@@ -233,19 +233,6 @@ export const CollaboratorContactDialog = ({
 
           {/* Botões */}
           <div className="flex gap-2 justify-end">
-            {/* Botão de Debug - TEMPORÁRIO */}
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => {
-                console.log('🔴 TESTE: Botão de debug clicado!');
-                alert('✅ Clique funcionando!');
-              }}
-              className="text-xs"
-            >
-              🐛 Teste
-            </Button>
-            
             <Button
               variant="outline"
               onClick={() => {
