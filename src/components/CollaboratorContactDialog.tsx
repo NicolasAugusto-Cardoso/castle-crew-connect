@@ -48,10 +48,12 @@ export const CollaboratorContactDialog = ({
   });
 
   // Buscar perfil do usuário atual
-  const { data: userProfile } = useQuery({
+  const { data: userProfile, isLoading: profileLoading } = useQuery({
     queryKey: ['user-profile', user?.id],
     queryFn: async () => {
       if (!user?.id) return null;
+      
+      console.log('🔍 Buscando perfil do usuário:', user.id);
       
       const { data, error } = await supabase
         .from('profiles')
@@ -59,10 +61,16 @@ export const CollaboratorContactDialog = ({
         .eq('id', user.id)
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('❌ Erro ao buscar perfil:', error);
+        throw error;
+      }
+      
+      console.log('✅ Perfil carregado:', data);
       return data;
     },
-    enabled: !!user?.id,
+    enabled: !!user?.id && open, // Só buscar quando dialog estiver aberto
+    staleTime: 5 * 60 * 1000, // Cache por 5 minutos
   });
 
   const handleSubmit = async () => {
@@ -70,8 +78,10 @@ export const CollaboratorContactDialog = ({
     console.log('📝 Mensagem:', message);
     console.log('👤 Usuário:', user?.id);
     console.log('👥 Colaborador ID:', collaborator.id);
-    console.log('🔑 User ID do colaborador:', collaborator.user_id);
+    console.log('👤 Perfil carregado?', !!userProfile);
+    console.log('⏳ Loading perfil?', profileLoading);
     
+    // Validação de mensagem
     if (!message.trim() || message.trim().length < 10) {
       toast({
         title: 'Mensagem muito curta',
@@ -81,6 +91,7 @@ export const CollaboratorContactDialog = ({
       return;
     }
 
+    // Validação de autenticação
     if (!user?.id) {
       console.error('❌ Usuário não autenticado');
       toast({
@@ -91,24 +102,27 @@ export const CollaboratorContactDialog = ({
       return;
     }
 
-    if (!userProfile) {
-      console.error('❌ Perfil do usuário não encontrado');
+    // Aguardar perfil carregar (com fallback)
+    const senderName = userProfile?.name || user?.user_metadata?.name || user?.email?.split('@')[0] || 'Usuário';
+    
+    if (!senderName || senderName === 'Usuário') {
+      console.error('❌ Nome do usuário não encontrado');
       toast({
         title: 'Erro',
-        description: 'Não foi possível carregar seu perfil. Tente novamente.',
+        description: 'Não foi possível identificar seu nome. Tente novamente.',
         variant: 'destructive',
       });
       return;
     }
 
-    console.log('📤 Tentando criar mensagem via hook...');
+    console.log('📤 Criando mensagem com nome:', senderName);
     
     const messageData = {
-      name: userProfile.name,
+      name: senderName,
       phone: 'N/A', // Campo obrigatório no schema
       email: user.email || undefined,
       message: message.trim(),
-      collaborator_id: collaborator.id, // Importante: define que é uma mensagem para colaborador
+      collaborator_id: collaborator.id,
     };
     
     console.log('📦 Dados da mensagem:', messageData);
@@ -158,6 +172,14 @@ export const CollaboratorContactDialog = ({
         </DialogHeader>
 
         <div className="space-y-4">
+          {/* Loading do perfil */}
+          {profileLoading && (
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Loader2 className="w-4 h-4 animate-spin" />
+              Carregando suas informações...
+            </div>
+          )}
+
           {/* Informações do Colaborador */}
           <div className="flex items-center gap-3 p-4 bg-muted rounded-lg">
             <Avatar className="h-12 w-12">
@@ -205,7 +227,12 @@ export const CollaboratorContactDialog = ({
             </Button>
             <Button
               onClick={handleSubmit}
-              disabled={createMessage.isPending || message.trim().length < 10}
+              disabled={
+                createMessage.isPending || 
+                message.trim().length < 10 || 
+                profileLoading || 
+                !userProfile
+              }
               className="btn-gradient"
             >
               {createMessage.isPending ? (
