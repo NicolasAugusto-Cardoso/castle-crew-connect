@@ -159,16 +159,46 @@ export function CollaboratorRouteMap({
         setError('Não foi possível calcular a rota. Mostrando apenas as localizações no mapa.');
       }
     } catch (err: any) {
-      console.error('Erro ao calcular rota:', err);
-      if (permissionState !== 'denied') {
-        setError('Erro ao calcular rota');
+      console.error('❌ Erro ao calcular rota:', err);
+      
+      // Se já temos localização do usuário, não bloquear o mapa
+      if (userLocation) {
+        setError('Não foi possível calcular a rota, mas você pode ver as localizações no mapa');
+      } else {
+        // Se não temos userLocation, é erro de geolocalização
+        if (permissionState !== 'denied') {
+          setError('Erro ao obter sua localização');
+        }
       }
     } finally {
       setLoading(false);
     }
   };
 
-  if (permissionState === 'prompt') {
+  // Debug log
+  console.log('CollaboratorRouteMap render:', {
+    permissionState,
+    hasUserLocation: !!userLocation,
+    hasCollaboratorLocation: !!collaboratorLocation,
+    hasError: !!error,
+    loading
+  });
+
+  // PRIORIDADE 1: Se temos ambas as localizações, renderizar o mapa (mesmo com erro de rota)
+  if (userLocation && collaboratorLocation) {
+    // Continua para renderizar o mapa (abaixo)
+  } else if (loading || permissionState === 'requesting') {
+    // PRIORIDADE 2: Mostra loading
+    return (
+      <div className="w-full h-full flex items-center justify-center bg-muted/20">
+        <div className="text-center">
+          <Loader2 className="w-8 h-8 animate-spin text-primary mx-auto mb-2" />
+          <p className="text-sm text-muted-foreground">Calculando rota...</p>
+        </div>
+      </div>
+    );
+  } else if (permissionState === 'prompt') {
+    // PRIORIDADE 3: Solicita permissão
     return (
       <div className="w-full h-full flex items-center justify-center p-6 bg-muted/20">
         <Card className="max-w-md">
@@ -189,20 +219,8 @@ export function CollaboratorRouteMap({
         </Card>
       </div>
     );
-  }
-
-  if (loading || permissionState === 'requesting') {
-    return (
-      <div className="w-full h-full flex items-center justify-center bg-muted/20">
-        <div className="text-center">
-          <Loader2 className="w-8 h-8 animate-spin text-primary mx-auto mb-2" />
-          <p className="text-sm text-muted-foreground">Calculando rota...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (permissionState === 'denied') {
+  } else if (permissionState === 'denied') {
+    // PRIORIDADE 4: Permissão negada
     return (
       <div className="w-full h-full flex items-center justify-center p-6 bg-muted/20">
         <Card className="max-w-md">
@@ -229,10 +247,8 @@ export function CollaboratorRouteMap({
         </Card>
       </div>
     );
-  }
-
-  // Se tiver erro mas também tiver localização, mostra o mapa com aviso
-  if (error && !userLocation) {
+  } else if (error) {
+    // PRIORIDADE 5: Erro genérico (quando não temos localizações)
     return (
       <div className="w-full h-full flex items-center justify-center p-6 bg-muted/20">
         <Card className="max-w-md">
@@ -257,9 +273,8 @@ export function CollaboratorRouteMap({
         </Card>
       </div>
     );
-  }
-
-  if (!userLocation) {
+  } else {
+    // Fallback: algo deu errado
     return (
       <div className="w-full h-full flex items-center justify-center p-6">
         <Alert variant="destructive" className="max-w-md">
@@ -270,11 +285,12 @@ export function CollaboratorRouteMap({
     );
   }
 
+  // Se chegamos aqui, temos ambas as localizações - renderizar mapa
   try {
     return (
       <div className="relative w-full h-full min-h-[400px]">
         {/* Aviso se houver erro na rota mas o mapa pode ser exibido */}
-        {error && userLocation && collaboratorLocation && (
+        {error && (
           <Alert className="absolute top-4 right-4 max-w-sm z-10 bg-background/95 backdrop-blur-sm">
             <AlertCircle className="h-4 w-4" />
             <AlertDescription className="text-xs">{error}</AlertDescription>
@@ -283,12 +299,8 @@ export function CollaboratorRouteMap({
         
         <Map
           initialViewState={{
-            longitude: userLocation && collaboratorLocation 
-              ? (userLocation[0] + collaboratorLocation[0]) / 2 
-              : userLocation?.[0] || 0,
-            latitude: userLocation && collaboratorLocation 
-              ? (userLocation[1] + collaboratorLocation[1]) / 2 
-              : userLocation?.[1] || 0,
+            longitude: (userLocation[0] + collaboratorLocation[0]) / 2,
+            latitude: (userLocation[1] + collaboratorLocation[1]) / 2,
             zoom: 11
           }}
           style={{ width: '100%', height: '100%' }}
@@ -300,40 +312,36 @@ export function CollaboratorRouteMap({
           }}
         >
         {/* Marcador do usuário */}
-        {userLocation && (
-          <Marker 
-            longitude={userLocation[0]} 
-            latitude={userLocation[1]} 
-            anchor="bottom"
-          >
-            <div className="flex flex-col items-center">
-              <div className="bg-blue-500 rounded-full p-2 shadow-lg">
-                <MapPin className="w-5 h-5 text-white" fill="white" />
-              </div>
-              <div className="bg-blue-500 text-white text-xs px-2 py-1 rounded mt-1 shadow-lg whitespace-nowrap">
-                Você
-              </div>
+        <Marker 
+          longitude={userLocation[0]} 
+          latitude={userLocation[1]} 
+          anchor="bottom"
+        >
+          <div className="flex flex-col items-center">
+            <div className="bg-blue-500 rounded-full p-2 shadow-lg">
+              <MapPin className="w-5 h-5 text-white" fill="white" />
             </div>
-          </Marker>
-        )}
+            <div className="bg-blue-500 text-white text-xs px-2 py-1 rounded mt-1 shadow-lg whitespace-nowrap">
+              Você
+            </div>
+          </div>
+        </Marker>
 
         {/* Marcador do colaborador */}
-        {collaboratorLocation && (
-          <Marker 
-            longitude={collaboratorLocation[0]} 
-            latitude={collaboratorLocation[1]} 
-            anchor="bottom"
-          >
-            <div className="flex flex-col items-center">
-              <div className="bg-primary rounded-full p-2 shadow-lg">
-                <MapPin className="w-5 h-5 text-primary-foreground" fill="currentColor" />
-              </div>
-              <div className="bg-primary text-primary-foreground text-xs px-2 py-1 rounded mt-1 shadow-lg whitespace-nowrap">
-                {collaboratorName}
-              </div>
+        <Marker 
+          longitude={collaboratorLocation[0]} 
+          latitude={collaboratorLocation[1]} 
+          anchor="bottom"
+        >
+          <div className="flex flex-col items-center">
+            <div className="bg-primary rounded-full p-2 shadow-lg">
+              <MapPin className="w-5 h-5 text-primary-foreground" fill="currentColor" />
             </div>
-          </Marker>
-        )}
+            <div className="bg-primary text-primary-foreground text-xs px-2 py-1 rounded mt-1 shadow-lg whitespace-nowrap">
+              {collaboratorName}
+            </div>
+          </div>
+        </Marker>
 
         {/* Linha da rota */}
         {routeGeometry && (
