@@ -241,12 +241,14 @@ export function CollaboratorRouteMap({
   // Renderizar seleção de método
   if (showMethodSelection) {
     return (
-      <div className="w-full h-full flex items-center justify-center p-6 bg-muted/20">
-        <Card className="max-w-lg w-full">
+      <div className="w-full h-full flex items-center justify-center p-4 sm:p-6 bg-muted/20">
+        <Card className="max-w-2xl w-full mx-auto">
           <CardHeader>
-            <CardTitle className="text-center flex items-center justify-center gap-2">
-              <Navigation className="w-5 h-5" />
-              Como deseja calcular a rota?
+            <CardTitle className="text-center flex items-center justify-center gap-2 flex-wrap">
+              <span className="flex items-center gap-2">
+                <Navigation className="w-5 h-5 flex-shrink-0" />
+                Como deseja calcular a rota?
+              </span>
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
@@ -257,45 +259,45 @@ export function CollaboratorRouteMap({
 
             <Button 
               onClick={handleGPSClick} 
-              className="w-full h-auto py-4 flex flex-col items-start gap-1"
+              className="w-full h-auto py-4 px-4 flex flex-col items-start gap-1 text-left"
               variant="default"
               disabled={locationLoading}
             >
               <div className="flex items-center gap-2 w-full">
-                <MapPinned className="w-5 h-5" />
-                <span className="font-semibold">Localização Precisa (GPS)</span>
+                <MapPinned className="w-5 h-5 flex-shrink-0" />
+                <span className="font-semibold break-words">Localização Precisa (GPS)</span>
               </div>
-              <span className="text-xs opacity-90 font-normal text-left">
+              <span className="text-xs opacity-90 font-normal text-left break-words">
                 Requer permissão do navegador • Mais preciso
               </span>
             </Button>
 
             <Button 
               onClick={handleIPClick} 
-              className="w-full h-auto py-4 flex flex-col items-start gap-1"
+              className="w-full h-auto py-4 px-4 flex flex-col items-start gap-1 text-left"
               variant="secondary"
               disabled={locationLoading}
             >
               <div className="flex items-center gap-2 w-full">
-                <Globe className="w-5 h-5" />
-                <span className="font-semibold">Localização Aproximada (IP)</span>
+                <Globe className="w-5 h-5 flex-shrink-0" />
+                <span className="font-semibold break-words">Localização Aproximada (IP)</span>
               </div>
-              <span className="text-xs opacity-90 font-normal text-left">
+              <span className="text-xs opacity-90 font-normal text-left break-words">
                 Baseado na sua conexão • Pode ter diferença de alguns km
               </span>
             </Button>
 
             <Button 
               onClick={handleManualClick} 
-              className="w-full h-auto py-4 flex flex-col items-start gap-1"
+              className="w-full h-auto py-4 px-4 flex flex-col items-start gap-1 text-left"
               variant="outline"
               disabled={locationLoading}
             >
               <div className="flex items-center gap-2 w-full">
-                <Home className="w-5 h-5" />
-                <span className="font-semibold">Digitar Meu Endereço</span>
+                <Home className="w-5 h-5 flex-shrink-0" />
+                <span className="font-semibold break-words">Digitar Meu Endereço</span>
               </div>
-              <span className="text-xs opacity-90 font-normal text-left">
+              <span className="text-xs opacity-90 font-normal text-left break-words">
                 Informe seu endereço manualmente
               </span>
             </Button>
@@ -319,8 +321,8 @@ export function CollaboratorRouteMap({
   // Renderizar formulário manual
   if (showManualForm) {
     return (
-      <div className="w-full h-full flex items-center justify-center p-6 bg-muted/20">
-        <Card className="max-w-md w-full">
+      <div className="w-full h-full flex items-center justify-center p-4 sm:p-6 bg-muted/20">
+        <Card className="max-w-xl w-full mx-auto">
           <CardHeader>
             <CardTitle className="text-center">Digite Seu Endereço</CardTitle>
           </CardHeader>
