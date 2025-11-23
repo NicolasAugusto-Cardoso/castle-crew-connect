@@ -242,62 +242,62 @@ export function CollaboratorRouteMap({
   if (showMethodSelection) {
     return (
       <div className="w-full h-full flex items-center justify-center p-4 sm:p-6 bg-muted/20">
-        <Card className="max-w-2xl w-full mx-auto">
+        <Card className="w-full max-w-[calc(100%-2rem)] sm:max-w-2xl mx-auto">
           <CardHeader>
-            <CardTitle className="text-center flex items-center justify-center gap-2 flex-wrap">
-              <span className="flex items-center gap-2">
+            <CardTitle className="text-center text-base sm:text-lg px-2">
+              <div className="flex items-center justify-center gap-2 flex-wrap">
                 <Navigation className="w-5 h-5 flex-shrink-0" />
-                Como deseja calcular a rota?
-              </span>
+                <span className="break-words">Como deseja calcular a rota?</span>
+              </div>
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-3">
-            <p className="text-sm text-muted-foreground text-center mb-4">
+          <CardContent className="space-y-3 px-4 sm:px-6">
+            <p className="text-xs sm:text-sm text-muted-foreground text-center mb-4 break-words px-2">
               Para calcular a rota até <span className="font-medium text-foreground">{collaboratorName}</span>, 
               precisamos saber de onde você está saindo.
             </p>
 
             <Button 
               onClick={handleGPSClick} 
-              className="w-full h-auto py-4 px-4 flex flex-col items-start gap-1 text-left"
+              className="w-full h-auto py-3 px-3 sm:py-4 sm:px-4 flex flex-col items-start gap-1 text-left"
               variant="default"
               disabled={locationLoading}
             >
               <div className="flex items-center gap-2 w-full">
                 <MapPinned className="w-5 h-5 flex-shrink-0" />
-                <span className="font-semibold break-words">Localização Precisa (GPS)</span>
+                <span className="font-semibold break-words text-sm sm:text-base">Localização Precisa (GPS)</span>
               </div>
-              <span className="text-xs opacity-90 font-normal text-left break-words">
+              <span className="text-[11px] sm:text-xs opacity-90 font-normal text-left break-words">
                 Requer permissão do navegador • Mais preciso
               </span>
             </Button>
 
             <Button 
               onClick={handleIPClick} 
-              className="w-full h-auto py-4 px-4 flex flex-col items-start gap-1 text-left"
+              className="w-full h-auto py-3 px-3 sm:py-4 sm:px-4 flex flex-col items-start gap-1 text-left"
               variant="secondary"
               disabled={locationLoading}
             >
               <div className="flex items-center gap-2 w-full">
                 <Globe className="w-5 h-5 flex-shrink-0" />
-                <span className="font-semibold break-words">Localização Aproximada (IP)</span>
+                <span className="font-semibold break-words text-sm sm:text-base">Localização Aproximada (IP)</span>
               </div>
-              <span className="text-xs opacity-90 font-normal text-left break-words">
+              <span className="text-[11px] sm:text-xs opacity-90 font-normal text-left break-words">
                 Baseado na sua conexão • Pode ter diferença de alguns km
               </span>
             </Button>
 
             <Button 
               onClick={handleManualClick} 
-              className="w-full h-auto py-4 px-4 flex flex-col items-start gap-1 text-left"
+              className="w-full h-auto py-3 px-3 sm:py-4 sm:px-4 flex flex-col items-start gap-1 text-left"
               variant="outline"
               disabled={locationLoading}
             >
               <div className="flex items-center gap-2 w-full">
                 <Home className="w-5 h-5 flex-shrink-0" />
-                <span className="font-semibold break-words">Digitar Meu Endereço</span>
+                <span className="font-semibold break-words text-sm sm:text-base">Digitar Meu Endereço</span>
               </div>
-              <span className="text-xs opacity-90 font-normal text-left break-words">
+              <span className="text-[11px] sm:text-xs opacity-90 font-normal text-left break-words">
                 Informe seu endereço manualmente
               </span>
             </Button>
