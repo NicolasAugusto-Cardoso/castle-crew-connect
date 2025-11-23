@@ -1,7 +1,28 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { corsHeaders } from "../_shared/cors.ts";
 
-// Removed complex utility functions - keeping it simple
+// Validate if Mapbox result is in the expected city
+function isInCorrectCity(mapboxResult: any, expectedCity: string): boolean {
+  const placeName = mapboxResult.place_name?.toLowerCase() || '';
+  const normalizedCity = expectedCity.toLowerCase().trim();
+  
+  // Check if the city appears in the place_name
+  if (placeName.includes(normalizedCity)) {
+    return true;
+  }
+  
+  // Check in context (Mapbox administrative structure)
+  if (mapboxResult.context && Array.isArray(mapboxResult.context)) {
+    for (const ctx of mapboxResult.context) {
+      if (ctx.id?.startsWith('place.') && 
+          ctx.text?.toLowerCase().trim() === normalizedCity) {
+        return true;
+      }
+    }
+  }
+  
+  return false;
+}
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -23,8 +44,8 @@ serve(async (req) => {
     // Mapbox Access Token (público)
     const MAPBOX_TOKEN = 'pk.eyJ1Ijoibmljay0xNyIsImEiOiJjbWlhc2R0NTMwOHNkMm1wdzZ3d250cDZ3In0.29vHKdadYBcdi4ioD_UIuQ';
 
-    // Simple helper function to call Mapbox API
-    const callMapbox = async (address: string) => {
+    // Simple helper function to call Mapbox API with city validation
+    const callMapbox = async (address: string, validateCity: boolean = true) => {
       const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(address)}.json?access_token=${MAPBOX_TOKEN}&limit=1&country=BR`;
       console.log('🔍 Calling Mapbox with:', address);
       
@@ -37,7 +58,21 @@ serve(async (req) => {
       const data = await response.json();
       if (data.features && data.features.length > 0) {
         const result = data.features[0];
-        console.log('✅ Mapbox returned:', result.place_name);
+        console.log('📍 Mapbox returned:', result.place_name);
+        
+        // Validate city if requested
+        if (validateCity) {
+          const cityMatch = isInCorrectCity(result, city);
+          console.log('🏙️ Expected city:', city);
+          console.log('✓ City matches:', cityMatch);
+          
+          if (!cityMatch) {
+            console.log('❌ Result is NOT in the correct city, rejecting');
+            return null;
+          }
+        }
+        
+        console.log('✅ Result accepted');
         return result;
       }
       
@@ -92,11 +127,11 @@ serve(async (req) => {
       }
     }
 
-    // Fallback: City center
+    // Fallback: City center (skip city validation for this)
     if (!location) {
       console.log('🎯 Fallback: City center');
       const cityAddress = `${city}, ${state}, Brasil`;
-      location = await callMapbox(cityAddress);
+      location = await callMapbox(cityAddress, false); // Don't validate city for city center
       if (location) {
         accuracy = 'city';
         console.log('⚠️ Using city center as fallback');
