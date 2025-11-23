@@ -69,7 +69,7 @@ export const CollaboratorContactDialog = ({
       console.log('✅ Perfil carregado:', data);
       return data;
     },
-    enabled: !!user?.id && open, // Só buscar quando dialog estiver aberto
+    enabled: !!user?.id, // Remover condição do 'open' para garantir que sempre carregue
     staleTime: 5 * 60 * 1000, // Cache por 5 minutos
   });
 
