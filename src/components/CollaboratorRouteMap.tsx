@@ -1,11 +1,14 @@
 import { useEffect, useState } from 'react';
 import Map, { Marker, Source, Layer } from 'react-map-gl';
-import { MapPin, Loader2, AlertCircle, Navigation } from 'lucide-react';
+import { MapPin, Loader2, AlertCircle, Navigation, MapPinned, Globe, Home } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { supabase } from '@/integrations/supabase/client';
 import { MAPBOX_TOKEN } from '@/config/mapbox';
+import { useGeolocation } from '@/hooks/useGeolocation';
 import 'mapbox-gl/dist/mapbox-gl.css';
 
 interface CollaboratorAddress {
@@ -32,363 +35,540 @@ export function CollaboratorRouteMap({
   collaboratorLongitude,
   collaboratorUserId
 }: CollaboratorRouteMapProps) {
-  const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
+  const {
+    userLocation,
+    locationMethod,
+    loading: locationLoading,
+    error: locationError,
+    getLocationByGPS,
+    getLocationByIP,
+    setLocationManually,
+    resetLocation
+  } = useGeolocation();
+
   const [collaboratorLocation, setCollaboratorLocation] = useState<[number, number] | null>(null);
   const [routeGeometry, setRouteGeometry] = useState<any>(null);
   const [routeInfo, setRouteInfo] = useState<{distance: string, duration: string} | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [permissionState, setPermissionState] = useState<'prompt' | 'requesting' | 'denied' | 'granted'>('prompt');
+  const [routeLoading, setRouteLoading] = useState(false);
+  const [routeError, setRouteError] = useState<string | null>(null);
+  const [showMethodSelection, setShowMethodSelection] = useState(true);
+  const [showManualForm, setShowManualForm] = useState(false);
+  
+  // Estados do formulário manual
+  const [manualAddress, setManualAddress] = useState({
+    street: '',
+    number: '',
+    neighborhood: '',
+    city: '',
+    state: '',
+    postalCode: ''
+  });
 
   const mapboxToken = MAPBOX_TOKEN;
 
-  const requestLocation = async () => {
-    if (!navigator.geolocation) {
-      setError('Geolocalização não é suportada pelo seu navegador');
-      setPermissionState('denied');
-      return;
+  // Calcular rota quando tivermos ambas as localizações
+  useEffect(() => {
+    if (userLocation && collaboratorLocation) {
+      calculateRoute();
     }
+  }, [userLocation, collaboratorLocation]);
 
-    setPermissionState('requesting');
-    setLoading(true);
-    setError(null);
-
-    try {
-      // 1. Obter localização do usuário
-      const userPosition = await new Promise<GeolocationPosition>((resolve, reject) => {
-        navigator.geolocation.getCurrentPosition(
-          resolve,
-          (error) => {
-            if (error.code === error.PERMISSION_DENIED) {
-              setPermissionState('denied');
-              setError('Permita o acesso à sua localização para calcular a rota');
-            } else {
-              setError('Erro ao obter sua localização');
-            }
-            reject(error);
-          }
-        );
-      });
-
-      const userLat = userPosition.coords.latitude;
-      const userLng = userPosition.coords.longitude;
-      setUserLocation([userLng, userLat]);
-      setPermissionState('granted');
-      console.log('✅ Localização do usuário obtida:', userLat, userLng);
-
-      // 2. Obter coordenadas do colaborador (do banco ou geocodificando)
-      let collabLat: number;
-      let collabLng: number;
-
+  // Obter coordenadas do colaborador
+  useEffect(() => {
+    const getCollaboratorLocation = async () => {
       if (collaboratorLatitude && collaboratorLongitude) {
-        console.log('✅ Usando coordenadas do banco:', collaboratorLatitude, collaboratorLongitude);
-        collabLat = collaboratorLatitude;
-        collabLng = collaboratorLongitude;
-      } else {
-        console.log('🔄 Geocodificando endereço do colaborador...');
-        const { data: geoData, error: geoError } = await supabase.functions.invoke('geocode-address', {
-          body: {
-            street: collaboratorAddress.street,
-            streetNumber: collaboratorAddress.streetNumber,
-            neighborhood: collaboratorAddress.neighborhood,
-            city: collaboratorAddress.city,
-            state: collaboratorAddress.state,
-            postalCode: collaboratorAddress.postalCode
-          }
-        });
-
-        if (geoError || !geoData?.latitude || !geoData?.longitude) {
-          console.error('❌ Erro ao geocodificar:', geoError);
-          setError('Não foi possível geocodificar o endereço do colaborador. Verifique se o endereço está completo.');
-          setLoading(false);
-          return;
-        }
-
-        collabLat = geoData.latitude;
-        collabLng = geoData.longitude;
-        console.log('✅ Endereço geocodificado:', collabLat, collabLng);
-
-        // Salvar coordenadas no banco em background (sem await)
-        supabase
-          .from('collaborator_profiles')
-          .update({
-            latitude: collabLat,
-            longitude: collabLng
-          })
-          .eq('user_id', collaboratorUserId)
-          .then(({ error }) => {
-            if (error) {
-              console.error('⚠️ Erro ao salvar coordenadas:', error);
-            } else {
-              console.log('✅ Coordenadas salvas no banco');
-            }
-          });
+        console.log('✅ Usando coordenadas do colaborador do banco:', collaboratorLatitude, collaboratorLongitude);
+        setCollaboratorLocation([collaboratorLongitude, collaboratorLatitude]);
+        return;
       }
 
-      setCollaboratorLocation([collabLng, collabLat]);
+      console.log('🔄 Geocodificando endereço do colaborador...');
+      const { data: geoData, error: geoError } = await supabase.functions.invoke('geocode-address', {
+        body: {
+          street: collaboratorAddress.street,
+          streetNumber: collaboratorAddress.streetNumber,
+          neighborhood: collaboratorAddress.neighborhood,
+          city: collaboratorAddress.city,
+          state: collaboratorAddress.state,
+          postalCode: collaboratorAddress.postalCode
+        }
+      });
 
-      // 3. Calcular rota usando Mapbox Directions API
+      if (geoError || !geoData?.latitude || !geoData?.longitude) {
+        console.error('❌ Erro ao geocodificar colaborador:', geoError);
+        setRouteError('Não foi possível localizar o endereço do colaborador');
+        return;
+      }
+
+      const collabLat = geoData.latitude;
+      const collabLng = geoData.longitude;
+      setCollaboratorLocation([collabLng, collabLat]);
+      console.log('✅ Colaborador geocodificado:', collabLat, collabLng);
+
+      // Salvar coordenadas em background
+      supabase
+        .from('collaborator_profiles')
+        .update({
+          latitude: collabLat,
+          longitude: collabLng
+        })
+        .eq('user_id', collaboratorUserId)
+        .then(({ error }) => {
+          if (!error) {
+            console.log('✅ Coordenadas do colaborador salvas no banco');
+          }
+        });
+    };
+
+    getCollaboratorLocation();
+  }, [collaboratorAddress, collaboratorLatitude, collaboratorLongitude, collaboratorUserId]);
+
+  const calculateRoute = async () => {
+    if (!userLocation || !collaboratorLocation) return;
+
+    setRouteLoading(true);
+    setRouteError(null);
+
+    try {
+      const [userLng, userLat] = userLocation;
+      const [collabLng, collabLat] = collaboratorLocation;
+
       const url = `https://api.mapbox.com/directions/v5/mapbox/driving/${userLng},${userLat};${collabLng},${collabLat}?geometries=geojson&access_token=${mapboxToken}`;
       
-      console.log("🔄 Calculando rota com Mapbox Directions API...");
-      console.log("📍 URL:", url);
-      
+      console.log("🔄 Calculando rota...");
       const response = await fetch(url);
       const data = await response.json();
 
-      console.log("📦 Resposta da API Mapbox:", response.status, data);
+      if (!response.ok || !data.routes || data.routes.length === 0) {
+        setRouteError('Não foi possível calcular a rota');
+        console.error("❌ Erro ao calcular rota:", data);
+        return;
+      }
 
-      if (!response.ok) {
-        const errorMsg = data.message || data.error || 'Erro desconhecido da API Mapbox';
-        console.error("❌ Erro da API Mapbox:", response.status, errorMsg);
-        setError(`Não foi possível calcular a rota: ${errorMsg}. Mostrando apenas as localizações no mapa.`);
-        // Não retorna aqui - continua para mostrar o mapa sem a rota
-      } else if (data.routes && data.routes.length > 0) {
-        const route = data.routes[0];
-        console.log("✅ Rota calculada:", route.distance, "m", route.duration, "s");
-        setRouteGeometry(route.geometry);
-        
-        const distanceKm = (route.distance / 1000).toFixed(1);
-        const durationMin = Math.round(route.duration / 60);
-        setRouteInfo({
-          distance: `${distanceKm} km`,
-          duration: `${durationMin} min`
-        });
-      } else {
-        console.error("❌ Nenhuma rota encontrada na resposta:", data);
-        setError('Não foi possível calcular a rota. Mostrando apenas as localizações no mapa.');
-      }
-    } catch (err: any) {
-      console.error('❌ Erro ao calcular rota:', err);
+      const route = data.routes[0];
+      setRouteGeometry(route.geometry);
       
-      // Se já temos localização do usuário, não bloquear o mapa
-      if (userLocation) {
-        setError('Não foi possível calcular a rota, mas você pode ver as localizações no mapa');
-      } else {
-        // Se não temos userLocation, é erro de geolocalização
-        if (permissionState !== 'denied') {
-          setError('Erro ao obter sua localização');
-        }
-      }
+      const distanceKm = (route.distance / 1000).toFixed(1);
+      const durationMin = Math.round(route.duration / 60);
+      setRouteInfo({
+        distance: `${distanceKm} km`,
+        duration: `${durationMin} min`
+      });
+      
+      console.log("✅ Rota calculada:", distanceKm, "km", durationMin, "min");
+    } catch (err) {
+      console.error('❌ Erro ao calcular rota:', err);
+      setRouteError('Erro ao calcular rota');
     } finally {
-      setLoading(false);
+      setRouteLoading(false);
     }
   };
 
-  // Debug log
-  console.log('CollaboratorRouteMap render:', {
-    permissionState,
-    hasUserLocation: !!userLocation,
-    hasCollaboratorLocation: !!collaboratorLocation,
-    hasError: !!error,
-    loading
-  });
+  const handleGPSClick = async () => {
+    setShowMethodSelection(false);
+    try {
+      await getLocationByGPS();
+    } catch (err) {
+      // Erro já tratado no hook
+      setShowMethodSelection(true);
+    }
+  };
 
-  // PRIORIDADE 1: Se temos ambas as localizações, renderizar o mapa (mesmo com erro de rota)
-  if (userLocation && collaboratorLocation) {
-    // Continua para renderizar o mapa (abaixo)
-  } else if (loading || permissionState === 'requesting') {
-    // PRIORIDADE 2: Mostra loading
+  const handleIPClick = async () => {
+    setShowMethodSelection(false);
+    try {
+      await getLocationByIP();
+    } catch (err) {
+      // Se IP falhar, mostrar opções novamente
+      setShowMethodSelection(true);
+    }
+  };
+
+  const handleManualClick = () => {
+    setShowMethodSelection(false);
+    setShowManualForm(true);
+  };
+
+  const handleManualSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!manualAddress.street || !manualAddress.city || !manualAddress.state) {
+      alert('Preencha pelo menos rua, cidade e estado');
+      return;
+    }
+
+    setRouteLoading(true);
+    setRouteError(null);
+
+    try {
+      console.log('🔄 Geocodificando endereço manual...');
+      const { data: geoData, error: geoError } = await supabase.functions.invoke('geocode-address', {
+        body: {
+          street: manualAddress.street,
+          streetNumber: manualAddress.number,
+          neighborhood: manualAddress.neighborhood,
+          city: manualAddress.city,
+          state: manualAddress.state,
+          postalCode: manualAddress.postalCode
+        }
+      });
+
+      if (geoError || !geoData?.latitude || !geoData?.longitude) {
+        console.error('❌ Erro ao geocodificar endereço manual:', geoError);
+        setRouteError('Não foi possível localizar o endereço informado. Verifique os dados.');
+        setRouteLoading(false);
+        return;
+      }
+
+      setLocationManually(geoData.latitude, geoData.longitude);
+      setShowManualForm(false);
+      console.log('✅ Endereço manual geocodificado:', geoData.latitude, geoData.longitude);
+    } catch (err) {
+      console.error('❌ Erro ao processar endereço manual:', err);
+      setRouteError('Erro ao processar endereço');
+    } finally {
+      setRouteLoading(false);
+    }
+  };
+
+  const handleTryAgain = () => {
+    resetLocation();
+    setShowMethodSelection(true);
+    setShowManualForm(false);
+    setRouteError(null);
+  };
+
+  // Renderizar seleção de método
+  if (showMethodSelection) {
+    return (
+      <div className="w-full h-full flex items-center justify-center p-6 bg-muted/20">
+        <Card className="max-w-lg w-full">
+          <CardHeader>
+            <CardTitle className="text-center flex items-center justify-center gap-2">
+              <Navigation className="w-5 h-5" />
+              Como deseja calcular a rota?
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <p className="text-sm text-muted-foreground text-center mb-4">
+              Para calcular a rota até <span className="font-medium text-foreground">{collaboratorName}</span>, 
+              precisamos saber de onde você está saindo.
+            </p>
+
+            <Button 
+              onClick={handleGPSClick} 
+              className="w-full h-auto py-4 flex flex-col items-start gap-1"
+              variant="default"
+              disabled={locationLoading}
+            >
+              <div className="flex items-center gap-2 w-full">
+                <MapPinned className="w-5 h-5" />
+                <span className="font-semibold">Localização Precisa (GPS)</span>
+              </div>
+              <span className="text-xs opacity-90 font-normal text-left">
+                Requer permissão do navegador • Mais preciso
+              </span>
+            </Button>
+
+            <Button 
+              onClick={handleIPClick} 
+              className="w-full h-auto py-4 flex flex-col items-start gap-1"
+              variant="secondary"
+              disabled={locationLoading}
+            >
+              <div className="flex items-center gap-2 w-full">
+                <Globe className="w-5 h-5" />
+                <span className="font-semibold">Localização Aproximada (IP)</span>
+              </div>
+              <span className="text-xs opacity-90 font-normal text-left">
+                Baseado na sua conexão • Pode ter diferença de alguns km
+              </span>
+            </Button>
+
+            <Button 
+              onClick={handleManualClick} 
+              className="w-full h-auto py-4 flex flex-col items-start gap-1"
+              variant="outline"
+              disabled={locationLoading}
+            >
+              <div className="flex items-center gap-2 w-full">
+                <Home className="w-5 h-5" />
+                <span className="font-semibold">Digitar Meu Endereço</span>
+              </div>
+              <span className="text-xs opacity-90 font-normal text-left">
+                Informe seu endereço manualmente
+              </span>
+            </Button>
+
+            {locationError && (
+              <Alert variant="destructive" className="mt-4">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription className="text-xs">
+                  {locationError === 'GPS negado' 
+                    ? 'Permissão GPS negada. Tente usar localização aproximada (IP) ou digite seu endereço.'
+                    : locationError}
+                </AlertDescription>
+              </Alert>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // Renderizar formulário manual
+  if (showManualForm) {
+    return (
+      <div className="w-full h-full flex items-center justify-center p-6 bg-muted/20">
+        <Card className="max-w-md w-full">
+          <CardHeader>
+            <CardTitle className="text-center">Digite Seu Endereço</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleManualSubmit} className="space-y-4">
+              <div className="grid grid-cols-3 gap-3">
+                <div className="col-span-2">
+                  <Label htmlFor="street">Rua *</Label>
+                  <Input
+                    id="street"
+                    value={manualAddress.street}
+                    onChange={(e) => setManualAddress({...manualAddress, street: e.target.value})}
+                    placeholder="Av. Paulista"
+                    required
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="number">Número</Label>
+                  <Input
+                    id="number"
+                    value={manualAddress.number}
+                    onChange={(e) => setManualAddress({...manualAddress, number: e.target.value})}
+                    placeholder="1000"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <Label htmlFor="neighborhood">Bairro</Label>
+                <Input
+                  id="neighborhood"
+                  value={manualAddress.neighborhood}
+                  onChange={(e) => setManualAddress({...manualAddress, neighborhood: e.target.value})}
+                  placeholder="Centro"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label htmlFor="city">Cidade *</Label>
+                  <Input
+                    id="city"
+                    value={manualAddress.city}
+                    onChange={(e) => setManualAddress({...manualAddress, city: e.target.value})}
+                    placeholder="São Paulo"
+                    required
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="state">Estado *</Label>
+                  <Input
+                    id="state"
+                    value={manualAddress.state}
+                    onChange={(e) => setManualAddress({...manualAddress, state: e.target.value})}
+                    placeholder="SP"
+                    maxLength={2}
+                    required
+                  />
+                </div>
+              </div>
+
+              <div>
+                <Label htmlFor="postalCode">CEP</Label>
+                <Input
+                  id="postalCode"
+                  value={manualAddress.postalCode}
+                  onChange={(e) => setManualAddress({...manualAddress, postalCode: e.target.value})}
+                  placeholder="01310-100"
+                />
+              </div>
+
+              {routeError && (
+                <Alert variant="destructive">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertDescription className="text-xs">{routeError}</AlertDescription>
+                </Alert>
+              )}
+
+              <div className="flex gap-2">
+                <Button type="button" variant="outline" onClick={handleTryAgain} className="flex-1">
+                  Voltar
+                </Button>
+                <Button type="submit" disabled={routeLoading} className="flex-1">
+                  {routeLoading ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Calculando...
+                    </>
+                  ) : (
+                    'Calcular Rota'
+                  )}
+                </Button>
+              </div>
+            </form>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // Loading
+  if (locationLoading || routeLoading || !collaboratorLocation) {
     return (
       <div className="w-full h-full flex items-center justify-center bg-muted/20">
         <div className="text-center">
           <Loader2 className="w-8 h-8 animate-spin text-primary mx-auto mb-2" />
-          <p className="text-sm text-muted-foreground">Calculando rota...</p>
+          <p className="text-sm text-muted-foreground">
+            {locationLoading ? 'Obtendo sua localização...' : 'Calculando rota...'}
+          </p>
         </div>
       </div>
     );
-  } else if (permissionState === 'prompt') {
-    // PRIORIDADE 3: Solicita permissão
-    return (
-      <div className="w-full h-full flex items-center justify-center p-6 bg-muted/20">
-        <Card className="max-w-md">
-          <CardContent className="p-6 text-center space-y-4">
-            <div className="w-16 h-16 mx-auto bg-primary/10 rounded-full flex items-center justify-center">
-              <Navigation className="w-8 h-8 text-primary" />
-            </div>
-            <h3 className="text-lg font-semibold">Permissão de Localização Necessária</h3>
-            <p className="text-sm text-muted-foreground">
-              Para calcular a rota até <span className="font-medium text-foreground">{collaboratorName}</span>, 
-              precisamos acessar sua localização atual.
-            </p>
-            <Button onClick={requestLocation} className="w-full" size="lg">
-              <Navigation className="w-4 h-4 mr-2" />
-              Permitir Acesso à Localização
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  } else if (permissionState === 'denied') {
-    // PRIORIDADE 4: Permissão negada
-    return (
-      <div className="w-full h-full flex items-center justify-center p-6 bg-muted/20">
-        <Card className="max-w-md">
-          <CardContent className="p-6 text-center space-y-4">
-            <div className="w-16 h-16 mx-auto bg-destructive/10 rounded-full flex items-center justify-center">
-              <AlertCircle className="w-8 h-8 text-destructive" />
-            </div>
-            <h3 className="text-lg font-semibold">Permissão de Localização Negada</h3>
-            <p className="text-sm text-muted-foreground">
-              Para calcular a rota, é necessário permitir o acesso à sua localização nas configurações do navegador.
-            </p>
-            <Button 
-              onClick={() => {
-                setPermissionState('prompt');
-                setError(null);
-              }} 
-              variant="outline" 
-              className="w-full"
-              size="lg"
-            >
-              Tentar Novamente
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  } else if (error) {
-    // PRIORIDADE 5: Erro genérico (quando não temos localizações)
-    return (
-      <div className="w-full h-full flex items-center justify-center p-6 bg-muted/20">
-        <Card className="max-w-md">
-          <CardContent className="p-6 text-center space-y-4">
-            <div className="w-16 h-16 mx-auto bg-destructive/10 rounded-full flex items-center justify-center">
-              <AlertCircle className="w-8 h-8 text-destructive" />
-            </div>
-            <h3 className="text-lg font-semibold">Erro</h3>
-            <p className="text-sm text-muted-foreground">{error}</p>
-            <Button 
-              onClick={() => {
-                setPermissionState('prompt');
-                setError(null);
-              }} 
-              variant="outline" 
-              className="w-full"
-              size="lg"
-            >
-              Tentar Novamente
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  } else {
-    // Fallback: algo deu errado
-    return (
-      <div className="w-full h-full flex items-center justify-center p-6">
-        <Alert variant="destructive" className="max-w-md">
-          <AlertCircle className="h-4 w-4" />
-          <AlertDescription>Erro ao carregar mapa</AlertDescription>
-        </Alert>
-      </div>
-    );
   }
 
-  // Se chegamos aqui, temos ambas as localizações - renderizar mapa
-  try {
-    return (
-      <div className="relative w-full h-full min-h-[400px]">
-        {/* Aviso se houver erro na rota mas o mapa pode ser exibido */}
-        {error && (
-          <Alert className="absolute top-4 right-4 max-w-sm z-10 bg-background/95 backdrop-blur-sm">
-            <AlertCircle className="h-4 w-4" />
-            <AlertDescription className="text-xs">{error}</AlertDescription>
-          </Alert>
-        )}
-        
-        <Map
-          initialViewState={{
-            longitude: (userLocation[0] + collaboratorLocation[0]) / 2,
-            latitude: (userLocation[1] + collaboratorLocation[1]) / 2,
-            zoom: 11
-          }}
-          style={{ width: '100%', height: '100%' }}
-          mapStyle="mapbox://styles/mapbox/streets-v12"
-          mapboxAccessToken={mapboxToken}
-          onError={(error) => {
-            console.error("CollaboratorRouteMap - Erro do Mapbox:", error);
-            setError("Erro ao renderizar o mapa");
-          }}
-        >
-        {/* Marcador do usuário */}
-        <Marker 
-          longitude={userLocation[0]} 
-          latitude={userLocation[1]} 
-          anchor="bottom"
-        >
-          <div className="flex flex-col items-center">
-            <div className="bg-blue-500 rounded-full p-2 shadow-lg">
-              <MapPin className="w-5 h-5 text-white" fill="white" />
-            </div>
-            <div className="bg-blue-500 text-white text-xs px-2 py-1 rounded mt-1 shadow-lg whitespace-nowrap">
-              Você
-            </div>
-          </div>
-        </Marker>
+  // Renderizar mapa se temos ambas as localizações
+  if (userLocation && collaboratorLocation) {
+    const locationMethodLabel = 
+      locationMethod === 'gps' ? 'GPS Preciso' :
+      locationMethod === 'ip' ? 'IP Aproximado' :
+      locationMethod === 'manual' ? 'Endereço Manual' : '';
 
-        {/* Marcador do colaborador */}
-        <Marker 
-          longitude={collaboratorLocation[0]} 
-          latitude={collaboratorLocation[1]} 
-          anchor="bottom"
-        >
-          <div className="flex flex-col items-center">
-            <div className="bg-primary rounded-full p-2 shadow-lg">
-              <MapPin className="w-5 h-5 text-primary-foreground" fill="currentColor" />
-            </div>
-            <div className="bg-primary text-primary-foreground text-xs px-2 py-1 rounded mt-1 shadow-lg whitespace-nowrap">
-              {collaboratorName}
-            </div>
-          </div>
-        </Marker>
+    try {
+      return (
+        <div className="relative w-full h-full min-h-[400px]">
+          {/* Avisos */}
+          {routeError && (
+            <Alert className="absolute top-4 right-4 max-w-sm z-10 bg-background/95 backdrop-blur-sm">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription className="text-xs">{routeError}</AlertDescription>
+            </Alert>
+          )}
 
-        {/* Linha da rota */}
-        {routeGeometry && (
-          <Source id="route" type="geojson" data={routeGeometry}>
-            <Layer
-              id="route-layer"
-              type="line"
-              paint={{
-                'line-color': 'hsl(var(--primary))',
-                'line-width': 4,
-                'line-opacity': 0.8
-              }}
-            />
-          </Source>
-        )}
-        </Map>
+          {locationMethod === 'ip' && !routeError && (
+            <Alert className="absolute top-4 right-4 max-w-sm z-10 bg-background/95 backdrop-blur-sm">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription className="text-xs">
+                Usando localização aproximada (IP). A distância pode variar alguns km.
+              </AlertDescription>
+            </Alert>
+          )}
+          
+          <Map
+            initialViewState={{
+              longitude: (userLocation[0] + collaboratorLocation[0]) / 2,
+              latitude: (userLocation[1] + collaboratorLocation[1]) / 2,
+              zoom: 11
+            }}
+            style={{ width: '100%', height: '100%' }}
+            mapStyle="mapbox://styles/mapbox/streets-v12"
+            mapboxAccessToken={mapboxToken}
+          >
+            {/* Marcador do usuário */}
+            <Marker 
+              longitude={userLocation[0]} 
+              latitude={userLocation[1]} 
+              anchor="bottom"
+            >
+              <div className="flex flex-col items-center">
+                <div className="bg-blue-500 rounded-full p-2 shadow-lg">
+                  <MapPin className="w-5 h-5 text-white" fill="white" />
+                </div>
+                <div className="bg-blue-500 text-white text-xs px-2 py-1 rounded mt-1 shadow-lg whitespace-nowrap">
+                  Você ({locationMethodLabel})
+                </div>
+              </div>
+            </Marker>
 
-        {/* Info da rota */}
-        {routeInfo && (
-          <div className="absolute top-4 left-4 bg-background/95 backdrop-blur-sm border border-border rounded-lg px-4 py-3 shadow-lg">
-            <div className="flex items-center gap-3 text-sm">
-              <div>
-                <span className="font-semibold">{routeInfo.distance}</span>
-                <span className="text-muted-foreground"> • </span>
-                <span className="font-semibold">{routeInfo.duration}</span>
+            {/* Marcador do colaborador */}
+            <Marker 
+              longitude={collaboratorLocation[0]} 
+              latitude={collaboratorLocation[1]} 
+              anchor="bottom"
+            >
+              <div className="flex flex-col items-center">
+                <div className="bg-primary rounded-full p-2 shadow-lg">
+                  <MapPin className="w-5 h-5 text-primary-foreground" fill="currentColor" />
+                </div>
+                <div className="bg-primary text-primary-foreground text-xs px-2 py-1 rounded mt-1 shadow-lg whitespace-nowrap">
+                  {collaboratorName}
+                </div>
+              </div>
+            </Marker>
+
+            {/* Linha da rota */}
+            {routeGeometry && (
+              <Source id="route" type="geojson" data={routeGeometry}>
+                <Layer
+                  id="route-layer"
+                  type="line"
+                  paint={{
+                    'line-color': 'hsl(var(--primary))',
+                    'line-width': 4,
+                    'line-opacity': 0.8
+                  }}
+                />
+              </Source>
+            )}
+          </Map>
+
+          {/* Info da rota */}
+          {routeInfo && (
+            <div className="absolute top-4 left-4 bg-background/95 backdrop-blur-sm border border-border rounded-lg px-4 py-3 shadow-lg">
+              <div className="flex items-center gap-3 text-sm">
+                <div>
+                  <span className="font-semibold">{routeInfo.distance}</span>
+                  <span className="text-muted-foreground"> • </span>
+                  <span className="font-semibold">{routeInfo.duration}</span>
+                </div>
               </div>
             </div>
-          </div>
-        )}
-      </div>
-    );
-  } catch (error) {
-    console.error("CollaboratorRouteMap - Erro ao renderizar:", error);
-    return (
-      <div className="w-full h-full flex items-center justify-center p-6 bg-muted/20">
-        <Card className="max-w-md">
-          <CardContent className="p-6 text-center space-y-4">
-            <div className="w-16 h-16 mx-auto bg-destructive/10 rounded-full flex items-center justify-center">
-              <AlertCircle className="w-8 h-8 text-destructive" />
-            </div>
-            <h3 className="text-lg font-semibold">Erro ao Carregar Mapa</h3>
-            <p className="text-sm text-muted-foreground">
-              Ocorreu um erro ao renderizar o mapa. Verifique o console para mais detalhes.
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-    );
+          )}
+
+          {/* Botão para trocar método */}
+          <Button
+            onClick={handleTryAgain}
+            variant="outline"
+            size="sm"
+            className="absolute bottom-4 right-4 z-10 bg-background/95 backdrop-blur-sm"
+          >
+            Trocar Localização
+          </Button>
+        </div>
+      );
+    } catch (error) {
+      console.error("Erro ao renderizar mapa:", error);
+      return (
+        <div className="w-full h-full flex items-center justify-center p-6 bg-muted/20">
+          <Card className="max-w-md">
+            <CardContent className="p-6 text-center space-y-4">
+              <AlertCircle className="w-12 h-12 mx-auto text-destructive" />
+              <h3 className="text-lg font-semibold">Erro ao Carregar Mapa</h3>
+              <Button onClick={handleTryAgain} variant="outline">
+                Tentar Novamente
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      );
+    }
   }
+
+  // Fallback
+  return (
+    <div className="w-full h-full flex items-center justify-center p-6">
+      <Alert variant="destructive" className="max-w-md">
+        <AlertCircle className="h-4 w-4" />
+        <AlertDescription>Erro ao carregar mapa</AlertDescription>
+      </Alert>
+    </div>
+  );
 }
