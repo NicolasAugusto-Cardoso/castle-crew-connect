@@ -5,14 +5,16 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { useNavigate } from 'react-router-dom';
 import { CollaboratorProfile } from '@/types/collaborator';
+import { MAPBOX_TOKEN } from '@/config/mapbox';
 import 'mapbox-gl/dist/mapbox-gl.css';
 
 interface CollaboratorsMapViewProps {
   collaborators: CollaboratorProfile[];
   userLocation?: { lat: number; lng: number } | null;
+  isGeocoding?: boolean;
 }
 
-export function CollaboratorsMapView({ collaborators, userLocation }: CollaboratorsMapViewProps) {
+export function CollaboratorsMapView({ collaborators, userLocation, isGeocoding = false }: CollaboratorsMapViewProps) {
   const navigate = useNavigate();
   const [selectedCollaborator, setSelectedCollaborator] = useState<CollaboratorProfile | null>(null);
 
@@ -43,7 +45,7 @@ export function CollaboratorsMapView({ collaborators, userLocation }: Collaborat
         <div className="text-center">
           <MapPin className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
           <p className="text-muted-foreground">
-            Nenhum colaborador com localização disponível
+            {isGeocoding ? '🗺️ Geocodificando endereços dos colaboradores...' : 'Nenhum colaborador com localização disponível'}
           </p>
         </div>
       </div>
@@ -59,7 +61,7 @@ export function CollaboratorsMapView({ collaborators, userLocation }: Collaborat
         }}
         style={{ width: '100%', height: '100%' }}
         mapStyle="mapbox://styles/mapbox/streets-v12"
-        mapboxAccessToken={import.meta.env.VITE_MAPBOX_TOKEN}
+        mapboxAccessToken={MAPBOX_TOKEN}
       >
         {/* Marcador do usuário */}
         {userLocation && (

@@ -235,10 +235,13 @@ export default function CollaboratorProfile() {
       // 3. Geocodificar apenas se o endereço mudou ou se não tem coordenadas
       let coordinates = null;
       if (addressChanged || !profile?.latitude || !profile?.longitude) {
-        console.log('CollaboratorProfile - Endereço mudou ou sem coordenadas, geocodificando...');
+        console.log('🗺️ CollaboratorProfile - Endereço mudou ou sem coordenadas, geocodificando...');
         coordinates = await geocodeAddress();
+        if (coordinates) {
+          console.log('📍 CollaboratorProfile - Coordenadas obtidas:', coordinates);
+        }
       } else {
-        console.log('CollaboratorProfile - Usando coordenadas existentes');
+        console.log('✅ CollaboratorProfile - Usando coordenadas existentes');
         coordinates = { latitude: profile.latitude, longitude: profile.longitude };
       }
 

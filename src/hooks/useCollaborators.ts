@@ -5,7 +5,9 @@ import { useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 
 export function useCollaborators() {
-  return useQuery({
+  const queryClient = useQueryClient();
+
+  const query = useQuery({
     queryKey: ['collaborators-complete'],
     queryFn: async () => {
       // Buscar perfis de colaboradores (SEM JOIN)
@@ -69,9 +71,71 @@ export function useCollaborators() {
           } as CollaboratorProfile;
         });
 
+      // 🗺️ GEOCODIFICAÇÃO AUTOMÁTICA: Processar colaboradores sem coordenadas
+      const needsGeocode = collaborators.filter(c => 
+        c.street && c.city && (!c.latitude || !c.longitude)
+      );
+
+      if (needsGeocode.length > 0) {
+        console.log(`🗺️ Geocodificando ${needsGeocode.length} colaborador(es) sem coordenadas...`);
+        
+        // Geocodificar em background (não bloqueante)
+        Promise.all(
+          needsGeocode.map(async (collab) => {
+            try {
+              const { data: geoData, error: geoError } = await supabase.functions.invoke('geocode-address', {
+                body: {
+                  street: collab.street,
+                  streetNumber: collab.street_number,
+                  neighborhood: collab.neighborhood,
+                  city: collab.city,
+                  state: collab.state,
+                  postalCode: collab.postal_code,
+                },
+              });
+
+              if (geoError) {
+                console.error(`❌ Erro ao geocodificar ${collab.name}:`, geoError);
+                return;
+              }
+
+              if (geoData?.latitude && geoData?.longitude) {
+                console.log(`📍 Coordenadas obtidas para ${collab.name}:`, {
+                  lat: geoData.latitude,
+                  lng: geoData.longitude
+                });
+
+                // Atualizar no banco
+                const { error: updateError } = await supabase
+                  .from('collaborator_profiles')
+                  .update({
+                    latitude: geoData.latitude,
+                    longitude: geoData.longitude,
+                  })
+                  .eq('user_id', collab.user_id);
+
+                if (updateError) {
+                  console.error(`❌ Erro ao salvar coordenadas para ${collab.name}:`, updateError);
+                } else {
+                  console.log(`✅ Coordenadas salvas para ${collab.name}`);
+                }
+              }
+            } catch (error) {
+              console.error(`❌ Erro ao processar ${collab.name}:`, error);
+            }
+          })
+        ).then(() => {
+          // Invalidar query após geocodificar todos
+          console.log('🔄 Atualizando mapa com novas coordenadas...');
+          queryClient.invalidateQueries({ queryKey: ['collaborators-complete'] });
+        });
+      }
+
       return collaborators;
     },
   });
+
+  return query;
 }
 
 // Hook para verificar se deve mostrar a aba de colaboradores
