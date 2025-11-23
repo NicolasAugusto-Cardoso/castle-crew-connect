@@ -45,6 +45,14 @@ export default function Collaborators() {
   const [sortBy, setSortBy] = useState<'default' | 'distance'>('default');
   const [viewMode, setViewMode] = useState<'grid' | 'map'>('grid');
 
+  // Verificar se há colaboradores sendo geocodificados
+  const isGeocoding = useMemo(() => {
+    if (!collaborators) return false;
+    return collaborators.some(c => 
+      c.street && c.city && (!c.latitude || !c.longitude)
+    );
+  }, [collaborators]);
+
   // Obter localização do usuário
   useEffect(() => {
     if (navigator.geolocation) {
@@ -316,6 +324,7 @@ export default function Collaborators() {
             <CollaboratorsMapView 
               collaborators={sortedCollaborators}
               userLocation={userLocation}
+              isGeocoding={isGeocoding}
             />
           </TabsContent>
         </Tabs>
