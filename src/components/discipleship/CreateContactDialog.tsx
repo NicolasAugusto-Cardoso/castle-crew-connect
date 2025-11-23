@@ -7,6 +7,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Info } from "lucide-react";
 import { useDiscipleship } from "@/hooks/useDiscipleship";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 export function CreateContactDialog() {
   const { createContact } = useDiscipleship();
@@ -49,6 +50,17 @@ export function CreateContactDialog() {
           if (!error && data?.latitude && data?.longitude) {
             latitude = data.latitude;
             longitude = data.longitude;
+            
+            // Mostrar aviso se a localização não for exata
+            if (data.accuracy === 'approximate') {
+              toast.warning('Localização aproximada', {
+                description: 'Não conseguimos localizar o endereço exato. Usamos uma localização aproximada na região.'
+              });
+            } else if (data.accuracy === 'city') {
+              toast.warning('Localização genérica', {
+                description: 'Não conseguimos localizar o endereço. Usamos o centro da cidade como referência.'
+              });
+            }
           }
         } catch (geocodeError) {
           console.error('Geocoding error:', geocodeError);
