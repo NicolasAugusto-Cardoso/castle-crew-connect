@@ -78,15 +78,7 @@ export type Database = {
           updated_by?: string | null
           user_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "fk_collaborator_profiles_user"
-            columns: ["user_id"]
-            isOneToOne: true
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       contact_messages: {
         Row: {
@@ -128,13 +120,6 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "contact_messages_collaborator_id_fkey"
-            columns: ["collaborator_id"]
-            isOneToOne: false
-            referencedRelation: "collaborator_profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "fk_contact_messages_collaborator"
             columns: ["collaborator_id"]
             isOneToOne: false
             referencedRelation: "collaborator_profiles"
