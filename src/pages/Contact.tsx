@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useSearchParams } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
 import { useContactMessages, ContactMessage } from '@/hooks/useContactMessages';
 import { useUserRepliesNotifications } from '@/hooks/useContactReplies';
 import { useUnreadReplies } from '@/hooks/useUnreadReplies';
@@ -20,6 +21,7 @@ import { supabase } from '@/integrations/supabase/client';
 export default function Contact() {
   const { hasRole, loading: authLoading, user } = useAuth();
   const { messages, isLoading, createMessage, updateMessageStatus } = useContactMessages();
+  const queryClient = useQueryClient();
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
@@ -34,6 +36,32 @@ export default function Contact() {
   
   // Initialize unread replies hook
   useUnreadReplies(user?.id);
+
+  // Realtime updates para mensagens
+  useEffect(() => {
+    console.log('📡 Configurando realtime updates para contact_messages');
+    
+    const channel = supabase
+      .channel('contact-messages-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'contact_messages'
+        },
+        (payload) => {
+          console.log('🔥 Mudança detectada em contact_messages:', payload);
+          queryClient.invalidateQueries({ queryKey: ['contact-messages'] });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      console.log('📡 Removendo realtime subscription');
+      supabase.removeChannel(channel);
+    };
+  }, [queryClient]);
 
   // Auto-abrir thread se houver messageId na URL
   useEffect(() => {
