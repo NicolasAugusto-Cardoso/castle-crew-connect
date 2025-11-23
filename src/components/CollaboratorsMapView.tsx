@@ -1,27 +1,95 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import Map, { Marker, Popup } from 'react-map-gl';
-import { MapPin, Eye } from 'lucide-react';
+import { MapPin, Eye, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { useNavigate } from 'react-router-dom';
 import { CollaboratorProfile } from '@/types/collaborator';
 import { MAPBOX_TOKEN } from '@/config/mapbox';
+import { supabase } from '@/integrations/supabase/client';
 import 'mapbox-gl/dist/mapbox-gl.css';
 
 interface CollaboratorsMapViewProps {
   collaborators: CollaboratorProfile[];
   userLocation?: { lat: number; lng: number } | null;
-  isGeocoding?: boolean;
 }
 
-export function CollaboratorsMapView({ collaborators, userLocation, isGeocoding = false }: CollaboratorsMapViewProps) {
+export function CollaboratorsMapView({ collaborators, userLocation }: CollaboratorsMapViewProps) {
   const navigate = useNavigate();
   const [selectedCollaborator, setSelectedCollaborator] = useState<CollaboratorProfile | null>(null);
+  const [geocodedCoords, setGeocodedCoords] = useState<Record<string, { lat: number; lng: number }>>({});
+  const [isGeocoding, setIsGeocoding] = useState(false);
+  const [geocodingProgress, setGeocodingProgress] = useState({ current: 0, total: 0 });
 
-  // Filtrar apenas colaboradores com coordenadas
+  // Geocodificar colaboradores sem coordenadas (mesma lógica do CollaboratorMap)
+  useEffect(() => {
+    const collaboratorsNeedingGeocode = collaborators.filter(c => 
+      c.street && c.city && !c.latitude && !c.longitude && !geocodedCoords[c.user_id]
+    );
+    
+    if (collaboratorsNeedingGeocode.length > 0) {
+      console.log('🗺️ CollaboratorsMapView - Geocodificando colaboradores:', collaboratorsNeedingGeocode.length);
+      setIsGeocoding(true);
+      setGeocodingProgress({ current: 0, total: collaboratorsNeedingGeocode.length });
+      
+      Promise.all(collaboratorsNeedingGeocode.map(async (collab) => {
+        try {
+          const { data, error } = await supabase.functions.invoke('geocode-address', {
+            body: {
+              street: collab.street,
+              streetNumber: collab.street_number,
+              neighborhood: collab.neighborhood,
+              city: collab.city,
+              state: collab.state,
+              postalCode: collab.postal_code,
+              country: 'Brasil'
+            }
+          });
+
+          if (error) throw error;
+
+          if (data?.latitude && data?.longitude) {
+            console.log(`📍 Coordenadas obtidas para ${collab.name}:`, { lat: data.latitude, lng: data.longitude });
+            
+            // Salvar no estado local IMEDIATAMENTE
+            setGeocodedCoords(prev => ({
+              ...prev,
+              [collab.user_id]: { lat: data.latitude, lng: data.longitude }
+            }));
+            
+            setGeocodingProgress(prev => ({ ...prev, current: prev.current + 1 }));
+            
+            // Salvar no banco em background (sem await para não bloquear)
+            supabase
+              .from('collaborator_profiles')
+              .update({
+                latitude: data.latitude,
+                longitude: data.longitude
+              })
+              .eq('user_id', collab.user_id)
+              .then(() => console.log(`💾 Coordenadas salvas no banco para ${collab.name}`));
+          }
+        } catch (error) {
+          console.error(`❌ Erro ao geocodificar ${collab.name}:`, error);
+        }
+      })).finally(() => {
+        console.log('✅ Geocodificação concluída');
+        setIsGeocoding(false);
+      });
+    }
+  }, [collaborators, geocodedCoords]);
+
+  // Combinar coordenadas do banco + geocodificadas localmente
   const collaboratorsWithCoords = useMemo(() => {
-    return collaborators.filter(c => c.latitude && c.longitude);
-  }, [collaborators]);
+    return collaborators.map(c => {
+      const localCoords = geocodedCoords[c.user_id];
+      return {
+        ...c,
+        latitude: c.latitude || localCoords?.lat || null,
+        longitude: c.longitude || localCoords?.lng || null
+      };
+    }).filter(c => c.latitude && c.longitude);
+  }, [collaborators, geocodedCoords]);
 
   // Calcular centro do mapa
   const mapCenter = useMemo(() => {
@@ -39,13 +107,27 @@ export function CollaboratorsMapView({ collaborators, userLocation, isGeocoding 
     return { longitude: -47.9292, latitude: -15.7801 };
   }, [collaboratorsWithCoords, userLocation]);
 
+  if (isGeocoding) {
+    return (
+      <div className="w-full h-[600px] flex items-center justify-center bg-muted/20 rounded-lg">
+        <div className="text-center">
+          <Loader2 className="w-12 h-12 mx-auto mb-4 text-primary animate-spin" />
+          <p className="text-lg font-semibold mb-2">🗺️ Localizando colaboradores no mapa...</p>
+          <p className="text-sm text-muted-foreground">
+            Geocodificando {geocodingProgress.current} de {geocodingProgress.total} colaboradores
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   if (collaboratorsWithCoords.length === 0) {
     return (
       <div className="w-full h-[600px] flex items-center justify-center bg-muted/20 rounded-lg">
         <div className="text-center">
           <MapPin className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
           <p className="text-muted-foreground">
-            {isGeocoding ? '🗺️ Geocodificando endereços dos colaboradores...' : 'Nenhum colaborador com localização disponível'}
+            Nenhum colaborador com localização disponível
           </p>
         </div>
       </div>
