@@ -6,6 +6,7 @@ import { useContactMessages, ContactMessage } from '@/hooks/useContactMessages';
 import { useUserRepliesNotifications } from '@/hooks/useContactReplies';
 import { useUnreadReplies } from '@/hooks/useUnreadReplies';
 import { MessageThread } from '@/components/contact/MessageThread';
+import { DeleteConversationDialog } from '@/components/contact/DeleteConversationDialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -13,14 +14,14 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Mail, Phone, Loader2, MessageSquare, Users } from 'lucide-react';
+import { Mail, Phone, Loader2, MessageSquare, Users, Trash2 } from 'lucide-react';
 import { contactFormSchema } from '@/lib/validations';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 
 export default function Contact() {
   const { hasRole, loading: authLoading, user } = useAuth();
-  const { messages, isLoading, createMessage, updateMessageStatus } = useContactMessages();
+  const { messages, isLoading, createMessage, updateMessageStatus, deleteMessage } = useContactMessages();
   const queryClient = useQueryClient();
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
@@ -28,6 +29,8 @@ export default function Contact() {
   const [message, setMessage] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [selectedMessage, setSelectedMessage] = useState<ContactMessage | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [messageToDelete, setMessageToDelete] = useState<ContactMessage | null>(null);
   const [searchParams, setSearchParams] = useSearchParams();
   const messageIdFromUrl = searchParams.get('messageId');
 
@@ -85,6 +88,12 @@ export default function Contact() {
   // Separate messages by type for regular users
   const adminMessage = displayedMessages.find(m => !m.collaborator_id && m.user_id === user?.id);
   const collaboratorMessages = displayedMessages.filter(m => m.collaborator_id && m.user_id === user?.id);
+
+  const handleDeleteConversation = async () => {
+    if (!messageToDelete) return;
+    await deleteMessage.mutateAsync(messageToDelete.id);
+    setMessageToDelete(null);
+  };
 
   if (authLoading) {
     return (
@@ -365,17 +374,31 @@ export default function Contact() {
                       <p className="text-xs text-muted-foreground">
                         Última atualização: {new Date(adminMessage.updated_at).toLocaleString('pt-BR')}
                       </p>
-                      <Button
-                        className="btn-gradient w-full xs:w-auto"
-                        size="sm"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setSelectedMessage(adminMessage);
-                        }}
-                      >
-                        <MessageSquare className="w-4 h-4 mr-2" />
-                        Abrir conversa
-                      </Button>
+                      <div className="flex gap-2 w-full xs:w-auto">
+                        <Button
+                          className="btn-gradient flex-1 xs:flex-initial"
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedMessage(adminMessage);
+                          }}
+                        >
+                          <MessageSquare className="w-4 h-4 mr-2" />
+                          Abrir conversa
+                        </Button>
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setMessageToDelete(adminMessage);
+                            setDeleteDialogOpen(true);
+                          }}
+                          disabled={deleteMessage.isPending}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
                     </div>
                   </CardContent>
                 )}
@@ -419,17 +442,31 @@ export default function Contact() {
                           <p className="text-xs text-muted-foreground">
                             Última atualização: {new Date(msg.updated_at).toLocaleString('pt-BR')}
                           </p>
-                          <Button
-                            className="btn-gradient w-full xs:w-auto"
-                            size="sm"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setSelectedMessage(msg);
-                            }}
-                          >
-                            <MessageSquare className="w-4 h-4 mr-2" />
-                            Ver conversa
-                          </Button>
+                          <div className="flex gap-2 w-full xs:w-auto">
+                            <Button
+                              className="btn-gradient flex-1 xs:flex-initial"
+                              size="sm"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setSelectedMessage(msg);
+                              }}
+                            >
+                              <MessageSquare className="w-4 h-4 mr-2" />
+                              Ver conversa
+                            </Button>
+                            <Button
+                              variant="destructive"
+                              size="sm"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setMessageToDelete(msg);
+                                setDeleteDialogOpen(true);
+                              }}
+                              disabled={deleteMessage.isPending}
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </div>
                         </div>
                       </CardContent>
                     </Card>
@@ -442,6 +479,18 @@ export default function Contact() {
       )}
         </div>
       </div>
+
+      {/* Dialog de Confirmação de Exclusão */}
+      <DeleteConversationDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={handleDeleteConversation}
+        conversationWith={
+          messageToDelete?.collaborator_id
+            ? messageToDelete.collaborator_name || 'Colaborador'
+            : 'Administração'
+        }
+      />
 
       {/* Padding Inferior com fundo azul/gradient */}
       <div className="bg-gradient-to-r from-primary/20 via-primary/10 to-accent/20 py-6 xs:py-7 sm:py-8">

@@ -151,10 +151,44 @@ export function useContactMessages() {
     }
   });
 
+  const deleteMessage = useMutation({
+    mutationFn: async (messageId: string) => {
+      // Passo 1: Deletar todas as respostas da conversa
+      const { error: repliesError } = await supabase
+        .from('contact_replies')
+        .delete()
+        .eq('message_id', messageId);
+      
+      if (repliesError) throw repliesError;
+      
+      // Passo 2: Deletar a mensagem principal
+      const { error: messageError } = await supabase
+        .from('contact_messages')
+        .delete()
+        .eq('id', messageId);
+      
+      if (messageError) throw messageError;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['contact-messages'] });
+      queryClient.invalidateQueries({ queryKey: ['unread-replies-count'] });
+      toast.success('🗑️ Conversa apagada com sucesso!');
+    },
+    onError: (error: any) => {
+      console.error('Erro ao apagar conversa:', error);
+      if (error.code === '42501') {
+        toast.error('🔐 Você não tem permissão para apagar esta conversa.');
+      } else {
+        toast.error('❌ Não foi possível apagar a conversa. Tente novamente.');
+      }
+    }
+  });
+
   return {
     messages,
     isLoading,
     createMessage,
-    updateMessageStatus
+    updateMessageStatus,
+    deleteMessage
   };
 }
