@@ -102,18 +102,10 @@ export const CollaboratorContactDialog = ({
       return;
     }
 
-    // Aguardar perfil carregar (com fallback)
+    // Aguardar perfil carregar (com fallback) - sempre temos pelo menos o email
     const senderName = userProfile?.name || user?.user_metadata?.name || user?.email?.split('@')[0] || 'Usuário';
     
-    if (!senderName || senderName === 'Usuário') {
-      console.error('❌ Nome do usuário não encontrado');
-      toast({
-        title: 'Erro',
-        description: 'Não foi possível identificar seu nome. Tente novamente.',
-        variant: 'destructive',
-      });
-      return;
-    }
+    console.log('✅ Nome do remetente:', senderName);
 
     console.log('📤 Criando mensagem com nome:', senderName);
     
@@ -229,9 +221,7 @@ export const CollaboratorContactDialog = ({
               onClick={handleSubmit}
               disabled={
                 createMessage.isPending || 
-                message.trim().length < 10 || 
-                profileLoading || 
-                !userProfile
+                message.trim().length < 10
               }
               className="btn-gradient"
             >
