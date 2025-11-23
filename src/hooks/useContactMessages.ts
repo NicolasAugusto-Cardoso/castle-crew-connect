@@ -23,35 +23,65 @@ export function useContactMessages() {
   const { data: messages = [], isLoading } = useQuery({
     queryKey: ['contact-messages'],
     queryFn: async () => {
+      // Buscar todas as mensagens primeiro
       const { data, error } = await supabase
         .from('contact_messages')
-        .select(`
-          *,
-          collaborator_profiles!collaborator_id (
-            id,
-            user_id,
-            profiles!user_id (
-              name,
-              avatar_url
-            )
-          )
-        `)
+        .select('*')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
       
-      console.log('📦 Dados brutos do Supabase:', data);
+      console.log('📦 Total de mensagens retornadas:', data?.length);
       if (data && data.length > 0) {
         console.log('🔍 Primeira mensagem:', data[0]);
       }
       
-      // Transform data to include collaborator_name and collaborator_avatar
-      return data.map((msg: any) => ({
-        ...msg,
-        collaborator_name: msg.collaborator_profiles?.profiles?.name || null,
-        collaborator_avatar: msg.collaborator_profiles?.profiles?.avatar_url || null,
-        collaborator_profiles: undefined
-      })) as ContactMessage[];
+      // Buscar dados dos colaboradores para as mensagens que têm collaborator_id
+      const messagesWithCollaboratorData = await Promise.all(
+        data.map(async (msg: any) => {
+          if (!msg.collaborator_id) {
+            return {
+              ...msg,
+              collaborator_name: null,
+              collaborator_avatar: null,
+            };
+          }
+
+          // Buscar perfil do colaborador
+          const { data: collabProfile } = await supabase
+            .from('collaborator_profiles')
+            .select('user_id')
+            .eq('id', msg.collaborator_id)
+            .maybeSingle();
+
+          if (!collabProfile?.user_id) {
+            console.log(`⚠️ Colaborador não encontrado para mensagem ${msg.id}`);
+            return {
+              ...msg,
+              collaborator_name: null,
+              collaborator_avatar: null,
+            };
+          }
+
+          // Buscar dados do perfil do usuário
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('name, avatar_url')
+            .eq('id', collabProfile.user_id)
+            .maybeSingle();
+
+          console.log(`✅ Colaborador encontrado para mensagem ${msg.id}:`, profile?.name);
+
+          return {
+            ...msg,
+            collaborator_name: profile?.name || null,
+            collaborator_avatar: profile?.avatar_url || null,
+          };
+        })
+      );
+
+      console.log('📊 Mensagens processadas:', messagesWithCollaboratorData.length);
+      return messagesWithCollaboratorData as ContactMessage[];
     }
   });
 
@@ -69,6 +99,13 @@ export function useContactMessages() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['contact-messages'] });
+      
+      // Forçar refetch como fallback após 500ms
+      setTimeout(() => {
+        console.log('🔄 Forçando refetch das mensagens...');
+        queryClient.refetchQueries({ queryKey: ['contact-messages'] });
+      }, 500);
+      
       toast.success('✅ Mensagem enviada com sucesso! Responderemos em breve.', {
         duration: 5000,
       });
