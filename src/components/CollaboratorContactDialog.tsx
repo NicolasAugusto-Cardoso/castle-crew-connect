@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useContactMessages } from '@/hooks/useContactMessages';
@@ -39,13 +39,17 @@ export const CollaboratorContactDialog = ({
   const { toast } = useToast();
   const { createMessage } = useContactMessages();
   const [message, setMessage] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Log quando o diálogo abre
-  console.log('🔵 CollaboratorContactDialog aberto:', {
-    open,
-    collaborator,
-    user: user?.id,
-  });
+  // Log quando o diálogo abre (apenas quando 'open' muda)
+  useEffect(() => {
+    if (open) {
+      console.log('🔵 CollaboratorContactDialog ABRIU:', {
+        collaborator,
+        user: user?.id,
+      });
+    }
+  }, [open, collaborator, user?.id]);
 
   // Buscar perfil do usuário atual
   const { data: userProfile, isLoading: profileLoading } = useQuery({
@@ -59,88 +63,102 @@ export const CollaboratorContactDialog = ({
         .from('profiles')
         .select('name, avatar_url')
         .eq('id', user.id)
-        .single();
+        .maybeSingle();
 
       if (error) {
         console.error('❌ Erro ao buscar perfil:', error);
-        throw error;
+        return null;
       }
       
       console.log('✅ Perfil carregado:', data);
       return data;
     },
-    enabled: !!user?.id, // Remover condição do 'open' para garantir que sempre carregue
-    staleTime: 5 * 60 * 1000, // Cache por 5 minutos
+    enabled: !!user?.id,
+    staleTime: 10 * 60 * 1000, // Cache por 10 minutos
+    retry: false, // Não retry em caso de erro
   });
 
   const handleSubmit = async () => {
-    console.log('🚀 Iniciando envio de mensagem...');
-    console.log('📝 Mensagem:', message);
-    console.log('👤 Usuário:', user?.id);
-    console.log('👥 Colaborador ID:', collaborator.id);
-    console.log('👤 Perfil carregado?', !!userProfile);
-    console.log('⏳ Loading perfil?', profileLoading);
+    setIsSubmitting(true);
     
-    // Validação de mensagem
-    if (!message.trim() || message.trim().length < 10) {
-      toast({
-        title: 'Mensagem muito curta',
-        description: 'Por favor, escreva uma mensagem com pelo menos 10 caracteres.',
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    // Validação de autenticação
-    if (!user?.id) {
-      console.error('❌ Usuário não autenticado');
-      toast({
-        title: 'Erro',
-        description: 'Você precisa estar autenticado para enviar mensagens.',
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    // Aguardar perfil carregar (com fallback) - sempre temos pelo menos o email
-    const senderName = userProfile?.name || user?.user_metadata?.name || user?.email?.split('@')[0] || 'Usuário';
-    
-    console.log('✅ Nome do remetente:', senderName);
-
-    console.log('📤 Criando mensagem com nome:', senderName);
-    
-    const messageData = {
-      name: senderName,
-      phone: 'N/A', // Campo obrigatório no schema
-      email: user.email || undefined,
-      message: message.trim(),
-      collaborator_id: collaborator.id,
-    };
-    
-    console.log('📦 Dados da mensagem:', messageData);
-
-    // Usar o hook para criar a mensagem (que já invalida o cache)
-    createMessage.mutate(messageData, {
-      onSuccess: (data) => {
-        console.log('✅ Mensagem criada com sucesso:', data);
-
-        onOpenChange(false);
-        setMessage('');
-        
-        // Redirecionar para a página de contato com a mensagem aberta
-        if (data?.id) {
-          console.log('🔀 Redirecionando para /contact?messageId=' + data.id);
-          navigate(`/contact?messageId=${data.id}`);
-        } else {
-          console.log('🔀 Redirecionando para /contact');
-          navigate('/contact');
-        }
-      },
-      onError: (error: any) => {
-        console.error('❌ Erro ao criar mensagem:', error);
-        // O hook já mostra toasts de erro
+    try {
+      console.log('🚀 HANDLESUBMIT INICIADO!');
+      console.log('📝 Mensagem:', message);
+      console.log('👤 Usuário:', user?.id);
+      console.log('👥 Colaborador ID:', collaborator.id);
+      console.log('👤 Perfil carregado?', !!userProfile);
+      console.log('⏳ Loading perfil?', profileLoading);
+      
+      // Validação de mensagem
+      if (!message.trim() || message.trim().length < 10) {
+        toast({
+          title: 'Mensagem muito curta',
+          description: 'Por favor, escreva uma mensagem com pelo menos 10 caracteres.',
+          variant: 'destructive',
+        });
+        return;
       }
-    });
+
+      // Validação de autenticação
+      if (!user?.id) {
+        console.error('❌ Usuário não autenticado');
+        toast({
+          title: 'Erro',
+          description: 'Você precisa estar autenticado para enviar mensagens.',
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      // Aguardar perfil carregar (com fallback) - sempre temos pelo menos o email
+      const senderName = userProfile?.name || user?.user_metadata?.name || user?.email?.split('@')[0] || 'Usuário';
+      
+      console.log('✅ Nome do remetente:', senderName);
+
+      console.log('📤 Criando mensagem com nome:', senderName);
+      
+      const messageData = {
+        name: senderName,
+        phone: 'N/A', // Campo obrigatório no schema
+        email: user.email || undefined,
+        message: message.trim(),
+        collaborator_id: collaborator.id,
+      };
+      
+      console.log('📦 Dados da mensagem:', messageData);
+
+      // Usar o hook para criar a mensagem (que já invalida o cache)
+      createMessage.mutate(messageData, {
+        onSuccess: (data) => {
+          console.log('✅ Mensagem criada com sucesso:', data);
+
+          onOpenChange(false);
+          setMessage('');
+          
+          // Redirecionar para a página de contato com a mensagem aberta
+          if (data?.id) {
+            console.log('🔀 Redirecionando para /contact?messageId=' + data.id);
+            navigate(`/contact?messageId=${data.id}`);
+          } else {
+            console.log('🔀 Redirecionando para /contact');
+            navigate('/contact');
+          }
+        },
+        onError: (error: any) => {
+          console.error('❌ Erro ao criar mensagem:', error);
+          // O hook já mostra toasts de erro
+        }
+      });
+    } catch (error) {
+      console.error('💥 ERRO NÃO CAPTURADO:', error);
+      toast({
+        title: 'Erro inesperado',
+        description: error instanceof Error ? error.message : 'Erro desconhecido ao enviar mensagem',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const initials = collaborator.name
@@ -198,34 +216,64 @@ export const CollaboratorContactDialog = ({
               onChange={(e) => setMessage(e.target.value)}
               placeholder="Digite sua mensagem aqui... (mínimo 10 caracteres)"
               className="min-h-[120px] resize-none"
-              disabled={createMessage.isPending}
+              disabled={createMessage.isPending || isSubmitting}
             />
             <p className="text-xs text-muted-foreground">
               {message.length} / mínimo 10 caracteres
             </p>
+            
+            {/* Feedback de validação */}
+            {message.trim().length > 0 && message.trim().length < 10 && (
+              <div className="flex items-center gap-2 text-sm text-orange-500 font-medium">
+                <span>⚠️</span>
+                <span>Digite pelo menos {10 - message.trim().length} caracteres para enviar</span>
+              </div>
+            )}
           </div>
 
           {/* Botões */}
           <div className="flex gap-2 justify-end">
+            {/* Botão de Debug - TEMPORÁRIO */}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                console.log('🔴 TESTE: Botão de debug clicado!');
+                alert('✅ Clique funcionando!');
+              }}
+              className="text-xs"
+            >
+              🐛 Teste
+            </Button>
+            
             <Button
               variant="outline"
               onClick={() => {
                 onOpenChange(false);
                 setMessage('');
               }}
-              disabled={createMessage.isPending}
+              disabled={createMessage.isPending || isSubmitting}
             >
               Cancelar
             </Button>
             <Button
-              onClick={handleSubmit}
+              onClick={() => {
+                console.log('🎯 CLIQUE DETECTADO NO BOTÃO!');
+                console.log('Mensagem:', message);
+                console.log('Tamanho:', message.trim().length);
+                console.log('isPending:', createMessage.isPending);
+                console.log('isSubmitting:', isSubmitting);
+                console.log('Disabled?:', createMessage.isPending || isSubmitting || message.trim().length < 10);
+                handleSubmit();
+              }}
               disabled={
                 createMessage.isPending || 
+                isSubmitting ||
                 message.trim().length < 10
               }
               className="btn-gradient"
             >
-              {createMessage.isPending ? (
+              {(createMessage.isPending || isSubmitting) ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                   Enviando...
