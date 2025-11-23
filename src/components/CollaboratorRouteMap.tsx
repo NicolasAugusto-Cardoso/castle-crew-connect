@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import Map, { Marker, Source, Layer } from 'react-map-gl';
-import { MapPin, Loader2, AlertCircle, Navigation, MapPinned, Globe, Home } from 'lucide-react';
+import { MapPin, Loader2, AlertCircle, Navigation, MapPinned, Globe, Home, Info } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label';
 import { supabase } from '@/integrations/supabase/client';
 import { MAPBOX_TOKEN } from '@/config/mapbox';
 import { useGeolocation } from '@/hooks/useGeolocation';
+import { toast } from 'sonner';
 import 'mapbox-gl/dist/mapbox-gl.css';
 
 interface CollaboratorAddress {
@@ -53,6 +54,7 @@ export function CollaboratorRouteMap({
   const [routeError, setRouteError] = useState<string | null>(null);
   const [showMethodSelection, setShowMethodSelection] = useState(true);
   const [showManualForm, setShowManualForm] = useState(false);
+  const [locationAccuracy, setLocationAccuracy] = useState<'exact' | 'approximate' | 'city' | null>(null);
   
   // Estados do formulário manual
   const [manualAddress, setManualAddress] = useState({
@@ -103,7 +105,8 @@ export function CollaboratorRouteMap({
       const collabLat = geoData.latitude;
       const collabLng = geoData.longitude;
       setCollaboratorLocation([collabLng, collabLat]);
-      console.log('✅ Colaborador geocodificado:', collabLat, collabLng);
+      setLocationAccuracy(geoData.accuracy || 'approximate');
+      console.log('✅ Colaborador geocodificado:', collabLat, collabLng, 'Precisão:', geoData.accuracy);
 
       // Salvar coordenadas em background
       supabase
@@ -222,6 +225,17 @@ export function CollaboratorRouteMap({
         setRouteError('Não foi possível localizar o endereço informado. Verifique os dados.');
         setRouteLoading(false);
         return;
+      }
+
+      // Mostrar aviso se a localização não for exata
+      if (geoData.accuracy === 'approximate') {
+        toast.warning('Localização aproximada', {
+          description: 'Não conseguimos localizar o endereço exato. Usamos uma localização aproximada na região informada.'
+        });
+      } else if (geoData.accuracy === 'city') {
+        toast.warning('Localização genérica', {
+          description: 'Não conseguimos localizar o endereço. Usamos o centro da cidade como referência.'
+        });
       }
 
       setLocationManually(geoData.latitude, geoData.longitude);
@@ -464,6 +478,26 @@ export function CollaboratorRouteMap({
               <AlertCircle className="h-4 w-4" />
               <AlertDescription className="text-xs">
                 Usando localização aproximada (IP). A distância pode variar alguns km.
+              </AlertDescription>
+            </Alert>
+          )}
+
+          {locationAccuracy && locationAccuracy !== 'exact' && !routeError && locationMethod !== 'ip' && (
+            <Alert className="absolute top-4 right-4 max-w-sm z-10 bg-background/95 backdrop-blur-sm">
+              <Info className="h-4 w-4" />
+              <AlertDescription className="text-xs">
+                {locationAccuracy === 'approximate' && (
+                  <>
+                    <div className="font-semibold">⚠️ Localização aproximada</div>
+                    <div>Não conseguimos localizar o endereço exato do colaborador. A rota usa uma localização aproximada.</div>
+                  </>
+                )}
+                {locationAccuracy === 'city' && (
+                  <>
+                    <div className="font-semibold">⚠️ Localização genérica</div>
+                    <div>Não conseguimos localizar o endereço do colaborador. A rota usa o centro da cidade como referência.</div>
+                  </>
+                )}
               </AlertDescription>
             </Alert>
           )}
