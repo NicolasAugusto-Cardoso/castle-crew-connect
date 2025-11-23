@@ -5,7 +5,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent } from '@/components/ui/card';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Loader2, Send, Pencil, Trash2, Check, X } from 'lucide-react';
 import { ContactMessage } from '@/hooks/useContactMessages';
 import { cn } from '@/lib/utils';
@@ -132,7 +132,25 @@ export const MessageThread = ({ message, onClose }: MessageThreadProps) => {
       <CardContent className="p-3 xs:p-4 sm:p-6">
         {/* Header */}
         <div className="flex items-center justify-between gap-2 mb-4">
-          <h3 className="text-base xs:text-lg font-semibold break-words flex-1">Conversa com {message.name}</h3>
+          <div className="flex items-center gap-3 flex-1 min-w-0">
+            {message.collaborator_id ? (
+              <>
+                <Avatar className="h-10 w-10 shrink-0">
+                  <AvatarImage src={(message as any).collaborator_avatar || undefined} />
+                  <AvatarFallback className="bg-primary text-primary-foreground">
+                    {((message as any).collaborator_name || 'C').charAt(0).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+                <h3 className="text-base xs:text-lg font-semibold break-words">
+                  Conversa com {(message as any).collaborator_name || 'Colaborador'}
+                </h3>
+              </>
+            ) : (
+              <h3 className="text-base xs:text-lg font-semibold break-words">
+                Conversa com Administração
+              </h3>
+            )}
+          </div>
           <Button 
             variant="ghost" 
             size="sm" 

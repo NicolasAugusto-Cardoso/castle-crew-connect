@@ -11,7 +11,8 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Mail, Phone, Loader2, MessageSquare } from 'lucide-react';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Mail, Phone, Loader2, MessageSquare, Users } from 'lucide-react';
 import { contactFormSchema } from '@/lib/validations';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
@@ -54,8 +55,8 @@ export default function Contact() {
     : messages.filter(m => m.user_id === user?.id);
 
   // Separate messages by type for regular users
-  const adminMessage = displayedMessages.find(m => !m.collaborator_id);
-  const collaboratorMessages = displayedMessages.filter(m => m.collaborator_id);
+  const adminMessage = displayedMessages.find(m => !m.collaborator_id && m.user_id === user?.id);
+  const collaboratorMessages = displayedMessages.filter(m => m.collaborator_id && m.user_id === user?.id);
 
   if (authLoading) {
     return (
@@ -309,7 +310,7 @@ export default function Contact() {
             />
           ) : (
             <div className="space-y-6">
-              {/* Botão fixo para mensagem de administração */}
+              {/* Card de Administração - Sempre Visível */}
               <Card className="card-elevated border-2 border-primary/20 hover:shadow-lg transition-shadow cursor-pointer" onClick={() => adminMessage && setSelectedMessage(adminMessage)}>
                 <CardHeader>
                   <div className="flex items-center gap-3 mb-2">
@@ -319,7 +320,7 @@ export default function Contact() {
                     <div className="flex-1">
                       <CardTitle className="text-base sm:text-lg">Mensagem para Administração</CardTitle>
                       <p className="text-xs text-muted-foreground mt-1">
-                        {adminMessage ? 'Conversa ativa' : 'Nenhuma mensagem enviada'}
+                        {adminMessage ? 'Conversa ativa' : 'Use o formulário acima para enviar sua primeira mensagem'}
                       </p>
                     </div>
                     {adminMessage && (
@@ -354,23 +355,34 @@ export default function Contact() {
 
               {/* Lista de mensagens com colaboradores */}
               {collaboratorMessages.length > 0 && (
-                <div className="space-y-4">
-                  <h3 className="text-lg font-semibold text-muted-foreground">Mensagens com Colaboradores</h3>
+                <div className="space-y-4 mt-6">
+                  <h3 className="text-lg font-semibold flex items-center gap-2">
+                    <Users className="w-5 h-5 text-primary" />
+                    Conversas com Colaboradores
+                  </h3>
                   {collaboratorMessages.map((msg) => (
                     <Card key={msg.id} className="card-elevated hover:shadow-lg transition-shadow cursor-pointer" onClick={() => setSelectedMessage(msg)}>
                       <CardHeader>
-                        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+                        <div className="flex items-center gap-3">
+                          <Avatar className="h-10 w-10">
+                            <AvatarImage src={msg.collaborator_avatar || undefined} />
+                            <AvatarFallback className="bg-primary text-primary-foreground">
+                              {msg.collaborator_name?.charAt(0).toUpperCase() || 'C'}
+                            </AvatarFallback>
+                          </Avatar>
                           <div className="flex-1">
-                            <CardTitle className="text-base sm:text-lg break-words">
-                              {msg.collaborator_name || 'Colaborador'}
-                            </CardTitle>
+                            <div className="flex items-center justify-between">
+                              <CardTitle className="text-base sm:text-lg break-words">
+                                {msg.collaborator_name || 'Colaborador'}
+                              </CardTitle>
+                              <Badge className={`${getStatusColor(msg.status)} whitespace-nowrap text-xs px-2 py-1`}>
+                                {getStatusLabel(msg.status)}
+                              </Badge>
+                            </div>
                             <p className="text-xs text-muted-foreground mt-1">
                               Conversa iniciada em {new Date(msg.created_at).toLocaleDateString('pt-BR')}
                             </p>
                           </div>
-                          <Badge className={`${getStatusColor(msg.status)} whitespace-nowrap text-xs px-2 py-1`}>
-                            {getStatusLabel(msg.status)}
-                          </Badge>
                         </div>
                       </CardHeader>
                       <CardContent>
