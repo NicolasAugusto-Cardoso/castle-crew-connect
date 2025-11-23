@@ -53,6 +53,10 @@ export default function Contact() {
     ? messages 
     : messages.filter(m => m.user_id === user?.id);
 
+  // Separate messages by type for regular users
+  const adminMessage = displayedMessages.find(m => !m.collaborator_id);
+  const collaboratorMessages = displayedMessages.filter(m => m.collaborator_id);
+
   if (authLoading) {
     return (
       <div className="container mx-auto px-4 py-6 max-w-4xl">
@@ -304,38 +308,94 @@ export default function Contact() {
               onClose={() => setSelectedMessage(null)}
             />
           ) : (
-            <div className="space-y-4">
-              {messages.map((msg) => (
-                <Card key={msg.id} className="card-elevated hover:shadow-lg transition-shadow cursor-pointer" onClick={() => setSelectedMessage(msg)}>
-                  <CardHeader>
-                    <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
-                      <CardTitle className="text-base sm:text-lg break-words flex-1">Mensagem para Administração</CardTitle>
-                      <Badge className={`${getStatusColor(msg.status)} whitespace-nowrap text-xs px-1.5 py-0.5`}>
-                        {getStatusLabel(msg.status)}
-                      </Badge>
+            <div className="space-y-6">
+              {/* Botão fixo para mensagem de administração */}
+              <Card className="card-elevated border-2 border-primary/20 hover:shadow-lg transition-shadow cursor-pointer" onClick={() => adminMessage && setSelectedMessage(adminMessage)}>
+                <CardHeader>
+                  <div className="flex items-center gap-3 mb-2">
+                    <div className="p-2 rounded-full bg-primary/10">
+                      <Mail className="w-5 h-5 text-primary" />
                     </div>
-                  </CardHeader>
+                    <div className="flex-1">
+                      <CardTitle className="text-base sm:text-lg">Mensagem para Administração</CardTitle>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {adminMessage ? 'Conversa ativa' : 'Nenhuma mensagem enviada'}
+                      </p>
+                    </div>
+                    {adminMessage && (
+                      <Badge className={`${getStatusColor(adminMessage.status)} whitespace-nowrap text-xs px-2 py-1`}>
+                        {getStatusLabel(adminMessage.status)}
+                      </Badge>
+                    )}
+                  </div>
+                </CardHeader>
+                {adminMessage && (
                   <CardContent>
-                    <p className="text-sm sm:text-base text-foreground leading-relaxed mb-4 line-clamp-2 break-words">{msg.message}</p>
+                    <p className="text-sm text-foreground leading-relaxed mb-3 line-clamp-2 break-words">{adminMessage.message}</p>
                     <div className="flex flex-col xs:flex-row xs:items-center xs:justify-between gap-3">
                       <p className="text-xs text-muted-foreground">
-                        Enviada em {new Date(msg.created_at).toLocaleString('pt-BR')}
+                        Última atualização: {new Date(adminMessage.updated_at).toLocaleString('pt-BR')}
                       </p>
                       <Button
                         className="btn-gradient w-full xs:w-auto"
                         size="sm"
                         onClick={(e) => {
                           e.stopPropagation();
-                          setSelectedMessage(msg);
+                          setSelectedMessage(adminMessage);
                         }}
                       >
                         <MessageSquare className="w-4 h-4 mr-2" />
-                        Ver conversa
+                        Abrir conversa
                       </Button>
                     </div>
                   </CardContent>
-                </Card>
-              ))}
+                )}
+              </Card>
+
+              {/* Lista de mensagens com colaboradores */}
+              {collaboratorMessages.length > 0 && (
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold text-muted-foreground">Mensagens com Colaboradores</h3>
+                  {collaboratorMessages.map((msg) => (
+                    <Card key={msg.id} className="card-elevated hover:shadow-lg transition-shadow cursor-pointer" onClick={() => setSelectedMessage(msg)}>
+                      <CardHeader>
+                        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+                          <div className="flex-1">
+                            <CardTitle className="text-base sm:text-lg break-words">
+                              {msg.collaborator_name || 'Colaborador'}
+                            </CardTitle>
+                            <p className="text-xs text-muted-foreground mt-1">
+                              Conversa iniciada em {new Date(msg.created_at).toLocaleDateString('pt-BR')}
+                            </p>
+                          </div>
+                          <Badge className={`${getStatusColor(msg.status)} whitespace-nowrap text-xs px-2 py-1`}>
+                            {getStatusLabel(msg.status)}
+                          </Badge>
+                        </div>
+                      </CardHeader>
+                      <CardContent>
+                        <p className="text-sm text-foreground leading-relaxed mb-3 line-clamp-2 break-words">{msg.message}</p>
+                        <div className="flex flex-col xs:flex-row xs:items-center xs:justify-between gap-3">
+                          <p className="text-xs text-muted-foreground">
+                            Última atualização: {new Date(msg.updated_at).toLocaleString('pt-BR')}
+                          </p>
+                          <Button
+                            className="btn-gradient w-full xs:w-auto"
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedMessage(msg);
+                            }}
+                          >
+                            <MessageSquare className="w-4 h-4 mr-2" />
+                            Ver conversa
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
             </div>
           )}
         </div>

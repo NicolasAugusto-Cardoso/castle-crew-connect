@@ -10,6 +10,8 @@ export interface ContactMessage {
   message: string;
   status: 'new' | 'in_progress' | 'answered';
   user_id: string | null;
+  collaborator_id: string | null;
+  collaborator_name?: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -22,16 +24,29 @@ export function useContactMessages() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('contact_messages')
-        .select('*')
+        .select(`
+          *,
+          collaborator:collaborator_profiles(
+            id,
+            user_id,
+            profile:profiles(name)
+          )
+        `)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      return data as ContactMessage[];
+      
+      // Transform data to include collaborator_name
+      return data.map((msg: any) => ({
+        ...msg,
+        collaborator_name: msg.collaborator?.profile?.name || null,
+        collaborator: undefined
+      })) as ContactMessage[];
     }
   });
 
   const createMessage = useMutation({
-    mutationFn: async (message: { name: string; phone: string; email?: string; message: string }) => {
+    mutationFn: async (message: { name: string; phone: string; email?: string; message: string; collaborator_id?: string | null }) => {
       // O user_id será definido automaticamente pelo trigger no backend
       const { data, error } = await supabase
         .from('contact_messages')
