@@ -139,7 +139,7 @@ export function CollaboratorsMapView({ collaborators, userLocation }: Collaborat
       <Map
         initialViewState={{
           ...mapCenter,
-          zoom: userLocation ? 10 : 5
+          zoom: userLocation ? 12 : (collaboratorsWithCoords.length > 0 ? 13 : 5)
         }}
         style={{ width: '100%', height: '100%' }}
         mapStyle="mapbox://styles/mapbox/streets-v12"
