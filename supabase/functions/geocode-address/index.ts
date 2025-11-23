@@ -83,36 +83,38 @@ serve(async (req) => {
     let location = null;
     let accuracy: 'exact' | 'approximate' | 'city' = 'city';
 
-    // Strategy 1: Complete address (street + number + neighborhood + city + state)
-    if (!location && street && streetNumber && neighborhood) {
-      console.log('🎯 Strategy 1: Complete address with neighborhood');
-      const fullAddress = `${street} ${streetNumber}, ${neighborhood}, ${city}, ${state}, Brasil`;
-      location = await callMapbox(fullAddress);
-      if (location) {
-        accuracy = 'exact';
-        console.log('✅ Found with complete address');
-      }
-    }
-
-    // Strategy 2: Without neighborhood (street + number + city + state)
+    // Strategy 1 (PRINCIPAL): Street + number + city + state (WITHOUT neighborhood)
+    // This avoids Mapbox confusing the neighborhood with a street name
     if (!location && street && streetNumber) {
-      console.log('🎯 Strategy 2: Address without neighborhood');
+      console.log('🎯 Strategy 1 (PRINCIPAL): Address without neighborhood');
       const addressWithoutNeighborhood = `${street} ${streetNumber}, ${city}, ${state}, Brasil`;
       location = await callMapbox(addressWithoutNeighborhood);
       if (location) {
         accuracy = 'exact';
-        console.log('✅ Found without neighborhood');
+        console.log('✅ Found without neighborhood (best match)');
       }
     }
 
-    // Strategy 3: Street only (street + city + state)
+    // Strategy 2: Street only (street + city + state)
     if (!location && street) {
-      console.log('🎯 Strategy 3: Street only');
+      console.log('🎯 Strategy 2: Street only');
       const streetOnly = `${street}, ${city}, ${state}, Brasil`;
       location = await callMapbox(streetOnly);
       if (location) {
         accuracy = 'approximate';
         console.log('✅ Found street only');
+      }
+    }
+
+    // Strategy 3: Complete address with neighborhood (last resort)
+    // Only try with neighborhood if the above strategies failed
+    if (!location && street && streetNumber && neighborhood) {
+      console.log('🎯 Strategy 3: Complete address with neighborhood (fallback)');
+      const fullAddress = `${street} ${streetNumber}, ${neighborhood}, ${city}, ${state}, Brasil`;
+      location = await callMapbox(fullAddress);
+      if (location) {
+        accuracy = 'exact';
+        console.log('✅ Found with complete address including neighborhood');
       }
     }
 
