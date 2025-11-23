@@ -1,5 +1,5 @@
-import { useState, useMemo, useEffect } from 'react';
-import Map, { Marker, Popup } from 'react-map-gl';
+import { useState, useMemo, useEffect, useRef } from 'react';
+import Map, { Marker, Popup, MapRef } from 'react-map-gl';
 import { MapPin, Eye, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
@@ -16,10 +16,31 @@ interface CollaboratorsMapViewProps {
 
 export function CollaboratorsMapView({ collaborators, userLocation }: CollaboratorsMapViewProps) {
   const navigate = useNavigate();
+  const mapRef = useRef<MapRef>(null);
   const [selectedCollaborator, setSelectedCollaborator] = useState<CollaboratorProfile | null>(null);
   const [geocodedCoords, setGeocodedCoords] = useState<Record<string, { lat: number; lng: number }>>({});
   const [isGeocoding, setIsGeocoding] = useState(false);
   const [geocodingProgress, setGeocodingProgress] = useState({ current: 0, total: 0 });
+
+  // Função para ajustar o mapa ao clicar em um colaborador
+  const handleCollaboratorClick = (collaborator: CollaboratorProfile) => {
+    setSelectedCollaborator(collaborator);
+    
+    // Ajustar o mapa para centralizar no colaborador com padding para o card
+    if (mapRef.current && collaborator.latitude && collaborator.longitude) {
+      mapRef.current.flyTo({
+        center: [collaborator.longitude, collaborator.latitude],
+        zoom: 15,
+        duration: 1000,
+        padding: {
+          top: 150,
+          bottom: 250,
+          left: 20,
+          right: 20
+        }
+      });
+    }
+  };
 
   // Geocodificar colaboradores sem coordenadas (mesma lógica do CollaboratorMap)
   useEffect(() => {
@@ -137,6 +158,7 @@ export function CollaboratorsMapView({ collaborators, userLocation }: Collaborat
   return (
     <div className="relative w-full h-[600px] rounded-lg overflow-hidden border border-border shadow-lg">
       <Map
+        ref={mapRef}
         initialViewState={{
           ...mapCenter,
           zoom: userLocation ? 12 : (collaboratorsWithCoords.length > 0 ? 13 : 5)
@@ -180,7 +202,7 @@ export function CollaboratorsMapView({ collaborators, userLocation }: Collaborat
               anchor="bottom"
               onClick={(e) => {
                 e.originalEvent.stopPropagation();
-                setSelectedCollaborator(collaborator);
+                handleCollaboratorClick(collaborator);
               }}
             >
               <div className="cursor-pointer transform hover:scale-110 transition-transform">
