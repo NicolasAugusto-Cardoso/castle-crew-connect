@@ -23,6 +23,7 @@ interface RouteDialogProps {
   collaboratorName: string;
   collaboratorLatitude?: number | null;
   collaboratorLongitude?: number | null;
+  collaboratorUserId: string;
 }
 
 export function RouteDialog({
@@ -31,7 +32,8 @@ export function RouteDialog({
   collaboratorAddress,
   collaboratorName,
   collaboratorLatitude,
-  collaboratorLongitude
+  collaboratorLongitude,
+  collaboratorUserId
 }: RouteDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -48,6 +50,7 @@ export function RouteDialog({
             collaboratorName={collaboratorName}
             collaboratorLatitude={collaboratorLatitude}
             collaboratorLongitude={collaboratorLongitude}
+            collaboratorUserId={collaboratorUserId}
           />
         </div>
       </DialogContent>

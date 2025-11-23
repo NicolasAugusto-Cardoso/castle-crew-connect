@@ -22,13 +22,15 @@ interface CollaboratorRouteMapProps {
   collaboratorName: string;
   collaboratorLatitude?: number | null;
   collaboratorLongitude?: number | null;
+  collaboratorUserId: string;
 }
 
 export function CollaboratorRouteMap({ 
   collaboratorAddress,
   collaboratorName,
   collaboratorLatitude,
-  collaboratorLongitude
+  collaboratorLongitude,
+  collaboratorUserId
 }: CollaboratorRouteMapProps) {
   const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
   const [collaboratorLocation, setCollaboratorLocation] = useState<[number, number] | null>(null);
@@ -72,17 +74,18 @@ export function CollaboratorRouteMap({
       const userLng = userPosition.coords.longitude;
       setUserLocation([userLng, userLat]);
       setPermissionState('granted');
+      console.log('✅ Localização do usuário obtida:', userLat, userLng);
 
       // 2. Obter coordenadas do colaborador (do banco ou geocodificando)
       let collabLat: number;
       let collabLng: number;
 
       if (collaboratorLatitude && collaboratorLongitude) {
-        console.log('CollaboratorRouteMap - Usando coordenadas do banco:', collaboratorLatitude, collaboratorLongitude);
+        console.log('✅ Usando coordenadas do banco:', collaboratorLatitude, collaboratorLongitude);
         collabLat = collaboratorLatitude;
         collabLng = collaboratorLongitude;
       } else {
-        console.log('CollaboratorRouteMap - Geocodificando endereço do colaborador...');
+        console.log('🔄 Geocodificando endereço do colaborador...');
         const { data: geoData, error: geoError } = await supabase.functions.invoke('geocode-address', {
           body: {
             street: collaboratorAddress.street,
@@ -95,13 +98,31 @@ export function CollaboratorRouteMap({
         });
 
         if (geoError || !geoData?.latitude || !geoData?.longitude) {
-          setError('Não foi possível encontrar o endereço do colaborador');
+          console.error('❌ Erro ao geocodificar:', geoError);
+          setError('Não foi possível geocodificar o endereço do colaborador. Verifique se o endereço está completo.');
           setLoading(false);
           return;
         }
 
         collabLat = geoData.latitude;
         collabLng = geoData.longitude;
+        console.log('✅ Endereço geocodificado:', collabLat, collabLng);
+
+        // Salvar coordenadas no banco em background (sem await)
+        supabase
+          .from('collaborator_profiles')
+          .update({
+            latitude: collabLat,
+            longitude: collabLng
+          })
+          .eq('user_id', collaboratorUserId)
+          .then(({ error }) => {
+            if (error) {
+              console.error('⚠️ Erro ao salvar coordenadas:', error);
+            } else {
+              console.log('✅ Coordenadas salvas no banco');
+            }
+          });
       }
 
       setCollaboratorLocation([collabLng, collabLat]);
@@ -109,19 +130,22 @@ export function CollaboratorRouteMap({
       // 3. Calcular rota usando Mapbox Directions API
       const url = `https://api.mapbox.com/directions/v5/mapbox/driving/${userLng},${userLat};${collabLng},${collabLat}?geometries=geojson&access_token=${mapboxToken}`;
       
-      console.log("CollaboratorRouteMap - Calculando rota...");
+      console.log("🔄 Calculando rota com Mapbox Directions API...");
+      console.log("📍 URL:", url);
+      
       const response = await fetch(url);
       const data = await response.json();
 
-      if (!response.ok) {
-        console.error("CollaboratorRouteMap - Erro da API Mapbox:", response.status, data);
-        setError(`Erro ao calcular rota (${response.status})`);
-        return;
-      }
+      console.log("📦 Resposta da API Mapbox:", response.status, data);
 
-      if (data.routes && data.routes.length > 0) {
+      if (!response.ok) {
+        const errorMsg = data.message || data.error || 'Erro desconhecido da API Mapbox';
+        console.error("❌ Erro da API Mapbox:", response.status, errorMsg);
+        setError(`Não foi possível calcular a rota: ${errorMsg}. Mostrando apenas as localizações no mapa.`);
+        // Não retorna aqui - continua para mostrar o mapa sem a rota
+      } else if (data.routes && data.routes.length > 0) {
         const route = data.routes[0];
-        console.log("CollaboratorRouteMap - Rota calculada:", route.distance, "m", route.duration, "s");
+        console.log("✅ Rota calculada:", route.distance, "m", route.duration, "s");
         setRouteGeometry(route.geometry);
         
         const distanceKm = (route.distance / 1000).toFixed(1);
@@ -131,8 +155,8 @@ export function CollaboratorRouteMap({
           duration: `${durationMin} min`
         });
       } else {
-        console.error("CollaboratorRouteMap - Nenhuma rota encontrada:", data);
-        setError('Não foi possível calcular a rota');
+        console.error("❌ Nenhuma rota encontrada na resposta:", data);
+        setError('Não foi possível calcular a rota. Mostrando apenas as localizações no mapa.');
       }
     } catch (err: any) {
       console.error('Erro ao calcular rota:', err);
@@ -178,7 +202,7 @@ export function CollaboratorRouteMap({
     );
   }
 
-  if (permissionState === 'denied' || error) {
+  if (permissionState === 'denied') {
     return (
       <div className="w-full h-full flex items-center justify-center p-6 bg-muted/20">
         <Card className="max-w-md">
@@ -186,10 +210,38 @@ export function CollaboratorRouteMap({
             <div className="w-16 h-16 mx-auto bg-destructive/10 rounded-full flex items-center justify-center">
               <AlertCircle className="w-8 h-8 text-destructive" />
             </div>
-            <h3 className="text-lg font-semibold">Acesso Negado</h3>
+            <h3 className="text-lg font-semibold">Permissão de Localização Negada</h3>
             <p className="text-sm text-muted-foreground">
-              {error || 'Permissão de localização negada. Para calcular a rota, é necessário permitir o acesso à sua localização.'}
+              Para calcular a rota, é necessário permitir o acesso à sua localização nas configurações do navegador.
             </p>
+            <Button 
+              onClick={() => {
+                setPermissionState('prompt');
+                setError(null);
+              }} 
+              variant="outline" 
+              className="w-full"
+              size="lg"
+            >
+              Tentar Novamente
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // Se tiver erro mas também tiver localização, mostra o mapa com aviso
+  if (error && !userLocation) {
+    return (
+      <div className="w-full h-full flex items-center justify-center p-6 bg-muted/20">
+        <Card className="max-w-md">
+          <CardContent className="p-6 text-center space-y-4">
+            <div className="w-16 h-16 mx-auto bg-destructive/10 rounded-full flex items-center justify-center">
+              <AlertCircle className="w-8 h-8 text-destructive" />
+            </div>
+            <h3 className="text-lg font-semibold">Erro</h3>
+            <p className="text-sm text-muted-foreground">{error}</p>
             <Button 
               onClick={() => {
                 setPermissionState('prompt');
@@ -221,6 +273,14 @@ export function CollaboratorRouteMap({
   try {
     return (
       <div className="relative w-full h-full min-h-[400px]">
+        {/* Aviso se houver erro na rota mas o mapa pode ser exibido */}
+        {error && userLocation && collaboratorLocation && (
+          <Alert className="absolute top-4 right-4 max-w-sm z-10 bg-background/95 backdrop-blur-sm">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription className="text-xs">{error}</AlertDescription>
+          </Alert>
+        )}
+        
         <Map
           initialViewState={{
             longitude: userLocation && collaboratorLocation 
