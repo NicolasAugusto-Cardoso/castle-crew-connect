@@ -299,6 +299,7 @@ export default function CollaboratorDetails() {
           collaboratorName={collaborator.name!}
           collaboratorLatitude={collaborator.latitude}
           collaboratorLongitude={collaborator.longitude}
+          collaboratorUserId={collaborator.user_id}
         />
       )}
     </div>

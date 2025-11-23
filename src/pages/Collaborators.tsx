@@ -40,6 +40,9 @@ export default function Collaborators() {
       postalCode: string;
     };
     name: string;
+    userId: string;
+    latitude?: number | null;
+    longitude?: number | null;
   } | null>(null);
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [sortBy, setSortBy] = useState<'default' | 'distance'>('default');
@@ -294,7 +297,10 @@ export default function Collaborators() {
                             state: collaborator.state || '',
                             postalCode: collaborator.postal_code || ''
                           },
-                          name: collaborator.name!
+                          name: collaborator.name!,
+                          userId: collaborator.user_id,
+                          latitude: collaborator.latitude,
+                          longitude: collaborator.longitude
                         })}
                         variant="outline"
                         size="icon"
@@ -328,6 +334,9 @@ export default function Collaborators() {
           onOpenChange={(open) => !open && setSelectedRoute(null)}
           collaboratorAddress={selectedRoute.address}
           collaboratorName={selectedRoute.name}
+          collaboratorUserId={selectedRoute.userId}
+          collaboratorLatitude={selectedRoute.latitude}
+          collaboratorLongitude={selectedRoute.longitude}
         />
       )}
     </div>
