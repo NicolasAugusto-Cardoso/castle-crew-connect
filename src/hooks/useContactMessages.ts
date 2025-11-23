@@ -27,10 +27,10 @@ export function useContactMessages() {
         .from('contact_messages')
         .select(`
           *,
-          collaborator_profile:collaborator_profiles!contact_messages_collaborator_id_fkey(
+          collaborator_profiles!collaborator_id (
             id,
             user_id,
-            profiles(
+            profiles!user_id (
               name,
               avatar_url
             )
@@ -40,12 +40,17 @@ export function useContactMessages() {
 
       if (error) throw error;
       
+      console.log('📦 Dados brutos do Supabase:', data);
+      if (data && data.length > 0) {
+        console.log('🔍 Primeira mensagem:', data[0]);
+      }
+      
       // Transform data to include collaborator_name and collaborator_avatar
       return data.map((msg: any) => ({
         ...msg,
-        collaborator_name: msg.collaborator_profile?.profiles?.name || null,
-        collaborator_avatar: msg.collaborator_profile?.profiles?.avatar_url || null,
-        collaborator_profile: undefined
+        collaborator_name: msg.collaborator_profiles?.profiles?.name || null,
+        collaborator_avatar: msg.collaborator_profiles?.profiles?.avatar_url || null,
+        collaborator_profiles: undefined
       })) as ContactMessage[];
     }
   });
