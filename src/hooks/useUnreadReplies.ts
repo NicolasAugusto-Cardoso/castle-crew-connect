@@ -3,15 +3,49 @@ import { supabase } from '@/integrations/supabase/client';
 import { useEffect } from 'react';
 import { toast } from '@/hooks/use-toast';
 
-export const useUnreadReplies = (userId: string | undefined) => {
+export const useUnreadReplies = (userId: string | undefined, userRoles?: string[]) => {
   const queryClient = useQueryClient();
+
+  // Verificar roles do usuário
+  const isCollaborator = userRoles?.includes('collaborator');
+  const isAdmin = userRoles?.includes('admin');
+  const isSocialMedia = userRoles?.includes('social_media');
 
   // Buscar contador de mensagens não lidas
   const { data: unreadCount = 0, isLoading } = useQuery({
-    queryKey: ['unread-replies-count', userId],
+    queryKey: ['unread-replies-count', userId, userRoles],
     queryFn: async () => {
       if (!userId) return 0;
 
+      // Para colaboradores: contar mensagens novas para eles
+      if (isCollaborator) {
+        const { data: collabProfile } = await supabase
+          .from('collaborator_profiles')
+          .select('id')
+          .eq('user_id', userId)
+          .single();
+        
+        if (collabProfile) {
+          const { count } = await supabase
+            .from('contact_messages')
+            .select('*', { count: 'exact', head: true })
+            .eq('collaborator_id', collabProfile.id)
+            .eq('status', 'new');
+          return count || 0;
+        }
+        return 0;
+      }
+
+      // Para admins e social media: contar todas as mensagens novas
+      if (isAdmin || isSocialMedia) {
+        const { count } = await supabase
+          .from('contact_messages')
+          .select('*', { count: 'exact', head: true })
+          .eq('status', 'new');
+        return count || 0;
+      }
+
+      // Para usuários normais: contar respostas não lidas nas suas mensagens
       const { data: messages } = await supabase
         .from('contact_messages')
         .select('id')

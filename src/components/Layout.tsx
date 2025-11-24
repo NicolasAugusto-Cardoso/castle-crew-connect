@@ -2,17 +2,21 @@ import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { Home, MessageSquare, Users, FolderOpen, BookOpen, LogOut, UserCircle, Settings } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useUnreadReplies } from '@/hooks/useUnreadReplies';
+import { usePushNotifications } from '@/hooks/usePushNotifications';
 import { useShowCollaboratorsTab } from '@/hooks/useCollaborators';
 import castleLogo from '@/assets/castle-logo-final.png';
 import { Badge } from '@/components/ui/badge';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 
 export const Layout = () => {
-  const { user, signOut, hasRole } = useAuth();
+  const { user, signOut, hasRole, userRoles } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const { unreadCount } = useUnreadReplies(user?.id);
+  const { unreadCount } = useUnreadReplies(user?.id, userRoles);
   const { data: showCollaboratorsTab } = useShowCollaboratorsTab();
+  
+  // Registrar push notifications
+  usePushNotifications(user?.id);
 
   const handleLogout = async () => {
     await signOut();
