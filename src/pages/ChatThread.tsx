@@ -138,7 +138,7 @@ export default function ChatThread() {
     {
       id: message.id,
       content: message.message,
-      sender_id: message.collaborator_id || message.user_id || 'system',
+      sender_id: message.user_id || 'system',
       sender_name: message.name,
       sender_avatar: message.collaborator_avatar,
       created_at: message.created_at,
