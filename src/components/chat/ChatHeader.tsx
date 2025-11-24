@@ -12,7 +12,7 @@ export function ChatHeader({ name, avatar, subtitle }: ChatHeaderProps) {
   const navigate = useNavigate();
 
   return (
-    <div className="bg-background border-b border-border sticky top-0 z-50 shadow-md">
+    <div className="bg-background border-b-2 border-border/40 sticky top-0 z-50 shadow-lg shadow-black/10">
       <div className="flex items-center gap-3 px-4 py-3">
         <button
           onClick={() => navigate("/contact")}
