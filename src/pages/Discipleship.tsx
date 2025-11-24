@@ -3,6 +3,7 @@ import { useDiscipleship } from '@/hooks/useDiscipleship';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Users, Phone, Mail, MapPin, User, Loader2 } from 'lucide-react';
 import { CreateContactDialog } from '@/components/discipleship/CreateContactDialog';
 import {
@@ -25,7 +26,7 @@ const statusLabels: Record<string, string> = {
 
 export default function Discipleship() {
   const { hasRole, user } = useAuth();
-  const { contacts, isLoading, updateContactStatus } = useDiscipleship();
+  const { contacts, collaborators, isLoading, updateContactStatus, assignCollaborator } = useDiscipleship();
 
   const isCollaborator = hasRole(['collaborator']);
   const canRegister = hasRole(['admin', 'social_media']);
@@ -139,10 +140,81 @@ export default function Discipleship() {
                     ))}
                   </SelectContent>
                 </Select>
+
+                {/* Atribuir ou trocar colaborador */}
+                {canRegister && !contact.assigned_collaborator_id && (
+                  <Select
+                    onValueChange={(value) =>
+                      assignCollaborator.mutate({ contactId: contact.id, collaboratorId: value })
+                    }
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Atribuir a um colaborador..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {collaborators.map((collab) => (
+                        <SelectItem key={collab.id} value={collab.user_id}>
+                          {collab.name} - {collab.city || collab.neighborhood || 'Sem região'}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+
+                {canRegister && contact.assigned_collaborator_id && (
+                  <Select
+                    value={contact.assigned_collaborator_id}
+                    onValueChange={(value) =>
+                      assignCollaborator.mutate({ contactId: contact.id, collaboratorId: value })
+                    }
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {collaborators.map((collab) => (
+                        <SelectItem key={collab.id} value={collab.user_id}>
+                          {collab.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
               </div>
             </CardContent>
           </Card>
           ))}
+        </div>
+      )}
+
+      {/* Lista de colaboradores cadastrados */}
+      {canRegister && collaborators.length > 0 && (
+        <div className="mt-8 space-y-4">
+          <h2 className="text-xl font-bold flex items-center gap-2">
+            <Users className="w-5 h-5" />
+            Colaboradores Cadastrados ({collaborators.length})
+          </h2>
+
+          <div className="grid gap-3">
+            {collaborators.map((collab) => (
+              <Card key={collab.id} className="card-elevated">
+                <CardContent className="py-4">
+                  <div className="flex items-center gap-3">
+                    <Avatar>
+                      <AvatarImage src={collab.avatar_url || ''} />
+                      <AvatarFallback>{collab.name?.charAt(0)}</AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <p className="font-medium">{collab.name}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {collab.city || collab.neighborhood || 'Sem região'}
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
         </div>
       )}
     </div>

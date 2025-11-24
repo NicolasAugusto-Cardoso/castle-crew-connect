@@ -43,33 +43,47 @@ export default function ChatThread() {
     enabled: !!message?.user_id,
   });
 
-  // Marcar mensagens como lidas quando abrir a thread
+  // Marcar mensagens como lidas e atualizar status quando abrir a thread
   useEffect(() => {
     if (!user?.id || !messageId) return;
 
-    const markRepliesAsRead = async () => {
+    const markRepliesAsReadAndUpdateStatus = async () => {
+      // Marcar respostas como lidas
       const unreadReplies = replies.filter(
         r => r.sender_id !== user.id && !r.is_read
       );
 
-      if (unreadReplies.length === 0) return;
+      if (unreadReplies.length > 0) {
+        const { error } = await supabase
+          .from('contact_replies')
+          .update({ is_read: true })
+          .eq('message_id', messageId)
+          .neq('sender_id', user.id)
+          .eq('is_read', false);
 
-      const { error } = await supabase
-        .from('contact_replies')
-        .update({ is_read: true })
-        .eq('message_id', messageId)
-        .neq('sender_id', user.id)
-        .eq('is_read', false);
+        if (error) {
+          console.error('Erro ao marcar mensagens como lidas:', error);
+        } else {
+          await queryClient.invalidateQueries({ queryKey: ['unread-replies-count', user.id] });
+        }
+      }
 
-      if (error) {
-        console.error('Erro ao marcar mensagens como lidas:', error);
-      } else {
-        await queryClient.invalidateQueries({ queryKey: ['unread-replies-count', user.id] });
+      // Atualizar status da mensagem de 'new' para 'in_progress'
+      if (message && message.status === 'new') {
+        const { error } = await supabase
+          .from('contact_messages')
+          .update({ status: 'in_progress' })
+          .eq('id', messageId);
+
+        if (!error) {
+          await queryClient.invalidateQueries({ queryKey: ['contact-messages'] });
+          await queryClient.invalidateQueries({ queryKey: ['unread-replies-count', user.id] });
+        }
       }
     };
 
-    markRepliesAsRead();
-  }, [messageId, replies, user?.id, queryClient]);
+    markRepliesAsReadAndUpdateStatus();
+  }, [messageId, replies, message, user?.id, queryClient]);
 
   // Redirect if message not found
   useEffect(() => {
