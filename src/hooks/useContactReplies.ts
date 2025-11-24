@@ -10,6 +10,12 @@ export interface ContactReply {
   content: string;
   created_at: string;
   updated_at: string;
+  is_read: boolean;
+  sender?: {
+    id: string;
+    name: string;
+    avatar_url: string | null;
+  };
 }
 
 export function useContactReplies(messageId: string | null) {
@@ -21,14 +27,31 @@ export function useContactReplies(messageId: string | null) {
     queryFn: async () => {
       if (!messageId) return [];
 
-      const { data, error } = await supabase
+      const { data: repliesData, error: repliesError } = await supabase
         .from('contact_replies')
         .select('*')
         .eq('message_id', messageId)
         .order('created_at', { ascending: true });
 
-      if (error) throw error;
-      return data as ContactReply[];
+      if (repliesError) throw repliesError;
+
+      // Buscar informações dos remetentes
+      const senderIds = [...new Set(repliesData?.map(r => r.sender_id) || [])];
+      
+      if (senderIds.length === 0) return repliesData as ContactReply[];
+
+      const { data: profilesData } = await supabase
+        .from('profiles')
+        .select('id, name, avatar_url')
+        .in('id', senderIds);
+
+      // Combinar dados
+      const repliesWithSender = repliesData?.map(reply => ({
+        ...reply,
+        sender: profilesData?.find(p => p.id === reply.sender_id) || null
+      }));
+
+      return repliesWithSender as ContactReply[];
     },
     enabled: !!messageId,
   });
