@@ -349,6 +349,80 @@ export default function Contact() {
         </div>
       )}
 
+      {/* Seção para Colaboradores */}
+      {isCollaborator && (
+        <div className="space-y-4">
+          <h2 className="text-xl font-bold">Mensagens Recebidas</h2>
+
+          {isLoading || !collaboratorProfileId ? (
+            // Loading
+            <div className="flex justify-center py-12">
+              <Loader2 className="w-8 h-8 animate-spin text-primary" />
+            </div>
+          ) : displayedMessages.length === 0 ? (
+            // Sem mensagens
+            <Card className="card-elevated">
+              <CardContent className="py-12 text-center text-muted-foreground">
+                <Mail className="w-12 h-12 mx-auto mb-3" />
+                <p>Nenhuma mensagem recebida ainda</p>
+              </CardContent>
+            </Card>
+          ) : (
+            // Renderizar mensagens recebidas pelo colaborador
+            displayedMessages.map((msg) => (
+              <Card
+                key={msg.id}
+                className="card-elevated hover:shadow-lg transition-shadow cursor-pointer"
+                onClick={() => navigate(`/contact/${msg.id}`)}
+              >
+                <CardHeader>
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex-1 min-w-0">
+                      <CardTitle className="text-base sm:text-lg">{msg.name}</CardTitle>
+
+                      <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground">
+                        <span className="flex items-center gap-1">
+                          <Phone className="w-4 h-4" />
+                          {msg.phone}
+                        </span>
+
+                        {msg.email && (
+                          <span className="flex items-center gap-1">
+                            <Mail className="w-4 h-4" />
+                            {msg.email}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    <Badge className={`${getStatusColor(msg.status)} whitespace-nowrap`}>
+                      {getStatusLabel(msg.status)}
+                    </Badge>
+                  </div>
+                </CardHeader>
+
+                <CardContent>
+                  <p className="text-sm text-foreground leading-relaxed mb-4 line-clamp-2">
+                    {msg.message}
+                  </p>
+
+                  <div className="flex items-center justify-between gap-3">
+                    <p className="text-xs text-muted-foreground">
+                      Recebida em {new Date(msg.created_at).toLocaleString('pt-BR')}
+                    </p>
+
+                    <Button className="btn-gradient" size="sm">
+                      <MessageSquare className="w-4 h-4 mr-2" />
+                      Ver conversa
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            ))
+          )}
+        </div>
+      )}
+
       {!canManageMessages && !isCollaborator && (
         <div className="mt-8">
           <h2 className="text-xl font-bold mb-4">Minhas Mensagens</h2>
