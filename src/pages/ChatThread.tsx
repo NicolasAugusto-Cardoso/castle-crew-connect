@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useContactMessages } from '@/hooks/useContactMessages';
 import { useContactReplies } from '@/hooks/useContactReplies';
-import { useQueryClient } from '@tanstack/react-query';
+import { useQueryClient, useQuery } from '@tanstack/react-query';
 import { ChatContainer } from '@/components/chat/ChatContainer';
 import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -20,6 +20,28 @@ export default function ChatThread() {
   const [replyText, setReplyText] = useState('');
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editText, setEditText] = useState('');
+
+  // Buscar avatar do usuário que enviou a mensagem inicial
+  const { data: senderProfile } = useQuery({
+    queryKey: ['sender-profile', message?.user_id],
+    queryFn: async () => {
+      if (!message?.user_id) return null;
+      
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('avatar_url')
+        .eq('id', message.user_id)
+        .single();
+      
+      if (error) {
+        console.error('Erro ao buscar perfil do remetente:', error);
+        return null;
+      }
+      
+      return data;
+    },
+    enabled: !!message?.user_id,
+  });
 
   // Marcar mensagens como lidas quando abrir a thread
   useEffect(() => {
@@ -140,7 +162,7 @@ export default function ChatThread() {
       content: message.message,
       sender_id: message.user_id || 'system', // user_id é o REMETENTE da mensagem inicial
       sender_name: message.name,
-      sender_avatar: message.collaborator_avatar,
+      sender_avatar: senderProfile?.avatar_url || null, // Avatar do usuário que enviou
       created_at: message.created_at,
       updated_at: message.created_at,
     },
