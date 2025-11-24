@@ -4,9 +4,19 @@ import { useUsers, UserWithRoles } from '@/hooks/useUsers';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Plus, UserCircle, Mail, Shield, Loader2 } from 'lucide-react';
+import { Plus, UserCircle, Mail, Shield, Loader2, Trash2 } from 'lucide-react';
 import { CreateUserDialog } from '@/components/users/CreateUserDialog';
 import { EditUserDialog } from '@/components/users/EditUserDialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 const roleLabels: Record<string, string> = {
   admin: 'Administrador',
@@ -23,11 +33,13 @@ const roleColors: Record<string, string> = {
 };
 
 export default function Users() {
-  const { hasRole, loading: authLoading } = useAuth();
-  const { users, isLoading, createUser, updateUserRoles, isCreating, isUpdating } = useUsers();
+  const { hasRole, loading: authLoading, user } = useAuth();
+  const { users, isLoading, createUser, updateUserRoles, deleteUser, isCreating, isUpdating, isDeleting } = useUsers();
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<UserWithRoles | null>(null);
+  const [userToDelete, setUserToDelete] = useState<UserWithRoles | null>(null);
 
   const isAdmin = hasRole(['admin']);
 
@@ -82,6 +94,21 @@ export default function Users() {
   const openEditDialog = (user: UserWithRoles) => {
     setSelectedUser(user);
     setEditDialogOpen(true);
+  };
+
+  const openDeleteDialog = (user: UserWithRoles) => {
+    setUserToDelete(user);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDeleteUser = () => {
+    if (!userToDelete) return;
+    deleteUser(userToDelete.id, {
+      onSuccess: () => {
+        setDeleteDialogOpen(false);
+        setUserToDelete(null);
+      },
+    });
   };
 
   return (
@@ -139,9 +166,19 @@ export default function Users() {
                     <p>Criado em: {new Date(user.created_at).toLocaleDateString('pt-BR')}</p>
                     <p>Permissões: {user.roles.length}</p>
                   </div>
-                  <Button variant="outline" size="sm" onClick={() => openEditDialog(user)}>
-                    Editar
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button variant="outline" size="sm" onClick={() => openEditDialog(user)}>
+                      Editar
+                    </Button>
+                    <Button 
+                      variant="destructive" 
+                      size="sm" 
+                      onClick={() => openDeleteDialog(user)}
+                      disabled={isDeleting}
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -163,6 +200,29 @@ export default function Users() {
         onSubmit={handleEditUser}
         isLoading={isUpdating}
       />
+
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirmar Exclusão</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem certeza que deseja excluir o usuário <strong>{userToDelete?.name}</strong>?
+              Esta ação não pode ser desfeita e todos os dados associados serão removidos.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteUser}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              disabled={isDeleting}
+            >
+              {isDeleting && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+              Excluir Usuário
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

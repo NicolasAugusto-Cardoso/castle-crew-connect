@@ -34,6 +34,7 @@ export default function Contact() {
   const [messageToDelete, setMessageToDelete] = useState<ContactMessage | null>(null);
   const [searchParams, setSearchParams] = useSearchParams();
   const messageIdFromUrl = searchParams.get('messageId');
+  const [collaboratorProfileId, setCollaboratorProfileId] = useState<string | null>(null);
 
   // Subscribe to realtime notifications for new replies
   useUserRepliesNotifications();
@@ -78,12 +79,30 @@ export default function Contact() {
     }
   }, [messageIdFromUrl, messages, navigate, setSearchParams]);
 
+  // Buscar perfil de colaborador se o usuário for colaborador
+  const isCollaborator = hasRole(['collaborator']);
+  
+  useEffect(() => {
+    if (isCollaborator && user?.id) {
+      supabase
+        .from('collaborator_profiles')
+        .select('id')
+        .eq('user_id', user.id)
+        .single()
+        .then(({ data }) => {
+          setCollaboratorProfileId(data?.id || null);
+        });
+    }
+  }, [isCollaborator, user?.id]);
+
   const canManageMessages = hasRole(['admin', 'social_media']);
   
-  // Filter messages for regular users (only their own)
+  // Filter messages based on user role
   const displayedMessages = canManageMessages 
     ? messages 
-    : messages.filter(m => m.user_id === user?.id);
+    : isCollaborator && collaboratorProfileId
+      ? messages.filter(m => m.collaborator_id === collaboratorProfileId)
+      : messages.filter(m => m.user_id === user?.id);
 
   // Separate messages by type for regular users
   const adminMessage = displayedMessages.find(m => !m.collaborator_id && m.user_id === user?.id);
@@ -199,7 +218,7 @@ export default function Contact() {
       {/* Área de Conteúdo Principal */}
       <div className="flex-1 bg-transparent py-4 xs:py-5 sm:py-6">
         <div className="container mx-auto px-3 xs:px-4 max-w-4xl">
-          {!canManageMessages && displayedMessages.length === 0 && (
+          {!canManageMessages && !isCollaborator && !adminMessage && (
         <Card className="mb-6 card-elevated">
           <CardHeader>
             <CardTitle>Envie uma Mensagem</CardTitle>
@@ -330,7 +349,7 @@ export default function Contact() {
         </div>
       )}
 
-      {!canManageMessages && displayedMessages.length > 0 && (
+      {!canManageMessages && !isCollaborator && (
         <div className="mt-8">
           <h2 className="text-xl font-bold mb-4">Minhas Mensagens</h2>
           <div className="space-y-6">
