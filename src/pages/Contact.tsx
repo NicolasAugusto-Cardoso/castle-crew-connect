@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { useContactMessages, ContactMessage } from '@/hooks/useContactMessages';
 import { useUserRepliesNotifications } from '@/hooks/useContactReplies';
@@ -20,6 +20,7 @@ import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 
 export default function Contact() {
+  const navigate = useNavigate();
   const { hasRole, loading: authLoading, user } = useAuth();
   const { messages, isLoading, createMessage, updateMessageStatus, deleteMessage } = useContactMessages();
   const queryClient = useQueryClient();
@@ -66,17 +67,16 @@ export default function Contact() {
     };
   }, [queryClient]);
 
-  // Auto-abrir thread se houver messageId na URL
+  // Auto-navegar para thread se houver messageId na URL
   useEffect(() => {
-    if (messageIdFromUrl && messages.length > 0 && !selectedMessage) {
+    if (messageIdFromUrl && messages.length > 0) {
       const messageToOpen = messages.find(m => m.id === messageIdFromUrl);
       if (messageToOpen) {
-        setSelectedMessage(messageToOpen);
-        // Remover parâmetro da URL após abrir
+        navigate(`/contact/${messageIdFromUrl}`);
         setSearchParams({});
       }
     }
-  }, [messageIdFromUrl, messages, selectedMessage, setSearchParams]);
+  }, [messageIdFromUrl, messages, navigate, setSearchParams]);
 
   const canManageMessages = hasRole(['admin', 'social_media']);
   
@@ -266,14 +266,8 @@ export default function Contact() {
 
       {canManageMessages && (
         <div className="space-y-4">
-          {selectedMessage ? (
-            <MessageThread
-              message={selectedMessage}
-              onClose={() => setSelectedMessage(null)}
-            />
-          ) : (
-            <>
-              <h2 className="text-xl font-bold">Mensagens Recebidas</h2>
+          <>
+            <h2 className="text-xl font-bold">Mensagens Recebidas</h2>
               {isLoading ? (
                 <div className="flex justify-center py-12">
                   <Loader2 className="w-8 h-8 animate-spin text-primary" />
@@ -287,7 +281,7 @@ export default function Contact() {
                 </Card>
               ) : (
                 messages.map((msg) => (
-                <Card key={msg.id} className="card-elevated hover:shadow-lg transition-shadow cursor-pointer" onClick={() => setSelectedMessage(msg)}>
+                <Card key={msg.id} className="card-elevated hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate(`/contact/${msg.id}`)}>
                     <CardHeader>
                       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
                         <div className="flex-1 min-w-0">
@@ -321,7 +315,7 @@ export default function Contact() {
                           size="sm"
                           onClick={(e) => {
                             e.stopPropagation();
-                            setSelectedMessage(msg);
+                            navigate(`/contact/${msg.id}`);
                           }}
                         >
                           <MessageSquare className="w-4 h-4 mr-2" />
@@ -332,90 +326,83 @@ export default function Contact() {
                   </Card>
                 ))
               )}
-            </>
-          )}
+          </>
         </div>
       )}
 
       {!canManageMessages && displayedMessages.length > 0 && (
         <div className="mt-8">
           <h2 className="text-xl font-bold mb-4">Minhas Mensagens</h2>
-          {selectedMessage ? (
-            <MessageThread
-              message={selectedMessage}
-              onClose={() => setSelectedMessage(null)}
-            />
-          ) : (
-            <div className="space-y-6">
-              {/* Card de Administração - Sempre Visível */}
-              <Card className="card-elevated border-2 border-primary/20 hover:shadow-lg transition-shadow cursor-pointer" onClick={() => adminMessage && setSelectedMessage(adminMessage)}>
-                <CardHeader>
-                  <div className="flex items-center gap-3 mb-2">
-                    <div className="p-2 rounded-full bg-primary/10">
-                      <Mail className="w-5 h-5 text-primary" />
-                    </div>
-                    <div className="flex-1">
-                      <CardTitle className="text-base sm:text-lg">Mensagem para Administração</CardTitle>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        {adminMessage ? 'Conversa ativa' : 'Use o formulário acima para enviar sua primeira mensagem'}
-                      </p>
-                    </div>
-                    {adminMessage && (
-                      <Badge className={`${getStatusColor(adminMessage.status)} whitespace-nowrap text-xs px-2 py-1`}>
-                        {getStatusLabel(adminMessage.status)}
-                      </Badge>
-                    )}
+          <div className="space-y-6">
+            {/* Card de Administração - Sempre Visível */}
+            <Card className="card-elevated border-2 border-primary/20 hover:shadow-lg transition-shadow cursor-pointer" onClick={() => adminMessage && navigate(`/contact/${adminMessage.id}`)}>
+              <CardHeader>
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="p-2 rounded-full bg-primary/10">
+                    <Mail className="w-5 h-5 text-primary" />
                   </div>
-                </CardHeader>
-                {adminMessage && (
-                  <CardContent>
-                    <p className="text-sm text-foreground leading-relaxed mb-3 line-clamp-2 break-words">{adminMessage.message}</p>
-                    <div className="flex flex-col xs:flex-row xs:items-center xs:justify-between gap-3">
-                      <p className="text-xs text-muted-foreground">
-                        Última atualização: {new Date(adminMessage.updated_at).toLocaleString('pt-BR')}
-                      </p>
-                      <div className="flex gap-2 w-full xs:w-auto">
-                        <Button
-                          className="btn-gradient flex-1 xs:flex-initial"
-                          size="sm"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setSelectedMessage(adminMessage);
-                          }}
-                        >
-                          <MessageSquare className="w-4 h-4 mr-2" />
-                          Abrir conversa
-                        </Button>
-                        <Button
-                          variant="destructive"
-                          size="sm"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setMessageToDelete(adminMessage);
-                            setDeleteDialogOpen(true);
-                          }}
-                          disabled={deleteMessage.isPending}
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      </div>
+                  <div className="flex-1">
+                    <CardTitle className="text-base sm:text-lg">Mensagem para Administração</CardTitle>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {adminMessage ? 'Conversa ativa' : 'Use o formulário acima para enviar sua primeira mensagem'}
+                    </p>
+                  </div>
+                  {adminMessage && (
+                    <Badge className={`${getStatusColor(adminMessage.status)} whitespace-nowrap text-xs px-2 py-1`}>
+                      {getStatusLabel(adminMessage.status)}
+                    </Badge>
+                  )}
+                </div>
+              </CardHeader>
+              {adminMessage && (
+                <CardContent>
+                  <p className="text-sm text-foreground leading-relaxed mb-3 line-clamp-2 break-words">{adminMessage.message}</p>
+                  <div className="flex flex-col xs:flex-row xs:items-center xs:justify-between gap-3">
+                    <p className="text-xs text-muted-foreground">
+                      Última atualização: {new Date(adminMessage.updated_at).toLocaleString('pt-BR')}
+                    </p>
+                    <div className="flex gap-2 w-full xs:w-auto">
+                      <Button
+                        className="btn-gradient flex-1 xs:flex-initial"
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigate(`/contact/${adminMessage.id}`);
+                        }}
+                      >
+                        <MessageSquare className="w-4 h-4 mr-2" />
+                        Abrir conversa
+                      </Button>
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setMessageToDelete(adminMessage);
+                          setDeleteDialogOpen(true);
+                        }}
+                        disabled={deleteMessage.isPending}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
                     </div>
-                  </CardContent>
-                )}
-              </Card>
+                  </div>
+                </CardContent>
+              )}
+            </Card>
 
-              {/* Lista de mensagens com colaboradores */}
-              {collaboratorMessages.length > 0 && (
-                <div className="space-y-4 mt-6">
-                  <h3 className="text-lg font-semibold flex items-center gap-2">
-                    <Users className="w-5 h-5 text-primary" />
-                    Conversas com Colaboradores
-                  </h3>
-                  {collaboratorMessages.map((msg) => (
-                    <Card key={msg.id} className="card-elevated hover:shadow-lg transition-shadow cursor-pointer" onClick={() => setSelectedMessage(msg)}>
-                      <CardHeader>
-                        <div className="flex items-center gap-3">
-                          <Avatar className="h-10 w-10">
+            {/* Lista de mensagens com colaboradores */}
+            {collaboratorMessages.length > 0 && (
+              <div className="space-y-4 mt-6">
+                <h3 className="text-lg font-semibold flex items-center gap-2">
+                  <Users className="w-5 h-5 text-primary" />
+                  Conversas com Colaboradores
+                </h3>
+                {collaboratorMessages.map((msg) => (
+                  <Card key={msg.id} className="card-elevated hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate(`/contact/${msg.id}`)}>
+                    <CardHeader>
+                      <div className="flex items-center gap-3">
+                        <Avatar className="h-10 w-10">
                             <AvatarImage src={msg.collaborator_avatar || undefined} />
                             <AvatarFallback className="bg-primary/10 text-primary">
                               {msg.collaborator_name?.charAt(0)?.toUpperCase() || 'C'}
@@ -448,7 +435,7 @@ export default function Contact() {
                               size="sm"
                               onClick={(e) => {
                                 e.stopPropagation();
-                                setSelectedMessage(msg);
+                                navigate(`/contact/${msg.id}`);
                               }}
                             >
                               <MessageSquare className="w-4 h-4 mr-2" />
@@ -474,13 +461,12 @@ export default function Contact() {
                 </div>
               )}
             </div>
-          )}
         </div>
       )}
-        </div>
       </div>
+    </div>
 
-      {/* Dialog de Confirmação de Exclusão */}
+    {/* Dialog de Confirmação de Exclusão */}
       <DeleteConversationDialog
         open={deleteDialogOpen}
         onOpenChange={setDeleteDialogOpen}
