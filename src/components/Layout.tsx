@@ -153,7 +153,7 @@ export const Layout = () => {
                 }`}
               >
                 <div className="relative">
-                  <item.icon className={`w-7 h-7 ${isActive ? 'drop-shadow-[0_0_6px_rgba(255,255,255,0.4)]' : ''}`} />
+                  <item.icon className={`w-6 h-6 ${isActive ? 'drop-shadow-[0_0_6px_rgba(255,255,255,0.4)]' : ''}`} />
                   {item.path === '/contact' && unreadCount > 0 && (
                     <Badge 
                       variant="destructive" 
