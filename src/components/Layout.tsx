@@ -139,32 +139,31 @@ export const Layout = () => {
 
       {/* Bottom Navigation (Mobile) */}
       <nav className="fixed bottom-0 left-0 right-0 bg-gradient-to-r from-[#33C2FF] to-[#2367FF] md:hidden z-30" style={{ paddingBottom: 'calc(0.25rem + env(safe-area-inset-bottom))' }}>
-        <div className="flex justify-around items-center py-1.5">
+        <div className="flex justify-around items-center py-2.5">
           {visibleNavItems.map((item) => {
             const isActive = location.pathname === item.path;
             return (
               <button
                 key={item.path}
                 onClick={() => navigate(item.path)}
-                className={`flex flex-col items-center gap-0.5 xs:gap-1 px-1.5 xs:px-2 sm:px-3 py-1.5 xs:py-2 transition-all relative min-w-[44px] min-h-[44px] ${
+                className={`flex items-center justify-center px-3 py-2.5 transition-all relative min-w-[44px] min-h-[44px] ${
                   isActive 
                     ? 'text-white' 
                     : 'text-white/80 hover:text-white'
                 }`}
               >
                 <div className="relative">
-                  <item.icon className={`w-6 xs:w-6.5 h-6 xs:h-6.5 ${isActive ? 'drop-shadow-[0_0_4px_rgba(255,255,255,0.3)]' : ''}`} />
+                  <item.icon className={`w-7 h-7 ${isActive ? 'drop-shadow-[0_0_6px_rgba(255,255,255,0.4)]' : ''}`} />
                   {item.path === '/contact' && unreadCount > 0 && (
                     <Badge 
                       variant="destructive" 
-                      className="absolute -top-1 -right-1 h-3.5 w-3.5 xs:h-4 xs:w-4 flex items-center justify-center p-0 text-[9px] xs:text-[10px]"
+                      className="absolute -top-1.5 -right-1.5 h-4 w-4 flex items-center justify-center p-0 text-[9px]"
                     >
                       {unreadCount > 9 ? '9+' : unreadCount}
                     </Badge>
                   )}
                 </div>
-                <span className="text-xs xs:text-sm leading-tight font-medium">{item.label}</span>
-                {isActive && <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-8 h-0.5 bg-white/30 rounded-full" />}
+                {isActive && <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-10 h-0.5 bg-white/40 rounded-full" />}
               </button>
             );
           })}
