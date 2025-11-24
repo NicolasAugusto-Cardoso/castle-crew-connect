@@ -105,10 +105,6 @@ export function useContactMessages() {
         console.log('🔄 Forçando refetch das mensagens...');
         queryClient.refetchQueries({ queryKey: ['contact-messages'] });
       }, 500);
-      
-      toast.success('✅ Mensagem enviada com sucesso! Responderemos em breve.', {
-        duration: 5000,
-      });
     },
     onError: (error: any) => {
       console.error('Erro ao enviar mensagem:', error);
@@ -143,7 +139,6 @@ export function useContactMessages() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['contact-messages'] });
-      toast.success('Status atualizado!');
     },
     onError: (error) => {
       toast.error('Erro ao atualizar status');
@@ -172,7 +167,6 @@ export function useContactMessages() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['contact-messages'] });
       queryClient.invalidateQueries({ queryKey: ['unread-replies-count'] });
-      toast.success('🗑️ Conversa apagada com sucesso!');
     },
     onError: (error: any) => {
       console.error('Erro ao apagar conversa:', error);

@@ -105,7 +105,6 @@ export function useContactReplies(messageId: string | null) {
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['contact-replies', variables.messageId] });
-      toast.success('✅ Resposta enviada com sucesso!');
     },
     onError: (error: any) => {
       console.error('Erro ao enviar resposta:', error);
@@ -135,7 +134,6 @@ export function useContactReplies(messageId: string | null) {
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['contact-replies', variables.messageId] });
-      toast.success('✏️ Mensagem editada com sucesso!');
     },
     onError: (error: any) => {
       console.error('Erro ao editar mensagem:', error);
@@ -157,7 +155,6 @@ export function useContactReplies(messageId: string | null) {
       queryClient.invalidateQueries({ queryKey: ['contact-replies', variables.messageId] });
       queryClient.invalidateQueries({ queryKey: ['unread-replies-count'] });
       queryClient.invalidateQueries({ queryKey: ['contact-messages'] });
-      toast.success('🗑️ Mensagem apagada com sucesso!');
     },
     onError: (error: any) => {
       console.error('Erro ao apagar mensagem:', error);
