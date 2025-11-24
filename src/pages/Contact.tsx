@@ -99,7 +99,7 @@ export default function Contact() {
   
   // Filter messages based on user role
   const displayedMessages = canManageMessages 
-    ? messages 
+    ? messages.filter(m => !m.collaborator_id) // Admin vê apenas mensagens para administração
     : isCollaborator && collaboratorProfileId
       ? messages.filter(m => m.collaborator_id === collaboratorProfileId)
       : messages.filter(m => m.user_id === user?.id);
