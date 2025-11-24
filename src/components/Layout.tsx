@@ -48,8 +48,8 @@ export const Layout = () => {
   return (
     <div className="min-h-screen bg-background flex flex-col overflow-x-hidden">
       {/* Header */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-white shadow-[0_2px_10px_rgba(0,0,0,0.10)]">
-        <div className="w-full px-2 xs:px-3 sm:px-4 py-1 sm:py-0.5 flex items-center justify-between md:px-8">
+      <header className="fixed top-0 left-0 right-0 z-50 bg-white shadow-[0_1px_3px_rgba(0,0,0,0.1)] h-[60px]">
+        <div className="w-full h-full px-2 xs:px-3 sm:px-4 flex items-center justify-between md:px-8">
           <div className="w-8 xs:w-16 sm:w-24 md:w-32"></div>
           
           <div className="flex items-center justify-center flex-1">
