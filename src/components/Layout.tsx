@@ -48,7 +48,7 @@ export const Layout = () => {
   return (
     <div className="min-h-screen bg-background flex flex-col overflow-x-hidden">
       {/* Header */}
-      <header className="sticky top-0 z-40 bg-white shadow-[0_2px_10px_rgba(0,0,0,0.10)]">
+      <header className="fixed top-0 left-0 right-0 z-50 bg-white shadow-[0_2px_10px_rgba(0,0,0,0.10)]">
         <div className="w-full px-2 xs:px-3 sm:px-4 py-1 sm:py-0.5 flex items-center justify-between md:px-8">
           <div className="w-8 xs:w-16 sm:w-24 md:w-32"></div>
           
@@ -96,7 +96,7 @@ export const Layout = () => {
       </header>
 
       {/* Sidebar Navigation (Desktop) */}
-      <aside className="hidden md:block fixed left-0 top-16 bottom-0 w-64 bg-card border-r border-border z-30">
+      <aside className="hidden md:block fixed left-0 top-[60px] bottom-0 w-64 bg-card border-r border-border z-30">
         <nav className="p-4 space-y-2">
           {visibleNavItems.map((item) => {
             const isActive = location.pathname === item.path;
@@ -129,7 +129,7 @@ export const Layout = () => {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 pb-20 md:pb-4 md:ml-64 overflow-x-hidden">
+      <main className="flex-1 pt-[60px] pb-20 md:pb-4 md:ml-64 overflow-x-hidden">
         <div className="flex justify-center w-full">
           <div className="w-full max-w-7xl">
             <Outlet />
@@ -138,7 +138,7 @@ export const Layout = () => {
       </main>
 
       {/* Bottom Navigation (Mobile) */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-gradient-to-r from-[#33C2FF] to-[#2367FF] md:hidden z-30" style={{ paddingBottom: 'calc(0.25rem + env(safe-area-inset-bottom))' }}>
+      <nav className="fixed bottom-0 left-0 right-0 bg-gradient-to-r from-[#33C2FF] to-[#2367FF] md:hidden z-40" style={{ paddingBottom: 'calc(0.25rem + env(safe-area-inset-bottom))' }}>
         <div className="flex justify-around items-center py-2.5">
           {visibleNavItems.map((item) => {
             const isActive = location.pathname === item.path;
