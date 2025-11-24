@@ -98,7 +98,8 @@ export function ChatContainer({
     <div
       className="flex flex-col bg-muted/30"
       style={{
-        height: "calc(100vh - env(safe-area-inset-top))",
+        height: "100vh",
+        paddingTop: "120px",
         paddingBottom: "calc(120px + env(safe-area-inset-bottom))",
       }}
     >
@@ -111,7 +112,7 @@ export function ChatContainer({
       <div
         ref={scrollRef}
         onScroll={handleScroll}
-        className="flex-1 overflow-y-auto px-4 py-4"
+        className="flex-1 overflow-y-auto px-4"
       >
         {isLoading ? (
           <div className="flex items-center justify-center h-full">
