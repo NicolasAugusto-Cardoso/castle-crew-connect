@@ -22,6 +22,7 @@ const roleLabels: Record<string, string> = {
   admin: 'Administrador',
   social_media: 'Social Media',
   collaborator: 'Colaborador',
+  volunteer: 'Voluntário',
   user: 'Usuário',
 };
 
@@ -29,6 +30,7 @@ const roleColors: Record<string, string> = {
   admin: 'bg-destructive text-destructive-foreground',
   social_media: 'bg-accent text-accent-foreground',
   collaborator: 'bg-primary text-primary-foreground',
+  volunteer: 'bg-orange-500 text-white',
   user: 'bg-secondary text-secondary-foreground',
 };
 

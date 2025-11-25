@@ -4,6 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   Dialog,
   DialogContent,
@@ -20,6 +21,7 @@ export function CreateTestimonialDialog() {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [authorName, setAuthorName] = useState('');
+  const [isAnonymous, setIsAnonymous] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -30,13 +32,14 @@ export function CreateTestimonialDialog() {
       await createTestimonial.mutateAsync({
         title,
         content,
-        author_name: authorName,
+        author_name: isAnonymous ? null : authorName,
         status: 'draft'
       });
       
       setTitle('');
       setContent('');
       setAuthorName('');
+      setIsAnonymous(false);
       setOpen(false);
     } finally {
       setIsSubmitting(false);
@@ -68,15 +71,30 @@ export function CreateTestimonialDialog() {
             />
           </div>
 
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id="anonymous"
+              checked={isAnonymous}
+              onCheckedChange={(checked) => {
+                setIsAnonymous(Boolean(checked));
+                if (checked) setAuthorName('');
+              }}
+              disabled={isSubmitting}
+            />
+            <label htmlFor="anonymous" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+              Publicar como anônimo
+            </label>
+          </div>
+
           <div className="space-y-2">
             <Label htmlFor="author">Nome do Autor</Label>
             <Input
               id="author"
-              value={authorName}
+              value={isAnonymous ? '' : authorName}
               onChange={(e) => setAuthorName(e.target.value)}
-              placeholder="Nome completo"
-              required
-              disabled={isSubmitting}
+              placeholder={isAnonymous ? 'Anônimo' : 'Nome completo'}
+              required={!isAnonymous}
+              disabled={isSubmitting || isAnonymous}
             />
           </div>
 
