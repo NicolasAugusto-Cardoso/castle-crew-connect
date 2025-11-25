@@ -161,6 +161,7 @@ export function useDiscipleship() {
       postal_code?: string;
       latitude?: number | null;
       longitude?: number | null;
+      assigned_collaborator_id?: string | null;
     }) => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
