@@ -12,6 +12,12 @@ export interface DiscipleshipContact {
   age: number | null;
   city: string | null;
   neighborhood: string | null;
+  street: string | null;
+  street_number: string | null;
+  state: string | null;
+  postal_code: string | null;
+  latitude: number | null;
+  longitude: number | null;
   assigned_collaborator_id: string | null;
   assigned_at: string | null;
   assigned_by: string | null;

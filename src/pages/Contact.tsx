@@ -291,7 +291,7 @@ export default function Contact() {
                 <div className="flex justify-center py-12">
                   <Loader2 className="w-8 h-8 animate-spin text-primary" />
                 </div>
-              ) : messages.length === 0 ? (
+              ) : displayedMessages.length === 0 ? (
                 <Card className="card-elevated">
                   <CardContent className="py-12 text-center text-muted-foreground">
                     <Mail className="w-12 h-12 mx-auto mb-3" />
@@ -299,7 +299,7 @@ export default function Contact() {
                   </CardContent>
                 </Card>
               ) : (
-                messages.map((msg) => (
+                displayedMessages.map((msg) => (
                 <Card key={msg.id} className="card-elevated hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate(`/contact/${msg.id}`)}>
                     <CardHeader>
                       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
