@@ -624,6 +624,9 @@ export default function Contact() {
           </div>
         </div>
       )}
+      
+      {/* Espaço extra para garantir scroll completo em mobile */}
+      <div className="h-6" />
       </div>
     </div>
 
