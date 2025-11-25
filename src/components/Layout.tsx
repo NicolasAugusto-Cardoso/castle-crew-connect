@@ -52,7 +52,7 @@ export const Layout = () => {
   const displayName = user?.user_metadata?.name || user?.email?.split('@')[0] || 'Usuário';
 
   return (
-    <div className="min-h-screen bg-background flex flex-col overflow-x-hidden">
+    <div className="min-h-[100dvh] bg-background flex flex-col overflow-x-hidden">
       {/* Header */}
       <header className="fixed top-0 left-0 right-0 z-50 bg-white shadow-[0_1px_3px_rgba(0,0,0,0.1)] h-[60px]">
         <div className="w-full h-full px-2 xs:px-3 sm:px-4 flex items-center justify-between md:px-8">
@@ -143,7 +143,7 @@ export const Layout = () => {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 pt-[60px] pb-20 md:pb-4 md:ml-64 overflow-x-hidden">
+      <main className="flex-1 pt-[60px] pb-24 md:pb-4 md:ml-64 overflow-x-hidden overflow-y-auto">
         <div className="flex justify-center w-full">
           <div className="w-full max-w-7xl">
             <Outlet />
