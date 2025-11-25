@@ -92,7 +92,7 @@ export const useUnreadReplies = (userId: string | undefined, userRoles?: string[
     },
   });
 
-  // Escutar novas respostas em tempo real
+  // Escutar novas respostas e atualizações em tempo real
   useEffect(() => {
     if (!userId) return;
 
@@ -123,9 +123,40 @@ export const useUnreadReplies = (userId: string | undefined, userRoles?: string[
             });
 
             // Atualizar contador
-            queryClient.invalidateQueries({ queryKey: ['unread-replies-count', userId] });
+            queryClient.invalidateQueries({ 
+              queryKey: ['unread-replies-count'],
+              refetchType: 'all'
+            });
             queryClient.invalidateQueries({ queryKey: ['contact-messages'] });
           }
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'contact_replies',
+        },
+        () => {
+          queryClient.invalidateQueries({ 
+            queryKey: ['unread-replies-count'],
+            refetchType: 'all'
+          });
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'contact_messages',
+        },
+        () => {
+          queryClient.invalidateQueries({ 
+            queryKey: ['unread-replies-count'],
+            refetchType: 'all'
+          });
         }
       )
       .subscribe();

@@ -4,9 +4,17 @@ import { useUsers, UserWithRoles } from '@/hooks/useUsers';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Plus, UserCircle, Mail, Shield, Loader2, Trash2 } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Plus, UserCircle, Mail, Shield, Loader2, Trash2, Search } from 'lucide-react';
 import { CreateUserDialog } from '@/components/users/CreateUserDialog';
 import { EditUserDialog } from '@/components/users/EditUserDialog';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -42,8 +50,21 @@ export default function Users() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<UserWithRoles | null>(null);
   const [userToDelete, setUserToDelete] = useState<UserWithRoles | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [roleFilter, setRoleFilter] = useState<string>('all');
 
   const isAdmin = hasRole(['admin']);
+
+  // Filtrar usuários baseado em busca e role
+  const filteredUsers = users.filter(user => {
+    const matchesSearch = 
+      user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.email.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    const matchesRole = roleFilter === 'all' || user.roles.includes(roleFilter);
+    
+    return matchesSearch && matchesRole;
+  });
 
   if (authLoading) {
     return (
@@ -133,13 +154,47 @@ export default function Users() {
         Novo Usuário
       </Button>
 
+      {/* Filtros de busca e role */}
+      <div className="flex flex-col sm:flex-row gap-4 mb-6">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <Input
+            placeholder="Buscar por nome ou email..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-10"
+          />
+        </div>
+        <Select value={roleFilter} onValueChange={setRoleFilter}>
+          <SelectTrigger className="w-full sm:w-[200px]">
+            <SelectValue placeholder="Filtrar por papel" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Todos os papéis</SelectItem>
+            <SelectItem value="admin">Administrador</SelectItem>
+            <SelectItem value="social_media">Social Media</SelectItem>
+            <SelectItem value="collaborator">Colaborador</SelectItem>
+            <SelectItem value="volunteer">Voluntário</SelectItem>
+            <SelectItem value="user">Usuário</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
       {isLoading ? (
         <div className="flex justify-center items-center py-12">
           <Loader2 className="w-8 h-8 animate-spin text-primary" />
         </div>
+      ) : filteredUsers.length === 0 ? (
+        <Card className="card-elevated">
+          <CardContent className="py-12 text-center text-muted-foreground">
+            <UserCircle className="w-12 h-12 mx-auto mb-3" />
+            <p>Nenhum usuário encontrado</p>
+            <p className="text-sm mt-2">Tente ajustar os filtros de busca</p>
+          </CardContent>
+        </Card>
       ) : (
         <div className="space-y-4">
-          {users.map((user) => (
+          {filteredUsers.map((user) => (
             <Card key={user.id} className="card-elevated">
               <CardHeader>
                 <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
