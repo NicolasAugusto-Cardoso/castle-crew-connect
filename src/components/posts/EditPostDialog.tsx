@@ -40,14 +40,12 @@ export function EditPostDialog({ post }: EditPostDialogProps) {
   const { updatePost, deletePost } = usePosts();
   const [open, setOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
-  const [title, setTitle] = useState(post.title);
   const [content, setContent] = useState(post.content);
   const [images, setImages] = useState<ImageFile[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     if (open) {
-      setTitle(post.title);
       setContent(post.content);
       
       // Carregar imagens existentes
@@ -145,6 +143,12 @@ export function EditPostDialog({ post }: EditPostDialogProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!content.trim()) {
+      toast.error('Por favor, escreva uma legenda.');
+      return;
+    }
+    
     setIsSubmitting(true);
 
     try {
@@ -189,8 +193,8 @@ export function EditPostDialog({ post }: EditPostDialogProps) {
 
       await updatePost.mutateAsync({
         id: post.id,
-        title,
-        content,
+        title: null,
+        content: content.trim(),
         image_url: finalImages.length > 0 ? finalImages[0].image_url : null,
         images: finalImages
       });
@@ -231,31 +235,6 @@ export function EditPostDialog({ post }: EditPostDialogProps) {
             <DialogTitle>Editar Postagem</DialogTitle>
           </DialogHeader>
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="edit-title">Título</Label>
-              <Input
-                id="edit-title"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                placeholder="Título da postagem"
-                required
-                disabled={isSubmitting}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="edit-content">Conteúdo</Label>
-              <Textarea
-                id="edit-content"
-                value={content}
-                onChange={(e) => setContent(e.target.value)}
-                placeholder="Escreva o conteúdo da postagem..."
-                rows={6}
-                required
-                disabled={isSubmitting}
-              />
-            </div>
-
             <div className="space-y-2">
               <Label>Imagens (opcional - máx 10)</Label>
               
@@ -336,6 +315,19 @@ export function EditPostDialog({ post }: EditPostDialogProps) {
                   </Label>
                 </div>
               )}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="edit-content">Legenda</Label>
+              <Textarea
+                id="edit-content"
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
+                placeholder="Escreva uma legenda..."
+                rows={6}
+                required
+                disabled={isSubmitting}
+              />
             </div>
 
             <div className="flex flex-col sm:flex-row gap-3 sm:justify-between">

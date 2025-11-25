@@ -2,17 +2,17 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { usePosts } from '@/hooks/usePosts';
 import { useVerseOfTheDay } from '@/hooks/useVerseOfTheDay';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Heart, BookOpen, Loader2, MoreVertical } from 'lucide-react';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Heart, BookOpen, Loader2, Smile } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { format } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
+import { cn } from '@/lib/utils';
 import { toast } from '@/hooks/use-toast';
 import { CreatePostDialog } from '@/components/posts/CreatePostDialog';
 import { EditPostDialog } from '@/components/posts/EditPostDialog';
 import { ImageLightbox } from '@/components/posts/ImageLightbox';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 import {
   Carousel,
   CarouselContent,
@@ -118,6 +118,18 @@ export default function Home() {
     };
   }, [reactionMenu.isOpen]);
 
+  const handleLike = (postId: string, isLiked: boolean) => {
+    if (!user) {
+      toast({
+        title: "Login necessário",
+        description: "Faça login para curtir publicações",
+        variant: "destructive"
+      });
+      return;
+    }
+    toggleLike.mutate(postId);
+  };
+
   return (
     <div className="container mx-auto px-3 xs:px-4 sm:px-6 py-4 xs:py-5 sm:py-6 max-w-2xl">
       {/* Welcome Section */}
@@ -130,13 +142,13 @@ export default function Home() {
         </p>
       </div>
 
-      {/* Verse of the Day - Async loading without blocking feed */}
+      {/* Verse of the Day */}
       {verse && !loadingVerse ? (
         <Card className="mb-5 xs:mb-5.5 sm:mb-6 bg-gradient-to-br from-primary-light to-primary text-white card-elevated animate-fade-in">
           <CardHeader className="pb-2.5 xs:pb-3 px-4 xs:px-5 sm:px-6 pt-4 xs:pt-5 sm:pt-6">
             <div className="flex items-center gap-1.5 xs:gap-2">
               <BookOpen className="w-4 xs:w-4.5 sm:w-5 h-4 xs:h-4.5 sm:h-5 text-accent flex-shrink-0" />
-              <CardTitle className="text-base xs:text-lg font-bold">Versículo do Dia</CardTitle>
+              <h2 className="text-base xs:text-lg font-bold">Versículo do Dia</h2>
             </div>
           </CardHeader>
           <CardContent className="px-4 xs:px-5 sm:px-6 pb-4 xs:pb-5 sm:pb-6">
@@ -182,145 +194,129 @@ export default function Home() {
         </Card>
       ) : (
         <div className="space-y-4 xs:space-y-5 sm:space-y-6">
-          {posts.map((post) => (
-            <Card key={post.id} className="card-elevated overflow-hidden">
-              <CardHeader className="px-4 xs:px-5 sm:px-6 pt-4 xs:pt-5 sm:pt-6 pb-3 xs:pb-4">
-                <div className="flex items-start justify-between gap-2">
-                  <div className="flex-1 min-w-0">
-                    <CardTitle className="text-base xs:text-lg sm:text-xl break-words">{post.title}</CardTitle>
-                    <p className="text-xs xs:text-sm text-muted-foreground mt-1 break-words">
-                      Por {post.author_name} • {new Date(post.created_at).toLocaleDateString('pt-BR')}
-                    </p>
-                  </div>
-                  {canManagePosts && (
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <button className="p-1.5 xs:p-2 hover:bg-secondary rounded-lg transition-colors flex-shrink-0">
-                          <MoreVertical className="w-3.5 xs:w-4 h-3.5 xs:h-4" />
-                        </button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <EditPostDialog post={post} />
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  )}
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-3 xs:space-y-4 px-4 xs:px-5 sm:px-6 pb-4 xs:pb-5 sm:pb-6">
-                {/* Carousel para múltiplas imagens */}
-                {post.images && post.images.length > 1 ? (
-                  <Carousel className="w-full">
-                    <CarouselContent>
-                      {post.images.map((img, idx) => (
-                        <CarouselItem key={img.id}>
-                          <div 
-                            className="w-full max-h-[300px] xs:max-h-[400px] sm:max-h-[500px] overflow-hidden rounded-lg bg-muted cursor-pointer hover:opacity-95 transition-opacity flex items-center justify-center"
-                            onClick={() => setSelectedImage({ url: img.image_url, alt: `${post.title} - Imagem ${idx + 1}` })}
-                          >
-                            <img
-                              src={img.image_url}
-                              alt={`${post.title} - ${idx + 1}`}
-                              className="w-full h-auto object-contain max-h-[300px] xs:max-h-[400px] sm:max-h-[500px]"
-                              loading="lazy"
-                            />
-                          </div>
-                        </CarouselItem>
-                      ))}
-                    </CarouselContent>
-                    <CarouselPrevious className="left-2" />
-                    <CarouselNext className="right-2" />
-                  </Carousel>
-                ) : post.images && post.images.length === 1 ? (
-                  <div 
-                    className="w-full max-h-[300px] xs:max-h-[400px] sm:max-h-[500px] overflow-hidden rounded-lg bg-muted cursor-pointer hover:opacity-95 transition-opacity flex items-center justify-center mx-auto"
-                    onClick={() => setSelectedImage({ url: post.images![0].image_url, alt: post.title })}
-                  >
-                    <img
-                      src={post.images[0].image_url}
-                      alt={post.title}
-                      className="w-full h-auto object-contain max-h-[300px] xs:max-h-[400px] sm:max-h-[500px] mx-auto"
-                      loading="lazy"
-                    />
-                  </div>
-                ) : post.image_url ? (
-                  <div 
-                    className="w-full max-h-[300px] xs:max-h-[400px] sm:max-h-[500px] overflow-hidden rounded-lg bg-muted cursor-pointer hover:opacity-95 transition-opacity flex items-center justify-center mx-auto"
-                    onClick={() => setSelectedImage({ url: post.image_url!, alt: post.title })}
-                  >
-                    <img
-                      src={post.image_url}
-                      alt={post.title}
-                      className="w-full h-auto object-contain max-h-[300px] xs:max-h-[400px] sm:max-h-[500px] mx-auto"
-                      loading="lazy"
-                    />
-                  </div>
-                ) : null}
-                <p className="text-sm xs:text-base text-foreground leading-relaxed break-words whitespace-pre-wrap">{post.content}</p>
-                
-                {/* Interaction - Click to like, Hold for reactions */}
-                <div className="flex items-center gap-4 pt-4 border-t">
-                  <button
-                    disabled={!user || isProcessing}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      if (!user) {
-                        toast({
-                          title: "Login necessário",
-                          description: "Faça login para curtir publicações",
-                          variant: "destructive"
-                        });
-                        return;
-                      }
-                      toggleLike.mutate(post.id);
-                    }}
-                    onMouseDown={(e) => handlePressStart(e, post.id)}
-                    onMouseUp={handlePressEnd}
-                    onMouseLeave={handlePressEnd}
-                    onTouchStart={(e) => handlePressStart(e, post.id)}
-                    onTouchEnd={handlePressEnd}
-                    className={`flex items-center gap-2 transition-all ${
-                      !user 
-                        ? 'opacity-50 cursor-not-allowed' 
-                        : isProcessing
-                        ? 'opacity-50 cursor-wait'
-                        : post.user_reaction
-                        ? 'text-primary font-bold scale-110'
-                        : post.is_liked
-                        ? 'text-primary font-bold'
-                        : 'text-muted-foreground hover:text-primary'
-                    }`}
-                    title={!user ? 'Faça login para curtir' : 'Clique para curtir, segure para reagir'}
-                  >
-                    {post.user_reaction ? (
-                      <span className="text-2xl animate-scale-in">{EMOJI_MAP[post.user_reaction]}</span>
-                    ) : (
-                      <Heart className={`w-5 h-5 ${post.is_liked ? 'fill-current' : ''}`} />
+          {posts.map((post) => {
+            const postImages = post.images && post.images.length > 0 
+              ? post.images.sort((a, b) => a.display_order - b.display_order)
+              : post.image_url 
+                ? [{ id: 'legacy', image_url: post.image_url, display_order: 0, post_id: post.id, created_at: '' }]
+                : [];
+            
+            return (
+              <Card key={post.id} className="overflow-hidden">
+                <CardHeader className="pb-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Avatar className="h-8 w-8">
+                        <AvatarImage src={post.author_avatar || undefined} />
+                        <AvatarFallback>
+                          {post.author_name?.charAt(0).toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="flex flex-col">
+                        <span className="text-sm font-semibold">{post.author_name}</span>
+                        <span className="text-xs text-muted-foreground">
+                          {format(new Date(post.created_at), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
+                        </span>
+                      </div>
+                    </div>
+                    {canManagePosts && (
+                      <EditPostDialog post={post} />
                     )}
-                    <span className="font-medium">
-                      {post.user_reaction 
-                        ? post.reactions[post.user_reaction]
-                        : post.likes_count || 0}
-                    </span>
-                  </button>
-
-                  {/* Other Reaction Counts */}
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    {Object.entries(post.reactions).map(([type, count]) => {
-                      const emojiType = type as EmojiType;
-                      if (count > 0 && emojiType !== post.user_reaction) {
-                        return (
-                          <span key={type} className="flex items-center gap-1">
-                            {EMOJI_MAP[emojiType]} {count}
-                          </span>
-                        );
-                      }
-                      return null;
-                    })}
                   </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+                </CardHeader>
+
+                <CardContent className="space-y-3 pt-0">
+                  {/* Carousel para múltiplas imagens ou imagem única */}
+                  {postImages.length > 1 ? (
+                    <Carousel className="w-full">
+                      <CarouselContent>
+                        {postImages.map((img, idx) => (
+                          <CarouselItem key={img.id}>
+                            <div 
+                              className="w-full aspect-square overflow-hidden bg-muted cursor-pointer hover:opacity-95 transition-opacity flex items-center justify-center"
+                              onClick={() => setSelectedImage({ url: img.image_url, alt: `Imagem ${idx + 1}` })}
+                            >
+                              <img
+                                src={img.image_url}
+                                alt={`Imagem ${idx + 1}`}
+                                className="w-full h-full object-cover"
+                                loading="lazy"
+                              />
+                            </div>
+                          </CarouselItem>
+                        ))}
+                      </CarouselContent>
+                      <CarouselPrevious className="left-2" />
+                      <CarouselNext className="right-2" />
+                    </Carousel>
+                  ) : postImages.length === 1 ? (
+                    <div 
+                      className="w-full aspect-square overflow-hidden bg-muted cursor-pointer hover:opacity-95 transition-opacity flex items-center justify-center"
+                      onClick={() => setSelectedImage({ url: postImages[0].image_url, alt: 'Imagem' })}
+                    >
+                      <img
+                        src={postImages[0].image_url}
+                        alt="Imagem"
+                        className="w-full h-full object-cover"
+                        loading="lazy"
+                      />
+                    </div>
+                  ) : null}
+
+                  {/* Likes e Reactions */}
+                  <div className="flex items-center gap-4 border-t pt-3">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleLike(post.id, post.is_liked || false)}
+                      onMouseDown={(e) => handlePressStart(e, post.id)}
+                      onMouseUp={handlePressEnd}
+                      onMouseLeave={handlePressEnd}
+                      onTouchStart={(e) => handlePressStart(e, post.id)}
+                      onTouchEnd={handlePressEnd}
+                      className="gap-2"
+                      disabled={!user || isProcessing}
+                    >
+                      <Heart
+                        className={cn(
+                          "h-5 w-5",
+                          post.is_liked && "fill-red-500 text-red-500"
+                        )}
+                      />
+                      <span>{post.likes_count || 0}</span>
+                    </Button>
+
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={(e) => handlePressStart(e, post.id)}
+                      onMouseDown={(e) => handlePressStart(e, post.id)}
+                      onMouseUp={handlePressEnd}
+                      onMouseLeave={handlePressEnd}
+                      onTouchStart={(e) => handlePressStart(e, post.id)}
+                      onTouchEnd={handlePressEnd}
+                      className="gap-2"
+                      disabled={!user || isProcessing}
+                    >
+                      {post.user_reaction ? (
+                        <span className="text-lg">{EMOJI_MAP[post.user_reaction]}</span>
+                      ) : (
+                        <Smile className="h-5 w-5" />
+                      )}
+                      <span>
+                        {post.reactions.fire + post.reactions.heart + post.reactions.hands}
+                      </span>
+                    </Button>
+                  </div>
+
+                  {/* Legenda */}
+                  {post.content && (
+                    <p className="whitespace-pre-wrap text-sm">{post.content}</p>
+                  )}
+                </CardContent>
+              </Card>
+            );
+          })}
         </div>
       )}
 
