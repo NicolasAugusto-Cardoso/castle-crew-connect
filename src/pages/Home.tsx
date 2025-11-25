@@ -13,6 +13,13 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from '@/components/ui/carousel';
 
 import { ReactionMenu } from '@/components/posts/ReactionMenu';
 import { EmojiType } from '@/hooks/usePosts';
@@ -200,7 +207,42 @@ export default function Home() {
                 </div>
               </CardHeader>
               <CardContent className="space-y-3 xs:space-y-4 px-4 xs:px-5 sm:px-6 pb-4 xs:pb-5 sm:pb-6">
-                {post.image_url && (
+                {/* Carousel para múltiplas imagens */}
+                {post.images && post.images.length > 1 ? (
+                  <Carousel className="w-full">
+                    <CarouselContent>
+                      {post.images.map((img, idx) => (
+                        <CarouselItem key={img.id}>
+                          <div 
+                            className="w-full max-h-[300px] xs:max-h-[400px] sm:max-h-[500px] overflow-hidden rounded-lg bg-muted cursor-pointer hover:opacity-95 transition-opacity flex items-center justify-center"
+                            onClick={() => setSelectedImage({ url: img.image_url, alt: `${post.title} - Imagem ${idx + 1}` })}
+                          >
+                            <img
+                              src={img.image_url}
+                              alt={`${post.title} - ${idx + 1}`}
+                              className="w-full h-auto object-contain max-h-[300px] xs:max-h-[400px] sm:max-h-[500px]"
+                              loading="lazy"
+                            />
+                          </div>
+                        </CarouselItem>
+                      ))}
+                    </CarouselContent>
+                    <CarouselPrevious className="left-2" />
+                    <CarouselNext className="right-2" />
+                  </Carousel>
+                ) : post.images && post.images.length === 1 ? (
+                  <div 
+                    className="w-full max-h-[300px] xs:max-h-[400px] sm:max-h-[500px] overflow-hidden rounded-lg bg-muted cursor-pointer hover:opacity-95 transition-opacity flex items-center justify-center mx-auto"
+                    onClick={() => setSelectedImage({ url: post.images![0].image_url, alt: post.title })}
+                  >
+                    <img
+                      src={post.images[0].image_url}
+                      alt={post.title}
+                      className="w-full h-auto object-contain max-h-[300px] xs:max-h-[400px] sm:max-h-[500px] mx-auto"
+                      loading="lazy"
+                    />
+                  </div>
+                ) : post.image_url ? (
                   <div 
                     className="w-full max-h-[300px] xs:max-h-[400px] sm:max-h-[500px] overflow-hidden rounded-lg bg-muted cursor-pointer hover:opacity-95 transition-opacity flex items-center justify-center mx-auto"
                     onClick={() => setSelectedImage({ url: post.image_url!, alt: post.title })}
@@ -212,7 +254,7 @@ export default function Home() {
                       loading="lazy"
                     />
                   </div>
-                )}
+                ) : null}
                 <p className="text-sm xs:text-base text-foreground leading-relaxed break-words whitespace-pre-wrap">{post.content}</p>
                 
                 {/* Interaction - Click to like, Hold for reactions */}
