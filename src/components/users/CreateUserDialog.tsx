@@ -19,6 +19,7 @@ interface CreateUserDialogProps {
 
 const availableRoles = [
   { value: 'user', label: 'Usuário' },
+  { value: 'volunteer', label: 'Voluntário' },
   { value: 'collaborator', label: 'Colaborador' },
   { value: 'social_media', label: 'Social Media' },
   { value: 'admin', label: 'Administrador' },

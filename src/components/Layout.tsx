@@ -1,5 +1,5 @@
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
-import { Home, MessageSquare, Users, FolderOpen, BookOpen, LogOut, UserCircle, Settings } from 'lucide-react';
+import { Home, MessageSquare, Users, FolderOpen, BookOpen, LogOut, UserCircle, Settings, UserCog, UserPlus } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useUnreadReplies } from '@/hooks/useUnreadReplies';
 import { usePushNotifications } from '@/hooks/usePushNotifications';
@@ -24,12 +24,12 @@ export const Layout = () => {
   };
 
   const navItems = [
-    { icon: Home, label: 'Home', path: '/', roles: ['admin', 'social_media', 'collaborator', 'user'] },
-    { icon: BookOpen, label: 'Testemunhos', path: '/testimonials', roles: ['admin', 'social_media', 'collaborator', 'user'] },
+    { icon: Home, label: 'Home', path: '/', roles: ['admin', 'social_media', 'collaborator', 'user', 'volunteer'] },
+    { icon: BookOpen, label: 'Testemunhos', path: '/testimonials', roles: ['admin', 'social_media', 'collaborator', 'user', 'volunteer'] },
     { icon: MessageSquare, label: 'Contato', path: '/contact', roles: ['admin', 'social_media', 'collaborator', 'user'] },
-    { icon: FolderOpen, label: 'Galeria', path: '/gallery', roles: ['admin', 'social_media', 'user'] },
-    { icon: Users, label: 'Colaboradores', path: '/colaboradores', roles: ['user', 'admin'], showWhen: showCollaboratorsTab },
-    { icon: Users, label: 'Discipulado', path: '/discipleship', roles: ['admin', 'social_media', 'collaborator'] },
+    { icon: FolderOpen, label: 'Galeria', path: '/gallery', roles: ['admin', 'social_media', 'user', 'volunteer'] },
+    { icon: Users, label: 'Colaboradores', path: '/colaboradores', roles: ['user', 'admin', 'volunteer'], showWhen: showCollaboratorsTab },
+    { icon: UserPlus, label: 'Discipulado', path: '/discipleship', roles: ['admin', 'social_media', 'collaborator', 'volunteer'] },
     { icon: UserCircle, label: 'Meu Perfil', path: '/collaborator/profile', roles: ['collaborator'] },
   ];
 
@@ -82,7 +82,7 @@ export const Layout = () => {
                 {hasRole(['admin']) && (
                   <>
                     <DropdownMenuItem onClick={() => navigate('/users')}>
-                      <Settings className="mr-2 h-4 w-4" />
+                      <UserCog className="mr-2 h-4 w-4" />
                       <span>Gerenciar Usuários</span>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
