@@ -68,6 +68,10 @@ export default function ChatThread() {
             queryKey: ['unread-replies-count'],
             refetchType: 'all' 
           });
+          await queryClient.refetchQueries({ 
+            queryKey: ['unread-replies-count'],
+            type: 'all'
+          });
           await queryClient.invalidateQueries({ queryKey: ['contact-messages'] });
         }
       }
@@ -84,6 +88,10 @@ export default function ChatThread() {
           await queryClient.invalidateQueries({ 
             queryKey: ['unread-replies-count'],
             refetchType: 'all'
+          });
+          await queryClient.refetchQueries({ 
+            queryKey: ['unread-replies-count'],
+            type: 'all'
           });
         }
       }
