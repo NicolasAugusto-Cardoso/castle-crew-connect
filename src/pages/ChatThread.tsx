@@ -12,7 +12,7 @@ import { supabase } from '@/integrations/supabase/client';
 export default function ChatThread() {
   const { messageId } = useParams<{ messageId: string }>();
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, userRoles } = useAuth();
   const { messages } = useContactMessages();
   const message = messages.find(m => m.id === messageId);
   const { replies, isLoading, createReply, updateReply, deleteReply } = useContactReplies(messageId || '');
@@ -176,13 +176,43 @@ export default function ChatThread() {
     );
   }
 
-  const chatName = message.collaborator_id 
-    ? (message as any).collaborator_name || 'Colaborador'
-    : 'Administração';
+  // Verificar se o usuário atual é admin/social_media/collaborator
+  const isAdmin = userRoles.includes('admin');
+  const isSocialMedia = userRoles.includes('social_media');
+  const isCollaborator = userRoles.includes('collaborator');
 
-  const chatAvatar = message.collaborator_id 
-    ? (message as any).collaborator_avatar
-    : null;
+  // Determinar o nome do cabeçalho baseado em QUEM está visualizando
+  let chatName: string;
+  let chatAvatar: string | null;
+  let chatSubtitle: string;
+
+  // Se é admin ou social_media vendo uma mensagem administrativa
+  if ((isAdmin || isSocialMedia) && !message.collaborator_id) {
+    // Admin está vendo mensagem de um usuário → mostrar nome do REMETENTE
+    chatName = message.name;
+    chatAvatar = senderProfile?.avatar_url || null;
+    chatSubtitle = 'Usuário';
+  } 
+  // Se é colaborador vendo mensagem destinada a ele
+  else if (isCollaborator && message.collaborator_id) {
+    // Colaborador vendo mensagem de usuário → mostrar nome do REMETENTE
+    chatName = message.name;
+    chatAvatar = senderProfile?.avatar_url || null;
+    chatSubtitle = 'Usuário';
+  }
+  // Se é usuário normal vendo suas próprias mensagens
+  else {
+    // Usuário vendo conversa com colaborador ou administração
+    chatName = message.collaborator_id 
+      ? (message as any).collaborator_name || 'Colaborador'
+      : 'Administração';
+    chatAvatar = message.collaborator_id 
+      ? (message as any).collaborator_avatar
+      : null;
+    chatSubtitle = message.collaborator_id
+      ? 'Colaborador'
+      : 'Equipe de Administração';
+  }
 
   // Preparar mensagens para o chat (mensagem original + respostas)
   const allMessages = [
@@ -205,10 +235,6 @@ export default function ChatThread() {
       updated_at: reply.updated_at,
     })),
   ];
-
-  const chatSubtitle = message.collaborator_id
-    ? 'Colaborador'
-    : 'Equipe de Administração';
 
   return (
     <ChatContainer
