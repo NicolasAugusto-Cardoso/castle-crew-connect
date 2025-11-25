@@ -59,7 +59,7 @@ Deno.serve(async (req) => {
     }
 
     // Validate roles
-    const validRoles = ['admin', 'social_media', 'collaborator', 'user'];
+    const validRoles = ['admin', 'social_media', 'collaborator', 'user', 'volunteer'];
     const rolesToAssign = requestedRoles?.filter((r: string) => validRoles.includes(r)) || ['user'];
 
     if (rolesToAssign.length === 0) {
