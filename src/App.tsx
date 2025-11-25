@@ -84,22 +84,22 @@ const App = () => {
                 <Route path="/gallery" element={<Gallery />} />
                 <Route path="/gallery/:folderId" element={<GalleryFolder />} />
                 <Route path="/colaboradores" element={
-                  <ProtectedRoute allowedRoles={['user', 'admin']}>
+                  <ProtectedRoute allowedRoles={['user', 'admin', 'volunteer']}>
                     <Collaborators />
                   </ProtectedRoute>
                 } />
                 <Route path="/colaboradores/:userId" element={
-                  <ProtectedRoute allowedRoles={['user', 'admin']}>
+                  <ProtectedRoute allowedRoles={['user', 'admin', 'volunteer']}>
                     <CollaboratorDetails />
                   </ProtectedRoute>
                 } />
                 <Route path="/colaboradores/:userId/chat" element={
-                  <ProtectedRoute allowedRoles={['user', 'admin']}>
+                  <ProtectedRoute allowedRoles={['user', 'admin', 'volunteer']}>
                     <CollaboratorChat />
                   </ProtectedRoute>
                 } />
                 <Route path="/discipleship" element={
-                  <ProtectedRoute allowedRoles={['admin', 'social_media', 'collaborator']}>
+                  <ProtectedRoute allowedRoles={['admin', 'social_media', 'collaborator', 'volunteer']}>
                     <Discipleship />
                   </ProtectedRoute>
                 } />
