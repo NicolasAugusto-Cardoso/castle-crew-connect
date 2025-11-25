@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { useQueryClient } from '@tanstack/react-query';
+import { useQueryClient, useQuery } from '@tanstack/react-query';
 import { useContactMessages, ContactMessage } from '@/hooks/useContactMessages';
 import { useUserRepliesNotifications } from '@/hooks/useContactReplies';
 import { useUnreadReplies } from '@/hooks/useUnreadReplies';
@@ -14,7 +14,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Mail, Phone, Loader2, MessageSquare, Users, Trash2 } from 'lucide-react';
+import { Mail, Phone, Loader2, MessageSquare, Users, Trash2, Search } from 'lucide-react';
 import { contactFormSchema } from '@/lib/validations';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
@@ -35,12 +35,37 @@ export default function Contact() {
   const [searchParams, setSearchParams] = useSearchParams();
   const messageIdFromUrl = searchParams.get('messageId');
   const [collaboratorProfileId, setCollaboratorProfileId] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
 
   // Subscribe to realtime notifications for new replies
   useUserRepliesNotifications();
   
   // Initialize unread replies hook
   useUnreadReplies(user?.id);
+
+  // Query for unread counts per conversation
+  const { data: unreadCounts = {} } = useQuery({
+    queryKey: ['unread-per-conversation', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return {};
+      
+      const { data, error } = await supabase
+        .from('contact_replies')
+        .select('message_id')
+        .eq('is_read', false)
+        .neq('sender_id', user.id);
+      
+      if (error) throw error;
+      
+      const counts: Record<string, number> = {};
+      data?.forEach((reply) => {
+        counts[reply.message_id] = (counts[reply.message_id] || 0) + 1;
+      });
+      
+      return counts;
+    },
+    enabled: !!user?.id,
+  });
 
   // Realtime updates para mensagens
   useEffect(() => {
@@ -58,6 +83,18 @@ export default function Contact() {
         (payload) => {
           console.log('🔥 Mudança detectada em contact_messages:', payload);
           queryClient.invalidateQueries({ queryKey: ['contact-messages'] });
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'contact_replies'
+        },
+        (payload) => {
+          console.log('🔥 Mudança detectada em contact_replies:', payload);
+          queryClient.invalidateQueries({ queryKey: ['unread-per-conversation'] });
         }
       )
       .subscribe();
@@ -211,6 +248,17 @@ export default function Contact() {
     return date.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
   };
 
+  const filterMessages = (msgs: ContactMessage[]) => {
+    if (!searchTerm.trim()) return msgs;
+    const term = searchTerm.toLowerCase();
+    return msgs.filter(
+      (m) =>
+        m.name.toLowerCase().includes(term) ||
+        m.message.toLowerCase().includes(term) ||
+        m.collaborator_name?.toLowerCase().includes(term)
+    );
+  };
+
   return (
     <div className="min-h-screen flex flex-col">
       {/* Padding Superior com fundo branco */}
@@ -297,11 +345,21 @@ export default function Contact() {
       {canManageMessages && (
         <div className="space-y-4">
           <h2 className="text-xl font-bold mb-4">Mensagens Recebidas</h2>
+          
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Input
+              placeholder="Buscar por nome ou mensagem..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10"
+            />
+          </div>
           {isLoading ? (
             <div className="flex justify-center py-12">
               <Loader2 className="w-8 h-8 animate-spin text-primary" />
             </div>
-          ) : displayedMessages.length === 0 ? (
+          ) : filterMessages(displayedMessages).length === 0 ? (
             <Card className="card-elevated">
               <CardContent className="py-12 text-center text-muted-foreground">
                 <Mail className="w-12 h-12 mx-auto mb-3" />
@@ -310,7 +368,7 @@ export default function Contact() {
             </Card>
           ) : (
             <div className="bg-background rounded-lg border border-border overflow-hidden">
-              {displayedMessages.map((msg, index) => (
+              {filterMessages(displayedMessages).map((msg, index) => (
                 <div 
                   key={msg.id}
                   className="flex items-center gap-3 p-4 hover:bg-muted/50 cursor-pointer transition-colors"
@@ -337,9 +395,19 @@ export default function Contact() {
                       <p className="text-sm text-muted-foreground truncate">
                         {msg.message}
                       </p>
-                      {msg.status === 'new' && (
-                        <span className="w-2.5 h-2.5 rounded-full bg-primary flex-shrink-0" />
-                      )}
+                      <div className="flex items-center gap-1.5">
+                        {msg.status === 'new' && (
+                          <span className="w-2.5 h-2.5 rounded-full bg-primary flex-shrink-0" />
+                        )}
+                        {unreadCounts[msg.id] > 0 && (
+                          <Badge 
+                            variant="destructive" 
+                            className="h-5 min-w-5 px-1.5 text-xs font-bold rounded-full"
+                          >
+                            {unreadCounts[msg.id]}
+                          </Badge>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -353,12 +421,22 @@ export default function Contact() {
       {isCollaborator && (
         <div className="space-y-4">
           <h2 className="text-xl font-bold mb-4">Mensagens Recebidas</h2>
+          
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Input
+              placeholder="Buscar por nome ou mensagem..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10"
+            />
+          </div>
 
           {isLoading || !collaboratorProfileId ? (
             <div className="flex justify-center py-12">
               <Loader2 className="w-8 h-8 animate-spin text-primary" />
             </div>
-          ) : displayedMessages.length === 0 ? (
+          ) : filterMessages(displayedMessages).length === 0 ? (
             <Card className="card-elevated">
               <CardContent className="py-12 text-center text-muted-foreground">
                 <Mail className="w-12 h-12 mx-auto mb-3" />
@@ -367,7 +445,7 @@ export default function Contact() {
             </Card>
           ) : (
             <div className="bg-background rounded-lg border border-border overflow-hidden">
-              {displayedMessages.map((msg, index) => (
+              {filterMessages(displayedMessages).map((msg, index) => (
                 <div 
                   key={msg.id}
                   className="flex items-center gap-3 p-4 hover:bg-muted/50 cursor-pointer transition-colors"
@@ -394,9 +472,19 @@ export default function Contact() {
                       <p className="text-sm text-muted-foreground truncate">
                         {msg.message}
                       </p>
-                      {msg.status === 'new' && (
-                        <span className="w-2.5 h-2.5 rounded-full bg-primary flex-shrink-0" />
-                      )}
+                      <div className="flex items-center gap-1.5">
+                        {msg.status === 'new' && (
+                          <span className="w-2.5 h-2.5 rounded-full bg-primary flex-shrink-0" />
+                        )}
+                        {unreadCounts[msg.id] > 0 && (
+                          <Badge 
+                            variant="destructive" 
+                            className="h-5 min-w-5 px-1.5 text-xs font-bold rounded-full"
+                          >
+                            {unreadCounts[msg.id]}
+                          </Badge>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -474,8 +562,19 @@ export default function Contact() {
                   <Users className="w-5 h-5 text-primary" />
                   Conversas com Colaboradores
                 </h3>
+                
+                <div className="relative mb-4">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Buscar por nome ou mensagem..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
+                
                 <div className="bg-background rounded-lg border border-border overflow-hidden">
-                  {collaboratorMessages.map((msg, index) => (
+                  {filterMessages(collaboratorMessages).map((msg, index) => (
                     <div 
                       key={msg.id}
                       className="flex items-center gap-3 p-4 hover:bg-muted/50 cursor-pointer transition-colors"
@@ -502,9 +601,19 @@ export default function Contact() {
                           <p className="text-sm text-muted-foreground truncate">
                             {msg.message}
                           </p>
-                          {msg.status === 'new' && (
-                            <span className="w-2.5 h-2.5 rounded-full bg-primary flex-shrink-0" />
-                          )}
+                          <div className="flex items-center gap-1.5">
+                            {msg.status === 'new' && (
+                              <span className="w-2.5 h-2.5 rounded-full bg-primary flex-shrink-0" />
+                            )}
+                            {unreadCounts[msg.id] > 0 && (
+                              <Badge 
+                                variant="destructive" 
+                                className="h-5 min-w-5 px-1.5 text-xs font-bold rounded-full"
+                              >
+                                {unreadCounts[msg.id]}
+                              </Badge>
+                            )}
+                          </div>
                         </div>
                       </div>
                     </div>
