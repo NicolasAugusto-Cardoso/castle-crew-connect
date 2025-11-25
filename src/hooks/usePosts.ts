@@ -14,7 +14,7 @@ export interface PostImage {
 
 export interface Post {
   id: string;
-  title: string;
+  title?: string | null;
   content: string;
   image_url: string | null;
   author_id: string;
@@ -107,7 +107,7 @@ export function usePosts() {
   });
 
   const createPost = useMutation({
-    mutationFn: async (post: { title: string; content: string; image_url?: string; images?: { image_url: string; display_order: number }[] }) => {
+    mutationFn: async (post: { title?: string | null; content: string; image_url?: string; images?: { image_url: string; display_order: number }[] }) => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
 

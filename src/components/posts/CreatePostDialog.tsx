@@ -25,7 +25,6 @@ interface ImageFile {
 export function CreatePostDialog() {
   const { createPost } = usePosts();
   const [open, setOpen] = useState(false);
-  const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [images, setImages] = useState<ImageFile[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -105,6 +104,12 @@ export function CreatePostDialog() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!content.trim()) {
+      toast.error('Por favor, escreva uma legenda.');
+      return;
+    }
+    
     setIsSubmitting(true);
 
     try {
@@ -144,13 +149,12 @@ export function CreatePostDialog() {
       }
 
       await createPost.mutateAsync({
-        title,
-        content,
+        title: null,
+        content: content.trim(),
         image_url: uploadedImages.length > 0 ? uploadedImages[0].image_url : undefined,
         images: uploadedImages
       });
       
-      setTitle('');
       setContent('');
       setImages([]);
       setOpen(false);
@@ -174,31 +178,6 @@ export function CreatePostDialog() {
           <DialogTitle>Nova Postagem</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="title">Título</Label>
-            <Input
-              id="title"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="Título da postagem"
-              required
-              disabled={isSubmitting}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="content">Conteúdo</Label>
-            <Textarea
-              id="content"
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              placeholder="Escreva o conteúdo da postagem..."
-              rows={6}
-              required
-              disabled={isSubmitting}
-            />
-          </div>
-
           <div className="space-y-2">
             <Label>Imagens (opcional - máx 10)</Label>
             
@@ -286,6 +265,19 @@ export function CreatePostDialog() {
                 </p>
               </div>
             )}
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="content">Legenda</Label>
+            <Textarea
+              id="content"
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
+              placeholder="Escreva uma legenda..."
+              rows={6}
+              required
+              disabled={isSubmitting}
+            />
           </div>
 
           <div className="flex flex-col sm:flex-row gap-3 sm:justify-end">
