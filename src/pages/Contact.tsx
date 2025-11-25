@@ -200,6 +200,17 @@ export default function Contact() {
     }
   };
 
+  const formatCompactDate = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const isToday = date.toDateString() === now.toDateString();
+    
+    if (isToday) {
+      return date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+    }
+    return date.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+  };
+
   return (
     <div className="min-h-screen flex flex-col">
       {/* Padding Superior com fundo branco */}
@@ -285,82 +296,12 @@ export default function Contact() {
 
       {canManageMessages && (
         <div className="space-y-4">
-          <>
-            <h2 className="text-xl font-bold">Mensagens Recebidas</h2>
-              {isLoading ? (
-                <div className="flex justify-center py-12">
-                  <Loader2 className="w-8 h-8 animate-spin text-primary" />
-                </div>
-              ) : displayedMessages.length === 0 ? (
-                <Card className="card-elevated">
-                  <CardContent className="py-12 text-center text-muted-foreground">
-                    <Mail className="w-12 h-12 mx-auto mb-3" />
-                    <p>Nenhuma mensagem recebida ainda</p>
-                  </CardContent>
-                </Card>
-              ) : (
-                displayedMessages.map((msg) => (
-                <Card key={msg.id} className="card-elevated hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate(`/contact/${msg.id}`)}>
-                    <CardHeader>
-                      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
-                        <div className="flex-1 min-w-0">
-                          <CardTitle className="text-base sm:text-lg break-words">{msg.name}</CardTitle>
-                          <div className="flex flex-col xs:flex-row xs:items-center gap-2 xs:gap-4 mt-2 text-sm text-muted-foreground">
-                            <span className="flex items-center gap-1">
-                              <Phone className="w-4 h-4 flex-shrink-0" />
-                              <span className="break-all">{msg.phone}</span>
-                            </span>
-                            {msg.email && (
-                              <span className="flex items-center gap-1">
-                                <Mail className="w-4 h-4 flex-shrink-0" />
-                                <span className="break-all">{msg.email}</span>
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                        <Badge className={`${getStatusColor(msg.status)} whitespace-nowrap text-xs px-1.5 py-0.5`}>
-                          {getStatusLabel(msg.status)}
-                        </Badge>
-                      </div>
-                    </CardHeader>
-                    <CardContent>
-                      <p className="text-sm sm:text-base text-foreground leading-relaxed mb-4 line-clamp-2 break-words">{msg.message}</p>
-                      <div className="flex flex-col xs:flex-row xs:items-center xs:justify-between gap-3">
-                        <p className="text-xs text-muted-foreground">
-                          Recebida em {new Date(msg.created_at).toLocaleString('pt-BR')}
-                        </p>
-                        <Button
-                          className="btn-gradient w-full xs:w-auto"
-                          size="sm"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            navigate(`/contact/${msg.id}`);
-                          }}
-                        >
-                          <MessageSquare className="w-4 h-4 mr-2" />
-                          Ver conversa
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))
-              )}
-          </>
-        </div>
-      )}
-
-      {/* Seção para Colaboradores */}
-      {isCollaborator && (
-        <div className="space-y-4">
-          <h2 className="text-xl font-bold">Mensagens Recebidas</h2>
-
-          {isLoading || !collaboratorProfileId ? (
-            // Loading
+          <h2 className="text-xl font-bold mb-4">Mensagens Recebidas</h2>
+          {isLoading ? (
             <div className="flex justify-center py-12">
               <Loader2 className="w-8 h-8 animate-spin text-primary" />
             </div>
           ) : displayedMessages.length === 0 ? (
-            // Sem mensagens
             <Card className="card-elevated">
               <CardContent className="py-12 text-center text-muted-foreground">
                 <Mail className="w-12 h-12 mx-auto mb-3" />
@@ -368,57 +309,99 @@ export default function Contact() {
               </CardContent>
             </Card>
           ) : (
-            // Renderizar mensagens recebidas pelo colaborador
-            displayedMessages.map((msg) => (
-              <Card
-                key={msg.id}
-                className="card-elevated hover:shadow-lg transition-shadow cursor-pointer"
-                onClick={() => navigate(`/contact/${msg.id}`)}
-              >
-                <CardHeader>
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="flex-1 min-w-0">
-                      <CardTitle className="text-base sm:text-lg">{msg.name}</CardTitle>
-
-                      <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground">
-                        <span className="flex items-center gap-1">
-                          <Phone className="w-4 h-4" />
-                          {msg.phone}
-                        </span>
-
-                        {msg.email && (
-                          <span className="flex items-center gap-1">
-                            <Mail className="w-4 h-4" />
-                            {msg.email}
-                          </span>
-                        )}
-                      </div>
+            <div className="bg-background rounded-lg border border-border overflow-hidden">
+              {displayedMessages.map((msg, index) => (
+                <div 
+                  key={msg.id}
+                  className="flex items-center gap-3 p-4 hover:bg-muted/50 cursor-pointer transition-colors"
+                  onClick={() => navigate(`/contact/${msg.id}`)}
+                  style={{ borderBottom: index < displayedMessages.length - 1 ? '1px solid hsl(var(--border) / 0.5)' : 'none' }}
+                >
+                  <Avatar className="h-12 w-12 flex-shrink-0">
+                    <AvatarImage src={undefined} />
+                    <AvatarFallback className="bg-primary/10 text-primary font-semibold text-base">
+                      {msg.name?.charAt(0)?.toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                  
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between gap-2 mb-1">
+                      <span className="font-semibold text-foreground truncate">
+                        {msg.name}
+                      </span>
+                      <span className="text-xs text-muted-foreground whitespace-nowrap">
+                        {formatCompactDate(msg.updated_at)}
+                      </span>
                     </div>
-
-                    <Badge className={`${getStatusColor(msg.status)} whitespace-nowrap`}>
-                      {getStatusLabel(msg.status)}
-                    </Badge>
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="text-sm text-muted-foreground truncate">
+                        {msg.message}
+                      </p>
+                      {msg.status === 'new' && (
+                        <span className="w-2.5 h-2.5 rounded-full bg-primary flex-shrink-0" />
+                      )}
+                    </div>
                   </div>
-                </CardHeader>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
 
-                <CardContent>
-                  <p className="text-sm text-foreground leading-relaxed mb-4 line-clamp-2">
-                    {msg.message}
-                  </p>
+      {/* Seção para Colaboradores */}
+      {isCollaborator && (
+        <div className="space-y-4">
+          <h2 className="text-xl font-bold mb-4">Mensagens Recebidas</h2>
 
-                  <div className="flex items-center justify-between gap-3">
-                    <p className="text-xs text-muted-foreground">
-                      Recebida em {new Date(msg.created_at).toLocaleString('pt-BR')}
-                    </p>
-
-                    <Button className="btn-gradient" size="sm">
-                      <MessageSquare className="w-4 h-4 mr-2" />
-                      Ver conversa
-                    </Button>
+          {isLoading || !collaboratorProfileId ? (
+            <div className="flex justify-center py-12">
+              <Loader2 className="w-8 h-8 animate-spin text-primary" />
+            </div>
+          ) : displayedMessages.length === 0 ? (
+            <Card className="card-elevated">
+              <CardContent className="py-12 text-center text-muted-foreground">
+                <Mail className="w-12 h-12 mx-auto mb-3" />
+                <p>Nenhuma mensagem recebida ainda</p>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="bg-background rounded-lg border border-border overflow-hidden">
+              {displayedMessages.map((msg, index) => (
+                <div 
+                  key={msg.id}
+                  className="flex items-center gap-3 p-4 hover:bg-muted/50 cursor-pointer transition-colors"
+                  onClick={() => navigate(`/contact/${msg.id}`)}
+                  style={{ borderBottom: index < displayedMessages.length - 1 ? '1px solid hsl(var(--border) / 0.5)' : 'none' }}
+                >
+                  <Avatar className="h-12 w-12 flex-shrink-0">
+                    <AvatarImage src={undefined} />
+                    <AvatarFallback className="bg-primary/10 text-primary font-semibold text-base">
+                      {msg.name?.charAt(0)?.toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                  
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between gap-2 mb-1">
+                      <span className="font-semibold text-foreground truncate">
+                        {msg.name}
+                      </span>
+                      <span className="text-xs text-muted-foreground whitespace-nowrap">
+                        {formatCompactDate(msg.updated_at)}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="text-sm text-muted-foreground truncate">
+                        {msg.message}
+                      </p>
+                      {msg.status === 'new' && (
+                        <span className="w-2.5 h-2.5 rounded-full bg-primary flex-shrink-0" />
+                      )}
+                    </div>
                   </div>
-                </CardContent>
-              </Card>
-            ))
+                </div>
+              ))}
+            </div>
           )}
         </div>
       )}
@@ -486,74 +469,50 @@ export default function Contact() {
 
             {/* Lista de mensagens com colaboradores */}
             {collaboratorMessages.length > 0 && (
-              <div className="space-y-4 mt-6">
-                <h3 className="text-lg font-semibold flex items-center gap-2">
+              <div className="mt-6">
+                <h3 className="text-lg font-semibold flex items-center gap-2 mb-4">
                   <Users className="w-5 h-5 text-primary" />
                   Conversas com Colaboradores
                 </h3>
-                {collaboratorMessages.map((msg) => (
-                  <Card key={msg.id} className="card-elevated hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate(`/contact/${msg.id}`)}>
-                    <CardHeader>
-                      <div className="flex items-center gap-3">
-                        <Avatar className="h-10 w-10">
-                            <AvatarImage src={msg.collaborator_avatar || undefined} />
-                            <AvatarFallback className="bg-primary/10 text-primary">
-                              {msg.collaborator_name?.charAt(0)?.toUpperCase() || 'C'}
-                            </AvatarFallback>
-                          </Avatar>
-                          <div className="flex-1">
-                            <div className="flex items-center justify-between">
-                              <CardTitle className="text-base sm:text-lg break-words">
-                                {msg.collaborator_name || 'Colaborador'}
-                              </CardTitle>
-                              <Badge className={`${getStatusColor(msg.status)} whitespace-nowrap text-xs px-2 py-1`}>
-                                {getStatusLabel(msg.status)}
-                              </Badge>
-                            </div>
-                            <p className="text-xs text-muted-foreground mt-1">
-                              Conversa iniciada em {new Date(msg.created_at).toLocaleDateString('pt-BR')}
-                            </p>
-                          </div>
+                <div className="bg-background rounded-lg border border-border overflow-hidden">
+                  {collaboratorMessages.map((msg, index) => (
+                    <div 
+                      key={msg.id}
+                      className="flex items-center gap-3 p-4 hover:bg-muted/50 cursor-pointer transition-colors"
+                      onClick={() => navigate(`/contact/${msg.id}`)}
+                      style={{ borderBottom: index < collaboratorMessages.length - 1 ? '1px solid hsl(var(--border) / 0.5)' : 'none' }}
+                    >
+                      <Avatar className="h-12 w-12 flex-shrink-0">
+                        <AvatarImage src={msg.collaborator_avatar || undefined} />
+                        <AvatarFallback className="bg-primary/10 text-primary font-semibold text-base">
+                          {msg.collaborator_name?.charAt(0)?.toUpperCase() || 'C'}
+                        </AvatarFallback>
+                      </Avatar>
+                      
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between gap-2 mb-1">
+                          <span className="font-semibold text-foreground truncate">
+                            {msg.collaborator_name || 'Colaborador'}
+                          </span>
+                          <span className="text-xs text-muted-foreground whitespace-nowrap">
+                            {formatCompactDate(msg.updated_at)}
+                          </span>
                         </div>
-                      </CardHeader>
-                      <CardContent>
-                        <p className="text-sm text-foreground leading-relaxed mb-3 line-clamp-2 break-words">{msg.message}</p>
-                        <div className="flex flex-col xs:flex-row xs:items-center xs:justify-between gap-3">
-                          <p className="text-xs text-muted-foreground">
-                            Última atualização: {new Date(msg.updated_at).toLocaleString('pt-BR')}
+                        <div className="flex items-center justify-between gap-2">
+                          <p className="text-sm text-muted-foreground truncate">
+                            {msg.message}
                           </p>
-                          <div className="flex gap-2 w-full xs:w-auto">
-                            <Button
-                              className="btn-gradient flex-1 xs:flex-initial"
-                              size="sm"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                navigate(`/contact/${msg.id}`);
-                              }}
-                            >
-                              <MessageSquare className="w-4 h-4 mr-2" />
-                              Ver conversa
-                            </Button>
-                            <Button
-                              variant="destructive"
-                              size="sm"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setMessageToDelete(msg);
-                                setDeleteDialogOpen(true);
-                              }}
-                              disabled={deleteMessage.isPending}
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
-                          </div>
+                          {msg.status === 'new' && (
+                            <span className="w-2.5 h-2.5 rounded-full bg-primary flex-shrink-0" />
+                          )}
                         </div>
-                      </CardContent>
-                    </Card>
+                      </div>
+                    </div>
                   ))}
                 </div>
-              )}
-            </div>
+              </div>
+            )}
+          </div>
         </div>
       )}
       </div>
