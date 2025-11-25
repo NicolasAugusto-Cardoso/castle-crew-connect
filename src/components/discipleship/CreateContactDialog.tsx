@@ -4,14 +4,16 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Info } from "lucide-react";
 import { useDiscipleship } from "@/hooks/useDiscipleship";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 export function CreateContactDialog() {
-  const { createContact } = useDiscipleship();
+  const { createContact, collaborators } = useDiscipleship();
   const [open, setOpen] = useState(false);
+  const [selectedCollaborator, setSelectedCollaborator] = useState<string>('auto');
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [age, setAge] = useState('');
@@ -82,6 +84,7 @@ export function CreateContactDialog() {
         postal_code: postalCode,
         latitude,
         longitude,
+        assigned_collaborator_id: selectedCollaborator === 'auto' ? null : selectedCollaborator,
       });
       
       // Reset form
@@ -94,6 +97,7 @@ export function CreateContactDialog() {
       setStreetNumber('');
       setState('');
       setPostalCode('');
+      setSelectedCollaborator('auto');
       setOpen(false);
     } finally {
       setIsSubmitting(false);
@@ -116,7 +120,7 @@ export function CreateContactDialog() {
           <Alert>
             <Info className="h-4 w-4" />
             <AlertDescription>
-              O sistema atribuirá automaticamente o colaborador mais próximo com base no endereço informado.
+              Escolha um colaborador ou deixe como "Automático" para que o sistema atribua o colaborador mais próximo com base no endereço.
             </AlertDescription>
           </Alert>
 
@@ -176,6 +180,26 @@ export function CreateContactDialog() {
                 placeholder="Digite o bairro"
                 required
               />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="collaborator">Colaborador</Label>
+              <Select 
+                value={selectedCollaborator} 
+                onValueChange={setSelectedCollaborator}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione um colaborador" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="auto">Automático (por localização)</SelectItem>
+                  {collaborators.map((collab) => (
+                    <SelectItem key={collab.user_id} value={collab.user_id}>
+                      {collab.name || 'Sem nome'} - {collab.neighborhood || collab.city || 'Sem região'}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
