@@ -64,7 +64,10 @@ export default function ChatThread() {
         if (error) {
           console.error('Erro ao marcar mensagens como lidas:', error);
         } else {
-          await queryClient.invalidateQueries({ queryKey: ['unread-replies-count'] });
+          await queryClient.invalidateQueries({ 
+            queryKey: ['unread-replies-count'],
+            refetchType: 'all' 
+          });
           await queryClient.invalidateQueries({ queryKey: ['contact-messages'] });
         }
       }
@@ -78,7 +81,10 @@ export default function ChatThread() {
 
         if (!error) {
           await queryClient.invalidateQueries({ queryKey: ['contact-messages'] });
-          await queryClient.invalidateQueries({ queryKey: ['unread-replies-count'] });
+          await queryClient.invalidateQueries({ 
+            queryKey: ['unread-replies-count'],
+            refetchType: 'all'
+          });
         }
       }
     };

@@ -2,6 +2,7 @@ import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { Home, MessageSquare, Users, FolderOpen, BookOpen, LogOut, UserCircle, Settings, UserCog, UserPlus } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useUnreadReplies } from '@/hooks/useUnreadReplies';
+import { useUnreadDiscipleship } from '@/hooks/useUnreadDiscipleship';
 import { usePushNotifications } from '@/hooks/usePushNotifications';
 import { useShowCollaboratorsTab } from '@/hooks/useCollaborators';
 import castleLogo from '@/assets/castle-logo-final.png';
@@ -13,6 +14,7 @@ export const Layout = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { unreadCount } = useUnreadReplies(user?.id, userRoles);
+  const { unreadDiscipleshipCount } = useUnreadDiscipleship(user?.id, userRoles);
   const { data: showCollaboratorsTab } = useShowCollaboratorsTab();
   
   // Registrar push notifications
@@ -124,6 +126,14 @@ export const Layout = () => {
                       {unreadCount}
                     </Badge>
                   )}
+                  {item.path === '/discipleship' && unreadDiscipleshipCount > 0 && (
+                    <Badge 
+                      variant="destructive" 
+                      className="absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center p-0 text-xs"
+                    >
+                      {unreadDiscipleshipCount}
+                    </Badge>
+                  )}
                 </div>
                 <span className="font-medium">{item.label}</span>
               </button>
@@ -164,6 +174,14 @@ export const Layout = () => {
                       className="absolute -top-1.5 -right-1.5 h-4 w-4 flex items-center justify-center p-0 text-[9px]"
                     >
                       {unreadCount > 9 ? '9+' : unreadCount}
+                    </Badge>
+                  )}
+                  {item.path === '/discipleship' && unreadDiscipleshipCount > 0 && (
+                    <Badge 
+                      variant="destructive" 
+                      className="absolute -top-1.5 -right-1.5 h-4 w-4 flex items-center justify-center p-0 text-[9px]"
+                    >
+                      {unreadDiscipleshipCount > 9 ? '9+' : unreadDiscipleshipCount}
                     </Badge>
                   )}
                 </div>
