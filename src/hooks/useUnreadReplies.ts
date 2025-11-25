@@ -36,12 +36,13 @@ export const useUnreadReplies = (userId: string | undefined, userRoles?: string[
         return 0;
       }
 
-      // Para admins e social media: contar todas as mensagens novas
+      // Para admins e social media: contar apenas mensagens administrativas novas
       if (isAdmin || isSocialMedia) {
         const { count } = await supabase
           .from('contact_messages')
           .select('*', { count: 'exact', head: true })
-          .eq('status', 'new');
+          .eq('status', 'new')
+          .is('collaborator_id', null); // Apenas mensagens administrativas
         return count || 0;
       }
 
@@ -143,6 +144,10 @@ export const useUnreadReplies = (userId: string | undefined, userRoles?: string[
             queryKey: ['unread-replies-count'],
             refetchType: 'all'
           });
+          queryClient.refetchQueries({
+            queryKey: ['unread-replies-count'],
+            type: 'all'
+          });
         }
       )
       .on(
@@ -156,6 +161,28 @@ export const useUnreadReplies = (userId: string | undefined, userRoles?: string[
           queryClient.invalidateQueries({ 
             queryKey: ['unread-replies-count'],
             refetchType: 'all'
+          });
+          queryClient.refetchQueries({
+            queryKey: ['unread-replies-count'],
+            type: 'all'
+          });
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'DELETE',
+          schema: 'public',
+          table: 'contact_messages',
+        },
+        () => {
+          queryClient.invalidateQueries({ 
+            queryKey: ['unread-replies-count'],
+            refetchType: 'all'
+          });
+          queryClient.refetchQueries({
+            queryKey: ['unread-replies-count'],
+            type: 'all'
           });
         }
       )
