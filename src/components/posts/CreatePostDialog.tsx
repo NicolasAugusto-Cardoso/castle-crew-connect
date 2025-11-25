@@ -12,57 +12,95 @@ import {
 } from '@/components/ui/dialog';
 import { usePosts } from '@/hooks/usePosts';
 import { supabase } from '@/integrations/supabase/client';
-import { Plus, Upload, X } from 'lucide-react';
+import { Plus, Upload, X, ChevronUp, ChevronDown } from 'lucide-react';
 import { toast } from 'sonner';
+
+interface ImageFile {
+  file?: File;
+  url: string;
+  preview: string;
+  order: number;
+}
 
 export function CreatePostDialog() {
   const { createPost } = usePosts();
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
-  const [imageUrl, setImageUrl] = useState('');
-  const [imageFile, setImageFile] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState<string>('');
+  const [images, setImages] = useState<ImageFile[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleImageFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  const handleImageFilesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
 
-    // Validar tipo de arquivo
-    const fileExtension = file.name.split('.').pop()?.toLowerCase();
-    const validExtensions = ['jpeg', 'jpg', 'png'];
-    const validMimeTypes = ['image/jpeg', 'image/jpg', 'image/png'];
-    
-    const isValidExtension = fileExtension && validExtensions.includes(fileExtension);
-    const isValidMimeType = validMimeTypes.includes(file.type);
-    
-    if (!isValidExtension && !isValidMimeType) {
-      toast.error('Formato inválido. Use .jpeg ou .png');
+    // Limite de 10 imagens
+    if (images.length + files.length > 10) {
+      toast.error('Máximo de 10 imagens por postagem');
       return;
     }
 
-    // Validar tamanho (máx 5MB para posts)
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error('Imagem muito grande. Máximo: 5MB');
-      return;
-    }
+    const newImages: ImageFile[] = [];
 
-    setImageFile(file);
-    setImageUrl(''); // Limpar URL se havia uma
+    files.forEach((file, index) => {
+      // Validar tipo
+      const fileExtension = file.name.split('.').pop()?.toLowerCase();
+      const validExtensions = ['jpeg', 'jpg', 'png'];
+      const validMimeTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+      
+      const isValidExtension = fileExtension && validExtensions.includes(fileExtension);
+      const isValidMimeType = validMimeTypes.includes(file.type);
+      
+      if (!isValidExtension && !isValidMimeType) {
+        toast.error(`${file.name}: Formato inválido. Use .jpeg ou .png`);
+        return;
+      }
 
-    // Criar preview
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setImagePreview(reader.result as string);
-    };
-    reader.readAsDataURL(file);
+      // Validar tamanho (máx 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error(`${file.name}: Imagem muito grande. Máximo: 5MB`);
+        return;
+      }
+
+      // Criar preview
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        newImages.push({
+          file,
+          url: '',
+          preview: reader.result as string,
+          order: images.length + index
+        });
+
+        // Quando todos os readers terminarem, atualizar estado
+        if (newImages.length === files.length) {
+          setImages(prev => [...prev, ...newImages]);
+        }
+      };
+      reader.readAsDataURL(file);
+    });
   };
 
-  const handleRemoveImage = () => {
-    setImageFile(null);
-    setImagePreview('');
-    setImageUrl('');
+  const handleRemoveImage = (index: number) => {
+    setImages(prev => prev.filter((_, i) => i !== index).map((img, i) => ({ ...img, order: i })));
+  };
+
+  const handleMoveUp = (index: number) => {
+    if (index === 0) return;
+    setImages(prev => {
+      const newImages = [...prev];
+      [newImages[index - 1], newImages[index]] = [newImages[index], newImages[index - 1]];
+      return newImages.map((img, i) => ({ ...img, order: i }));
+    });
+  };
+
+  const handleMoveDown = (index: number) => {
+    if (index === images.length - 1) return;
+    setImages(prev => {
+      const newImages = [...prev];
+      [newImages[index], newImages[index + 1]] = [newImages[index + 1], newImages[index]];
+      return newImages.map((img, i) => ({ ...img, order: i }));
+    });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -70,47 +108,51 @@ export function CreatePostDialog() {
     setIsSubmitting(true);
 
     try {
-      let finalImageUrl = imageUrl;
+      const uploadedImages: { image_url: string; display_order: number }[] = [];
 
-      // Se tem arquivo, fazer upload
-      if (imageFile) {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) throw new Error('Não autenticado');
+      // Upload das imagens
+      for (const image of images) {
+        if (image.file) {
+          const { data: { user } } = await supabase.auth.getUser();
+          if (!user) throw new Error('Não autenticado');
 
-        const fileExt = imageFile.name.split('.').pop();
-        const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
-        
-        const { error: uploadError } = await supabase.storage
-          .from('posts')
-          .upload(fileName, imageFile, {
-            cacheControl: '3600',
-            upsert: false
+          const fileExt = image.file.name.split('.').pop();
+          const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
+          
+          const { error: uploadError } = await supabase.storage
+            .from('posts')
+            .upload(fileName, image.file, {
+              cacheControl: '3600',
+              upsert: false
+            });
+
+          if (uploadError) {
+            toast.error('Erro ao enviar imagem');
+            throw uploadError;
+          }
+
+          // Obter URL pública
+          const { data: { publicUrl } } = supabase.storage
+            .from('posts')
+            .getPublicUrl(fileName);
+
+          uploadedImages.push({
+            image_url: publicUrl,
+            display_order: image.order
           });
-
-        if (uploadError) {
-          toast.error('Erro ao enviar imagem');
-          throw uploadError;
         }
-
-        // Obter URL pública
-        const { data: { publicUrl } } = supabase.storage
-          .from('posts')
-          .getPublicUrl(fileName);
-
-        finalImageUrl = publicUrl;
       }
 
       await createPost.mutateAsync({
         title,
         content,
-        image_url: finalImageUrl || undefined
+        image_url: uploadedImages.length > 0 ? uploadedImages[0].image_url : undefined,
+        images: uploadedImages
       });
       
       setTitle('');
       setContent('');
-      setImageUrl('');
-      setImageFile(null);
-      setImagePreview('');
+      setImages([]);
       setOpen(false);
     } catch (error) {
       console.error('Erro ao criar postagem:', error);
@@ -158,72 +200,90 @@ export function CreatePostDialog() {
           </div>
 
           <div className="space-y-2">
-            <Label>Imagem (opcional)</Label>
+            <Label>Imagens (opcional - máx 10)</Label>
             
-            {/* Preview da imagem */}
-            {(imagePreview || imageUrl) && (
-              <div className="relative w-full aspect-video rounded-lg overflow-hidden bg-muted">
-                <img
-                  src={imagePreview || imageUrl}
-                  alt="Preview"
-                  className="w-full h-full object-cover"
-                />
-                <Button
-                  type="button"
-                  variant="destructive"
-                  size="sm"
-                  className="absolute top-2 right-2"
-                  onClick={handleRemoveImage}
-                  disabled={isSubmitting}
-                >
-                  <X className="w-4 h-4" />
-                </Button>
+            {/* Grid de previews */}
+            {images.length > 0 && (
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-4">
+                {images.map((image, index) => (
+                  <div key={index} className="relative group">
+                    <div className="aspect-square rounded-lg overflow-hidden bg-muted">
+                      <img
+                        src={image.preview}
+                        alt={`Preview ${index + 1}`}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    
+                    {/* Número da ordem */}
+                    <div className="absolute top-2 left-2 bg-primary text-primary-foreground rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold">
+                      {index + 1}
+                    </div>
+                    
+                    {/* Botões de controle */}
+                    <div className="absolute top-2 right-2 flex gap-1">
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        size="icon"
+                        className="h-7 w-7"
+                        onClick={() => handleRemoveImage(index)}
+                        disabled={isSubmitting}
+                      >
+                        <X className="w-4 h-4" />
+                      </Button>
+                    </div>
+
+                    {/* Setas de reordenação */}
+                    <div className="absolute bottom-2 right-2 flex gap-1 bg-background/80 rounded p-1">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="h-6 w-6"
+                        onClick={() => handleMoveUp(index)}
+                        disabled={index === 0 || isSubmitting}
+                      >
+                        <ChevronUp className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="h-6 w-6"
+                        onClick={() => handleMoveDown(index)}
+                        disabled={index === images.length - 1 || isSubmitting}
+                      >
+                        <ChevronDown className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </div>
+                ))}
               </div>
             )}
 
-            {/* Upload de arquivo */}
-            {!imagePreview && !imageUrl && (
-              <div className="space-y-3">
-                <div className="border-2 border-dashed rounded-lg p-6 text-center">
-                  <Upload className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
-                  <Label htmlFor="image-file" className="cursor-pointer">
-                    <span className="text-sm text-primary hover:underline">
-                      Clique para enviar uma imagem
-                    </span>
-                    <input
-                      id="image-file"
-                      type="file"
-                      accept="image/jpeg,image/jpg,image/png,image/*"
-                      capture="environment"
-                      onChange={handleImageFileChange}
-                      className="hidden"
-                      disabled={isSubmitting}
-                    />
-                  </Label>
-                  <p className="text-xs text-muted-foreground mt-2">
-                    📱 Mobile: Toque para usar câmera ou galeria<br />
-                    💻 Desktop: .jpeg ou .png (máx 5MB)
-                  </p>
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <div className="flex-1 border-t border-muted"></div>
-                  <span className="text-xs text-muted-foreground">ou</span>
-                  <div className="flex-1 border-t border-muted"></div>
-                </div>
-
-                <div>
-                  <Label htmlFor="image-url" className="text-sm">URL da Imagem</Label>
-                  <Input
-                    id="image-url"
-                    type="url"
-                    value={imageUrl}
-                    onChange={(e) => setImageUrl(e.target.value)}
-                    placeholder="https://exemplo.com/imagem.jpg"
+            {/* Upload de arquivos */}
+            {images.length < 10 && (
+              <div className="border-2 border-dashed rounded-lg p-6 text-center">
+                <Upload className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
+                <Label htmlFor="image-files" className="cursor-pointer">
+                  <span className="text-sm text-primary hover:underline">
+                    Clique para enviar imagens ({images.length}/10)
+                  </span>
+                  <input
+                    id="image-files"
+                    type="file"
+                    accept="image/jpeg,image/jpg,image/png,image/*"
+                    capture="environment"
+                    multiple
+                    onChange={handleImageFilesChange}
+                    className="hidden"
                     disabled={isSubmitting}
-                    className="mt-1"
                   />
-                </div>
+                </Label>
+                <p className="text-xs text-muted-foreground mt-2">
+                  .jpeg ou .png (máx 5MB cada)
+                </p>
               </div>
             )}
           </div>

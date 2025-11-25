@@ -4,6 +4,14 @@ import { toast } from '@/hooks/use-toast';
 
 export type EmojiType = 'fire' | 'heart' | 'hands';
 
+export interface PostImage {
+  id: string;
+  post_id: string;
+  image_url: string;
+  display_order: number;
+  created_at: string;
+}
+
 export interface Post {
   id: string;
   title: string;
@@ -18,6 +26,7 @@ export interface Post {
   is_liked?: boolean;
   user_reaction?: EmojiType | null;
   reactions: Record<EmojiType, number>;
+  images?: PostImage[];
 }
 
 export function usePosts() {
@@ -34,6 +43,12 @@ export function usePosts() {
 
       if (postsError) throw postsError;
       if (!postsData) return [];
+
+      // Get post images
+      const { data: postImages } = await supabase
+        .from('post_images')
+        .select('*')
+        .order('display_order', { ascending: true });
 
       // Get author profiles
       const authorIds = [...new Set(postsData.map(p => p.author_id))];
@@ -55,6 +70,7 @@ export function usePosts() {
 
       // Combine data
       return postsData.map(post => {
+        const images = postImages?.filter(img => img.post_id === post.id) || [];
         const author = profiles?.find(p => p.id === post.author_id);
         const postLikes = likes?.filter(l => l.post_id === post.id) || [];
         const postReactions = reactionsData?.filter(r => r.post_id === post.id) || [];
@@ -83,27 +99,48 @@ export function usePosts() {
           likes_count: postLikes.length,
           is_liked: user ? postLikes.some(l => l.user_id === user.id) : false,
           user_reaction: userReaction,
-          reactions: reactionCounts
+          reactions: reactionCounts,
+          images
         };
       }) as Post[];
     }
   });
 
   const createPost = useMutation({
-    mutationFn: async (post: { title: string; content: string; image_url?: string }) => {
+    mutationFn: async (post: { title: string; content: string; image_url?: string; images?: { image_url: string; display_order: number }[] }) => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
 
       const { data, error } = await supabase
         .from('posts')
         .insert({
-          ...post,
+          title: post.title,
+          content: post.content,
+          image_url: post.image_url,
           author_id: user.id
         })
         .select()
         .single();
 
       if (error) throw error;
+
+      // Insert multiple images if provided
+      if (data && post.images && post.images.length > 0) {
+        const imagesToInsert = post.images.map(img => ({
+          post_id: data.id,
+          image_url: img.image_url,
+          display_order: img.display_order
+        }));
+
+        const { error: imagesError } = await supabase
+          .from('post_images')
+          .insert(imagesToInsert);
+
+        if (imagesError) {
+          console.error('Error inserting images:', imagesError);
+        }
+      }
+
       return data;
     },
     onSuccess: () => {
@@ -117,7 +154,7 @@ export function usePosts() {
   });
 
   const updatePost = useMutation({
-    mutationFn: async ({ id, ...updates }: Partial<Post> & { id: string }) => {
+    mutationFn: async ({ id, images, ...updates }: Omit<Partial<Post>, 'images'> & { id: string; images?: Array<{ id?: string; image_url: string; display_order: number }> }) => {
       const { data, error } = await supabase
         .from('posts')
         .update(updates)
@@ -126,6 +163,33 @@ export function usePosts() {
         .single();
 
       if (error) throw error;
+
+      // Handle images update
+      if (images !== undefined) {
+        // Delete existing images
+        await supabase
+          .from('post_images')
+          .delete()
+          .eq('post_id', id);
+
+        // Insert new images
+        if (images.length > 0) {
+          const imagesToInsert = images.map(img => ({
+            post_id: id,
+            image_url: img.image_url,
+            display_order: img.display_order
+          }));
+
+          const { error: imagesError } = await supabase
+            .from('post_images')
+            .insert(imagesToInsert);
+
+          if (imagesError) {
+            console.error('Error updating images:', imagesError);
+          }
+        }
+      }
+
       return data;
     },
     onSuccess: () => {
