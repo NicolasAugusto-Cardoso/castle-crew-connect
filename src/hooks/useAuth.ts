@@ -51,6 +51,7 @@ export function useAuth() {
       if (error) throw error;
       
       const roles = data?.map(r => r.role as UserRole) || [];
+      console.log('🔍 User roles loaded:', roles, 'for user:', userId);
       setUserRoles(roles);
     } catch (error) {
       console.error('Error fetching user roles:', error);
