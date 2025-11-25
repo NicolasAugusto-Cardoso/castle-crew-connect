@@ -639,17 +639,6 @@ export default function Contact() {
         }
       />
 
-      {/* Padding Inferior com fundo azul/gradient */}
-      <div className="bg-gradient-to-r from-primary/20 via-primary/10 to-accent/20 py-6 xs:py-7 sm:py-8">
-        <div className="container mx-auto px-3 xs:px-4 max-w-4xl">
-          <div className="text-center">
-            <Mail className="w-6 xs:w-7 sm:w-8 h-6 xs:h-7 sm:h-8 mx-auto mb-2 text-primary opacity-70" />
-            <p className="text-xs xs:text-sm text-muted-foreground">
-              Estamos aqui para ajudar você
-            </p>
-          </div>
-        </div>
-      </div>
     </div>
   );
 }
