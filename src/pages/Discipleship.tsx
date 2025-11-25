@@ -30,13 +30,16 @@ export default function Discipleship() {
   const { contacts, collaborators, isLoading, updateContactStatus, assignCollaborator } = useDiscipleship();
 
   const isCollaborator = hasRole(['collaborator']);
-  const canRegister = hasRole(['admin', 'social_media']);
+  const canRegister = hasRole(['admin', 'social_media', 'volunteer']);
   const canUpdateStatus = hasRole(['admin', 'social_media', 'collaborator']);
+  const isVolunteer = hasRole(['volunteer']);
 
-  // Filter contacts for collaborators
+  // Filter contacts for collaborators and volunteers
   const filteredContacts = isCollaborator
     ? contacts.filter(c => c.assigned_collaborator_id === user?.id)
-    : contacts;
+    : isVolunteer
+      ? contacts.filter(c => c.registered_by === user?.id)
+      : contacts;
 
   const handleStatusChange = (contactId: string, newStatus: string) => {
     updateContactStatus.mutate({ id: contactId, status: newStatus });
@@ -52,7 +55,9 @@ export default function Discipleship() {
         <p className="text-sm xs:text-base text-muted-foreground">
           {isCollaborator 
             ? 'Acompanhe as pessoas sob sua responsabilidade' 
-            : 'Gerencie contatos e acompanhamentos'}
+            : isVolunteer
+              ? 'Cadastre e acompanhe pessoas para discipulado'
+              : 'Gerencie contatos e acompanhamentos'}
         </p>
       </div>
 
@@ -82,7 +87,11 @@ export default function Discipleship() {
         <div className="space-y-4">
           <h2 className="text-xl font-bold flex items-center gap-2">
             <User className="w-5 h-5" />
-            {isCollaborator ? 'Pessoas que Acompanho' : 'Todos os Contatos'}
+            {isCollaborator 
+              ? 'Pessoas que Acompanho' 
+              : isVolunteer 
+                ? 'Pessoas que Cadastrei' 
+                : 'Todos os Contatos'}
           </h2>
           
           {filteredContacts.map((contact) => (
