@@ -4,7 +4,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import { Users, Phone, Mail, MapPin, User, Loader2 } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Users, Phone, Mail, MapPin, User, Loader2, Eye, Home, Calendar } from 'lucide-react';
 import { CreateContactDialog } from '@/components/discipleship/CreateContactDialog';
 import {
   Select,
@@ -176,13 +177,111 @@ export default function Discipleship() {
                         <SelectItem key={collab.id} value={collab.user_id}>
                           {collab.name}
                         </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                )}
-              </div>
-            </CardContent>
-          </Card>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+
+              {/* Botão Ver detalhes para colaboradores */}
+              {isCollaborator && (
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Button variant="outline" className="w-full">
+                      <Eye className="w-4 h-4 mr-2" />
+                      Ver detalhes
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
+                    <DialogHeader>
+                      <DialogTitle className="text-xl">{contact.name}</DialogTitle>
+                    </DialogHeader>
+                    
+                    <div className="space-y-4 mt-4">
+                      {/* Dados de Contato */}
+                      <div className="space-y-2">
+                        <h3 className="font-semibold text-sm text-muted-foreground">Dados de Contato</h3>
+                        <div className="grid gap-2 text-sm">
+                          <div className="flex items-center gap-2">
+                            <Phone className="w-4 h-4 text-primary" />
+                            <span>{contact.phone}</span>
+                          </div>
+                          {contact.email && (
+                            <div className="flex items-center gap-2">
+                              <Mail className="w-4 h-4 text-primary" />
+                              <span>{contact.email}</span>
+                            </div>
+                          )}
+                          {contact.age && (
+                            <div className="flex items-center gap-2">
+                              <User className="w-4 h-4 text-primary" />
+                              <span>{contact.age} anos</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Endereço */}
+                      <div className="space-y-2">
+                        <h3 className="font-semibold text-sm text-muted-foreground">Endereço</h3>
+                        <div className="grid gap-2 text-sm">
+                          {(contact.street || contact.street_number) && (
+                            <div className="flex items-center gap-2">
+                              <Home className="w-4 h-4 text-primary" />
+                              <span>
+                                {contact.street}
+                                {contact.street_number && `, ${contact.street_number}`}
+                              </span>
+                            </div>
+                          )}
+                          <div className="flex items-center gap-2">
+                            <MapPin className="w-4 h-4 text-primary" />
+                            <span>
+                              {[contact.neighborhood, contact.city, contact.state]
+                                .filter(Boolean)
+                                .join(', ')}
+                            </span>
+                          </div>
+                          {contact.postal_code && (
+                            <p className="text-muted-foreground ml-6">CEP: {contact.postal_code}</p>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Informações do Cadastro */}
+                      <div className="space-y-2">
+                        <h3 className="font-semibold text-sm text-muted-foreground">Informações</h3>
+                        <div className="grid gap-2 text-sm">
+                          <div className="flex items-center gap-2">
+                            <Calendar className="w-4 h-4 text-primary" />
+                            <span>Cadastrado em: {new Date(contact.created_at).toLocaleDateString('pt-BR')}</span>
+                          </div>
+                          {contact.assigned_at && (
+                            <p className="ml-6 text-muted-foreground">
+                              Atribuído em: {new Date(contact.assigned_at).toLocaleDateString('pt-BR')}
+                            </p>
+                          )}
+                          {contact.distance_km && (
+                            <p className="ml-6 text-muted-foreground">
+                              Distância: {contact.distance_km.toFixed(1)} km
+                            </p>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Status atual */}
+                      <div className="pt-2 border-t">
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-muted-foreground">Status atual:</span>
+                          <Badge className="bg-primary">{statusLabels[contact.status]}</Badge>
+                        </div>
+                      </div>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+              )}
+            </div>
+          </CardContent>
+        </Card>
           ))}
         </div>
       )}
