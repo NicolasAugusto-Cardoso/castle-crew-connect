@@ -41,7 +41,7 @@ export const Splash: React.FC<SplashProps> = ({ onComplete }) => {
     const timer = setTimeout(() => {
       setShow(false);
       setTimeout(onComplete, 200);
-    }, 700);
+    }, 900);
 
     return () => clearTimeout(timer);
   }, [onComplete]);
