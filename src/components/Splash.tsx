@@ -1,37 +1,18 @@
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Crown } from 'lucide-react';
 
 interface SplashProps {
   onComplete: () => void;
 }
 
-// Primary particles - larger, closer
-const primaryParticles = [
-  { angle: 0, distance: 60 },
-  { angle: 45, distance: 55 },
-  { angle: 90, distance: 65 },
-  { angle: 135, distance: 58 },
-  { angle: 180, distance: 62 },
-  { angle: 225, distance: 56 },
-  { angle: 270, distance: 64 },
-  { angle: 315, distance: 59 },
-];
-
-// Secondary particles - smaller, farther, more numerous
-const secondaryParticles = [
-  { angle: 22, distance: 75 },
-  { angle: 68, distance: 80 },
-  { angle: 112, distance: 78 },
-  { angle: 158, distance: 82 },
-  { angle: 202, distance: 76 },
-  { angle: 248, distance: 79 },
-  { angle: 292, distance: 77 },
-  { angle: 338, distance: 81 },
-  { angle: 15, distance: 85 },
-  { angle: 105, distance: 88 },
-  { angle: 195, distance: 84 },
-  { angle: 285, distance: 86 },
+// Spray splatter positions
+const splatters = [
+  { x: '25%', y: '30%', size: 8, delay: 0.3 },
+  { x: '75%', y: '35%', size: 6, delay: 0.35 },
+  { x: '15%', y: '65%', size: 10, delay: 0.4 },
+  { x: '80%', y: '70%', size: 7, delay: 0.32 },
+  { x: '45%', y: '25%', size: 5, delay: 0.38 },
+  { x: '60%', y: '75%', size: 9, delay: 0.36 },
 ];
 
 export const Splash: React.FC<SplashProps> = ({ onComplete }) => {
@@ -41,7 +22,7 @@ export const Splash: React.FC<SplashProps> = ({ onComplete }) => {
     const timer = setTimeout(() => {
       setShow(false);
       setTimeout(onComplete, 200);
-    }, 900);
+    }, 950);
 
     return () => clearTimeout(timer);
   }, [onComplete]);
@@ -53,196 +34,179 @@ export const Splash: React.FC<SplashProps> = ({ onComplete }) => {
           initial={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
-          className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-gradient-to-br from-primary-light via-primary to-primary-dark"
+          className="fixed inset-0 z-[9999] flex items-center justify-center overflow-hidden"
           style={{ 
             isolation: 'isolate',
-            willChange: 'opacity'
+            willChange: 'opacity',
+            background: 'linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 50%, #0f0f0f 100%)',
           }}
         >
-          {/* Animated circle stroke */}
-          <motion.svg
-            className="absolute w-48 h-48 sm:w-56 sm:h-56"
-            viewBox="0 0 100 100"
-            initial={{ rotate: 0, opacity: 0 }}
-            animate={{ rotate: 180, opacity: 0.3 }}
-            transition={{
-              duration: 0.7,
-              ease: [0.22, 1, 0.36, 1]
+          {/* Concrete texture overlay */}
+          <motion.div
+            className="absolute inset-0 opacity-[0.03]"
+            style={{
+              backgroundImage: `url("data:image/svg+xml,%3Csvg width='100' height='100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence baseFrequency='0.9' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100' height='100' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E")`,
+              backgroundSize: '150px 150px',
             }}
-          >
-            <motion.circle
-              cx="50"
-              cy="50"
-              r="45"
-              fill="none"
-              stroke="hsl(var(--accent))"
-              strokeWidth="0.5"
-              strokeLinecap="round"
-              initial={{ pathLength: 0, opacity: 0 }}
-              animate={{ pathLength: 1, opacity: 0.4 }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 0.03 }}
+            transition={{ duration: 0.3 }}
+          />
+
+          {/* Spray stroke entering */}
+          <motion.div
+            className="absolute top-1/2 left-0 h-1 bg-gradient-to-r from-transparent via-accent to-transparent"
+            style={{
+              transformOrigin: 'left center',
+              filter: 'blur(1px)',
+            }}
+            initial={{ scaleX: 0, opacity: 0 }}
+            animate={{ scaleX: 1.5, opacity: [0, 0.6, 0] }}
+            transition={{
+              duration: 0.4,
+              ease: [0.22, 1, 0.36, 1],
+            }}
+          />
+
+          {/* Spray splatters */}
+          {splatters.map((splatter, i) => (
+            <motion.div
+              key={i}
+              className="absolute rounded-full bg-accent"
+              style={{
+                left: splatter.x,
+                top: splatter.y,
+                width: splatter.size,
+                height: splatter.size,
+                filter: 'blur(1px)',
+                boxShadow: '0 0 8px hsl(var(--accent) / 0.4)',
+              }}
+              initial={{ scale: 0, opacity: 0 }}
+              animate={{ 
+                scale: [0, 1.2, 1],
+                opacity: [0, 0.7, 0.5],
+              }}
               transition={{
-                duration: 0.6,
-                ease: [0.22, 1, 0.36, 1]
+                duration: 0.3,
+                delay: splatter.delay,
+                ease: [0.22, 1, 0.36, 1],
               }}
             />
-          </motion.svg>
+          ))}
 
-          {/* Secondary particles - smaller, farther, later */}
-          <div className="absolute">
-            {secondaryParticles.map((pos, i) => {
-              const x = Math.cos((pos.angle * Math.PI) / 180) * pos.distance;
-              const y = Math.sin((pos.angle * Math.PI) / 180) * pos.distance;
-              
-              return (
-                <motion.div
-                  key={`sec-${i}`}
-                  className="absolute rounded-full bg-accent"
-                  style={{
-                    width: '0.5px',
-                    height: '0.5px',
-                    left: '50%',
-                    top: '50%',
-                    boxShadow: '0 0 6px hsl(var(--accent))',
-                  }}
-                  initial={{
-                    x: 0,
-                    y: 0,
-                    scale: 0,
-                    opacity: 0,
-                  }}
-                  animate={{
-                    x: x,
-                    y: y,
-                    scale: [0, 2, 1.5, 2.5, 1],
-                    opacity: [0, 0.6, 0.5, 0.8, 0],
-                  }}
-                  transition={{
-                    duration: 0.9,
-                    delay: 0.15 + i * 0.03,
-                    times: [0, 0.3, 0.5, 0.7, 1],
-                    ease: [0.22, 1, 0.36, 1],
-                  }}
-                />
-              );
-            })}
-          </div>
-
-          {/* Primary particles - larger, closer */}
-          <div className="absolute">
-            {primaryParticles.map((pos, i) => {
-              const x = Math.cos((pos.angle * Math.PI) / 180) * pos.distance;
-              const y = Math.sin((pos.angle * Math.PI) / 180) * pos.distance;
-              
-              return (
-                <motion.div
-                  key={`pri-${i}`}
-                  className="absolute w-1 h-1 rounded-full bg-accent"
-                  style={{
-                    left: '50%',
-                    top: '50%',
-                    boxShadow: '0 0 8px hsl(var(--accent))',
-                  }}
-                  initial={{
-                    x: 0,
-                    y: 0,
-                    scale: 0,
-                    opacity: 0,
-                  }}
-                  animate={{
-                    x: x,
-                    y: y,
-                    scale: [0, 1.5, 1, 2, 0.8],
-                    opacity: [0, 0.8, 0.7, 1, 0],
-                  }}
-                  transition={{
-                    duration: 0.9,
-                    delay: i * 0.05,
-                    times: [0, 0.3, 0.5, 0.7, 1],
-                    ease: [0.22, 1, 0.36, 1],
-                  }}
-                />
-              );
-            })}
-          </div>
-
-          {/* Crown logo with glow */}
+          {/* Graffiti-style text container */}
           <motion.div
-            initial={{ scale: 0.85, opacity: 0 }}
+            initial={{ scale: 1.1, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.95, opacity: 0 }}
             transition={{
               duration: 0.5,
-              ease: [0.22, 1, 0.36, 1]
+              delay: 0.15,
+              ease: [0.22, 1, 0.36, 1],
             }}
             className="relative"
           >
-            {/* Glow effect */}
+            {/* Golden glow behind text */}
             <motion.div
-              className="absolute inset-0 blur-2xl"
+              className="absolute inset-0 blur-3xl"
               initial={{ opacity: 0 }}
-              animate={{ opacity: [0, 0.6, 0.4, 0.8, 0.5] }}
-              transition={{
-                duration: 1.3,
-                times: [0, 0.35, 0.4, 0.65, 1],
-                ease: "easeInOut"
-              }}
-            >
-              <Crown 
-                className="w-20 h-20 sm:w-24 sm:h-24 text-accent"
-                strokeWidth={2}
-              />
-            </motion.div>
-
-            {/* Main icon */}
-            <Crown 
-              className="w-20 h-20 sm:w-24 sm:h-24 text-accent relative z-10"
-              strokeWidth={1.5}
-            />
-          </motion.div>
-
-          {/* Text Castle Movement with shimmer */}
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{
-              duration: 0.4,
-              delay: 0.35,
-              ease: [0.22, 1, 0.36, 1]
-            }}
-            className="mt-6 relative z-10"
-          >
-            <motion.h1 
-              className="text-2xl sm:text-3xl font-bold tracking-wide relative overflow-hidden"
-              style={{
-                backgroundImage: 'linear-gradient(90deg, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.9) 40%, hsl(var(--accent)) 50%, rgba(255,255,255,0.9) 60%, rgba(255,255,255,0.9) 100%)',
-                backgroundSize: '200% 100%',
-                backgroundClip: 'text',
-                WebkitBackgroundClip: 'text',
-                color: 'transparent',
-              }}
-              animate={{
-                backgroundPosition: ['200% 0', '-100% 0'],
-              }}
+              animate={{ opacity: [0, 0.4, 0.6] }}
               transition={{
                 duration: 0.8,
-                delay: 0.45,
-                ease: [0.22, 1, 0.36, 1],
+                delay: 0.3,
+                times: [0, 0.6, 1],
+                ease: "easeOut",
               }}
-            >
-              Castle Movement
-            </motion.h1>
-            <motion.div
-              className="h-px w-full mt-2 rounded-full"
               style={{
-                background: 'linear-gradient(90deg, transparent, hsl(var(--accent)), transparent)',
-                boxShadow: '0 0 10px hsl(var(--accent) / 0.5)',
+                background: 'radial-gradient(circle, hsl(var(--accent) / 0.5) 0%, transparent 70%)',
               }}
-              initial={{ scaleX: 0, opacity: 0 }}
-              animate={{ scaleX: 1, opacity: 0.6 }}
+            />
+
+            {/* Main text with stroke reveal */}
+            <motion.div className="relative px-8">
+              <motion.h1
+                className="text-4xl sm:text-5xl md:text-6xl font-black tracking-tight text-transparent relative"
+                style={{
+                  WebkitTextStroke: '2px hsl(var(--accent))',
+                  textShadow: '3px 3px 0px rgba(0,0,0,0.3), 0 0 20px hsl(var(--accent) / 0.5)',
+                  fontFamily: 'system-ui, -apple-system, sans-serif',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.02em',
+                }}
+                initial={{ clipPath: 'inset(0 100% 0 0)' }}
+                animate={{ clipPath: 'inset(0 0% 0 0)' }}
+                transition={{
+                  duration: 0.6,
+                  delay: 0.25,
+                  ease: [0.22, 1, 0.36, 1],
+                }}
+              >
+                Castle
+              </motion.h1>
+              
+              <motion.h2
+                className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight text-transparent relative -mt-2"
+                style={{
+                  WebkitTextStroke: '2px hsl(var(--accent))',
+                  textShadow: '3px 3px 0px rgba(0,0,0,0.3), 0 0 20px hsl(var(--accent) / 0.5)',
+                  fontFamily: 'system-ui, -apple-system, sans-serif',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.05em',
+                }}
+                initial={{ clipPath: 'inset(0 0 0 100%)' }}
+                animate={{ clipPath: 'inset(0 0 0 0%)' }}
+                transition={{
+                  duration: 0.6,
+                  delay: 0.35,
+                  ease: [0.22, 1, 0.36, 1],
+                }}
+              >
+                Movement
+              </motion.h2>
+            </motion.div>
+
+            {/* Drip effects */}
+            <motion.div
+              className="absolute bottom-0 left-1/4 w-1 bg-accent"
+              style={{
+                height: '20px',
+                filter: 'blur(0.5px)',
+              }}
+              initial={{ scaleY: 0, opacity: 0 }}
+              animate={{ scaleY: 1, opacity: 0.6 }}
               transition={{
                 duration: 0.4,
-                delay: 0.45,
-                ease: [0.22, 1, 0.36, 1]
+                delay: 0.6,
+                ease: "easeOut",
               }}
+            />
+            <motion.div
+              className="absolute bottom-0 right-1/3 w-1 bg-accent"
+              style={{
+                height: '15px',
+                filter: 'blur(0.5px)',
+              }}
+              initial={{ scaleY: 0, opacity: 0 }}
+              animate={{ scaleY: 1, opacity: 0.5 }}
+              transition={{
+                duration: 0.4,
+                delay: 0.65,
+                ease: "easeOut",
+              }}
+            />
+
+            {/* Small accent marks */}
+            <motion.div
+              className="absolute -top-4 left-0 w-8 h-0.5 bg-accent rotate-45"
+              initial={{ scaleX: 0, opacity: 0 }}
+              animate={{ scaleX: 1, opacity: 0.7 }}
+              transition={{ duration: 0.2, delay: 0.5 }}
+            />
+            <motion.div
+              className="absolute -bottom-4 right-0 w-10 h-0.5 bg-accent -rotate-45"
+              initial={{ scaleX: 0, opacity: 0 }}
+              animate={{ scaleX: 1, opacity: 0.7 }}
+              transition={{ duration: 0.2, delay: 0.55 }}
             />
           </motion.div>
         </motion.div>
