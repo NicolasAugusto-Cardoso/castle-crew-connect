@@ -179,10 +179,10 @@ export const Splash: React.FC<SplashProps> = ({ onComplete }) => {
             <motion.div
               className="absolute inset-0 blur-2xl"
               initial={{ opacity: 0 }}
-              animate={{ opacity: [0, 0.6, 0.4] }}
+              animate={{ opacity: [0, 0.6, 0.4, 0.8, 0.5] }}
               transition={{
-                duration: 0.7,
-                times: [0, 0.5, 1],
+                duration: 1.3,
+                times: [0, 0.35, 0.4, 0.65, 1],
                 ease: "easeInOut"
               }}
             >
