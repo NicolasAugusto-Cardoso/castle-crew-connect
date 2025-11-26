@@ -199,7 +199,7 @@ export const Splash: React.FC<SplashProps> = ({ onComplete }) => {
             />
           </motion.div>
 
-          {/* Text Castle Movement */}
+          {/* Text Castle Movement with shimmer */}
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -210,9 +210,26 @@ export const Splash: React.FC<SplashProps> = ({ onComplete }) => {
             }}
             className="mt-6 relative z-10"
           >
-            <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-wide">
+            <motion.h1 
+              className="text-2xl sm:text-3xl font-bold tracking-wide relative overflow-hidden"
+              style={{
+                backgroundImage: 'linear-gradient(90deg, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.9) 40%, hsl(var(--accent)) 50%, rgba(255,255,255,0.9) 60%, rgba(255,255,255,0.9) 100%)',
+                backgroundSize: '200% 100%',
+                backgroundClip: 'text',
+                WebkitBackgroundClip: 'text',
+                color: 'transparent',
+              }}
+              animate={{
+                backgroundPosition: ['200% 0', '-100% 0'],
+              }}
+              transition={{
+                duration: 0.8,
+                delay: 0.45,
+                ease: [0.22, 1, 0.36, 1],
+              }}
+            >
               Castle Movement
-            </h1>
+            </motion.h1>
             <motion.div
               className="h-px w-full mt-2 rounded-full"
               style={{
