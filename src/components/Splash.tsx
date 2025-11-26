@@ -94,9 +94,9 @@ export const Splash: React.FC<SplashProps> = ({ onComplete }) => {
 
           {/* Main text container */}
           <motion.div
-            initial={{ scale: 1.08, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0.96, opacity: 0 }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
             transition={{
               duration: 0.4,
               delay: 0.05,
