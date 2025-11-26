@@ -49,8 +49,17 @@ export default function Gallery() {
         <Card className="card-elevated">
           <CardContent className="py-12 text-center text-muted-foreground">
             <Image className="w-12 h-12 mx-auto mb-3" />
-            <p>Nenhuma pasta criada ainda</p>
-            <p className="text-sm mt-2">Crie a primeira pasta para organizar fotos e vídeos!</p>
+            {canManage ? (
+              <>
+                <p>Nenhuma pasta criada ainda</p>
+                <p className="text-sm mt-2">Crie a primeira pasta para organizar fotos e vídeos!</p>
+              </>
+            ) : (
+              <>
+                <p>Nenhum conteúdo publicado ainda</p>
+                <p className="text-sm mt-2">Em breve teremos fotos e vídeos dos nossos eventos!</p>
+              </>
+            )}
           </CardContent>
         </Card>
       ) : (
