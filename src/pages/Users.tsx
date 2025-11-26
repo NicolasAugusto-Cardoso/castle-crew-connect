@@ -43,7 +43,7 @@ const roleColors: Record<string, string> = {
 };
 
 export default function Users() {
-  const { hasRole, loading: authLoading, user } = useAuth();
+  const { hasRole, loading: authLoading, user: currentUser } = useAuth();
   const { users, isLoading, createUser, updateUserRoles, deleteUser, isCreating, isUpdating, isDeleting } = useUsers();
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
@@ -56,12 +56,12 @@ export default function Users() {
   const isAdmin = hasRole(['admin']);
 
   // Filtrar usuários baseado em busca e role
-  const filteredUsers = users.filter(user => {
+  const filteredUsers = users.filter(userItem => {
     const matchesSearch = 
-      user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchTerm.toLowerCase());
+      userItem.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      userItem.email.toLowerCase().includes(searchTerm.toLowerCase());
     
-    const matchesRole = roleFilter === 'all' || user.roles.includes(roleFilter);
+    const matchesRole = roleFilter === 'all' || userItem.roles.includes(roleFilter);
     
     return matchesSearch && matchesRole;
   });
@@ -194,22 +194,22 @@ export default function Users() {
         </Card>
       ) : (
         <div className="space-y-4">
-          {filteredUsers.map((user) => (
-            <Card key={user.id} className="card-elevated">
+          {filteredUsers.map((userItem) => (
+            <Card key={userItem.id} className="card-elevated">
               <CardHeader>
                 <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
                   <div className="flex items-center gap-3">
                     <UserCircle className="w-12 h-12 text-muted-foreground" />
                     <div>
-                      <CardTitle className="text-lg">{user.name}</CardTitle>
+                      <CardTitle className="text-lg">{userItem.name}</CardTitle>
                       <p className="text-sm text-muted-foreground flex items-center gap-1 mt-1">
                         <Mail className="w-4 h-4" />
-                        {user.email}
+                        {userItem.email}
                       </p>
                     </div>
                   </div>
                   <div className="flex flex-wrap gap-2 sm:justify-end">
-                    {user.roles.map((role) => (
+                    {userItem.roles.map((role) => (
                       <Badge key={role} className={roleColors[role]}>
                         {roleLabels[role]}
                       </Badge>
@@ -220,21 +220,23 @@ export default function Users() {
               <CardContent>
                 <div className="flex items-center justify-between">
                   <div className="text-sm text-muted-foreground">
-                    <p>Criado em: {new Date(user.created_at).toLocaleDateString('pt-BR')}</p>
-                    <p>Permissões: {user.roles.length}</p>
+                    <p>Criado em: {new Date(userItem.created_at).toLocaleDateString('pt-BR')}</p>
+                    <p>Permissões: {userItem.roles.length}</p>
                   </div>
                   <div className="flex gap-2">
-                    <Button variant="outline" size="sm" onClick={() => openEditDialog(user)}>
+                    <Button variant="outline" size="sm" onClick={() => openEditDialog(userItem)}>
                       Editar
                     </Button>
-                    <Button 
-                      variant="destructive" 
-                      size="sm" 
-                      onClick={() => openDeleteDialog(user)}
-                      disabled={isDeleting}
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
+                    {userItem.id !== currentUser?.id && (
+                      <Button 
+                        variant="destructive" 
+                        size="sm" 
+                        onClick={() => openDeleteDialog(userItem)}
+                        disabled={isDeleting}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    )}
                   </div>
                 </div>
               </CardContent>
