@@ -6,6 +6,18 @@ interface SplashProps {
   onComplete: () => void;
 }
 
+// Particle positions around the crown (polar coordinates)
+const particlePositions = [
+  { angle: 0, distance: 60 },
+  { angle: 45, distance: 55 },
+  { angle: 90, distance: 65 },
+  { angle: 135, distance: 58 },
+  { angle: 180, distance: 62 },
+  { angle: 225, distance: 56 },
+  { angle: 270, distance: 64 },
+  { angle: 315, distance: 59 },
+];
+
 export const Splash: React.FC<SplashProps> = ({ onComplete }) => {
   const [show, setShow] = useState(true);
 
@@ -58,6 +70,44 @@ export const Splash: React.FC<SplashProps> = ({ onComplete }) => {
               }}
             />
           </motion.svg>
+
+          {/* Particles */}
+          <div className="absolute">
+            {particlePositions.map((pos, i) => {
+              const x = Math.cos((pos.angle * Math.PI) / 180) * pos.distance;
+              const y = Math.sin((pos.angle * Math.PI) / 180) * pos.distance;
+              
+              return (
+                <motion.div
+                  key={i}
+                  className="absolute w-1 h-1 rounded-full bg-accent"
+                  style={{
+                    left: '50%',
+                    top: '50%',
+                    boxShadow: '0 0 8px hsl(var(--accent))',
+                  }}
+                  initial={{
+                    x: 0,
+                    y: 0,
+                    scale: 0,
+                    opacity: 0,
+                  }}
+                  animate={{
+                    x: x,
+                    y: y,
+                    scale: [0, 1.5, 0.8],
+                    opacity: [0, 0.8, 0],
+                  }}
+                  transition={{
+                    duration: 0.7,
+                    delay: i * 0.05,
+                    times: [0, 0.5, 1],
+                    ease: [0.22, 1, 0.36, 1],
+                  }}
+                />
+              );
+            })}
+          </div>
 
           {/* Crown logo with glow */}
           <motion.div
