@@ -414,7 +414,7 @@ export default function Contact() {
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-8 w-8 text-destructive hover:text-destructive/80 flex-shrink-0"
+                          className="h-8 w-8 text-foreground hover:bg-destructive hover:text-foreground flex-shrink-0"
                           onClick={(e) => {
                             e.stopPropagation();
                             setMessageToDelete(msg);
@@ -511,7 +511,7 @@ export default function Contact() {
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-8 w-8 text-destructive hover:text-destructive/80 flex-shrink-0"
+                          className="h-8 w-8 text-foreground hover:bg-destructive hover:text-foreground flex-shrink-0"
                           onClick={(e) => {
                             e.stopPropagation();
                             setMessageToDelete(msg);
@@ -653,7 +653,7 @@ export default function Contact() {
                             <Button
                               variant="ghost"
                               size="icon"
-                              className="h-8 w-8 text-destructive hover:text-destructive/80 flex-shrink-0"
+                              className="h-8 w-8 text-foreground hover:bg-destructive hover:text-foreground flex-shrink-0"
                               onClick={(e) => {
                                 e.stopPropagation();
                                 setMessageToDelete(msg);
