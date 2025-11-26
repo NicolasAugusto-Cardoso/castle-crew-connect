@@ -162,7 +162,7 @@ export const Splash: React.FC<SplashProps> = ({ onComplete }) => {
               </motion.div>
 
               <motion.h1
-                className="text-5xl sm:text-6xl md:text-7xl font-semibold tracking-tight relative font-outfit whitespace-nowrap"
+                className="text-5xl sm:text-6xl md:text-7xl font-semibold tracking-tight relative font-outfit whitespace-nowrap text-center"
                 style={{
                   color: 'hsl(var(--accent))',
                   WebkitTextStroke: '1px hsl(var(--accent))',
@@ -181,7 +181,7 @@ export const Splash: React.FC<SplashProps> = ({ onComplete }) => {
               </motion.h1>
               
               <motion.h2
-                className="text-2xl sm:text-3xl md:text-4xl font-semibold tracking-wide relative -mt-1 font-outfit whitespace-nowrap"
+                className="text-2xl sm:text-3xl md:text-4xl font-semibold tracking-wide relative -mt-1 font-outfit whitespace-nowrap text-center"
                 style={{
                   color: 'hsl(var(--accent))',
                   WebkitTextStroke: '0.5px hsl(var(--accent))',
