@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Crown } from 'lucide-react';
 
 interface SplashProps {
   onComplete: () => void;
@@ -119,8 +120,47 @@ export const Splash: React.FC<SplashProps> = ({ onComplete }) => {
               }}
             />
 
-            {/* Minimalist text with stroke reveal */}
-            <motion.div className="relative">
+            {/* Minimalist text with crown */}
+            <motion.div className="relative flex flex-col items-center">
+              {/* Crown icon */}
+              <motion.div
+                className="mb-4 relative"
+                initial={{ scale: 0.8, opacity: 0, y: 10 }}
+                animate={{ scale: 1, opacity: 1, y: 0 }}
+                transition={{
+                  duration: 0.5,
+                  delay: 0.15,
+                  ease: [0.22, 1, 0.36, 1],
+                }}
+              >
+                {/* Glow behind crown */}
+                <motion.div
+                  className="absolute inset-0 blur-xl"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: [0, 0.6, 0.4] }}
+                  transition={{
+                    duration: 0.8,
+                    delay: 0.2,
+                    times: [0, 0.5, 1],
+                    ease: "easeOut",
+                  }}
+                >
+                  <Crown 
+                    className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 text-accent"
+                    strokeWidth={1.5}
+                  />
+                </motion.div>
+                
+                {/* Main crown */}
+                <Crown 
+                  className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 text-accent relative z-10"
+                  strokeWidth={1.5}
+                  style={{
+                    filter: 'drop-shadow(0 0 8px hsl(var(--accent) / 0.6))',
+                  }}
+                />
+              </motion.div>
+
               <motion.h1
                 className="text-5xl sm:text-6xl md:text-7xl font-semibold tracking-tight relative font-outfit"
                 style={{
