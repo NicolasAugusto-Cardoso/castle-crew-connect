@@ -1,0 +1,24 @@
+{
+  "name": "Castle Movement",
+  "short_name": "Castle",
+  "description": "Plataforma de discipulado, evangelismo e organização de equipe. Transformando vidas através de Jesus.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#2B96D9",
+  "theme_color": "#2B96D9",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/pwa-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/pwa-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
