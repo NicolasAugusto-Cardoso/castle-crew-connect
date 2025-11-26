@@ -118,9 +118,7 @@ export default function Gallery() {
                   <div className="flex items-start justify-between gap-2">
                     <CardTitle className="text-sm xs:text-base break-words line-clamp-2 flex-1">{folder.name}</CardTitle>
                     {canManage && (
-                      <div className="flex-shrink-0">
-                        <UploadMediaDialog folderId={folder.id} />
-                      </div>
+                      <UploadMediaDialog folderId={folder.id} compact />
                     )}
                   </div>
                   {folder.description && (
