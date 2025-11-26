@@ -102,7 +102,7 @@ export const Splash: React.FC<SplashProps> = ({ onComplete }) => {
               delay: 0.15,
               ease: [0.22, 1, 0.36, 1],
             }}
-            className="relative px-6"
+            className="relative px-12"
           >
             {/* Golden glow behind text */}
             <motion.div
@@ -162,15 +162,15 @@ export const Splash: React.FC<SplashProps> = ({ onComplete }) => {
               </motion.div>
 
               <motion.h1
-                className="text-5xl sm:text-6xl md:text-7xl font-semibold tracking-tight relative font-outfit"
+                className="text-5xl sm:text-6xl md:text-7xl font-semibold tracking-tight relative font-outfit whitespace-nowrap"
                 style={{
                   color: 'hsl(var(--accent))',
                   WebkitTextStroke: '1px hsl(var(--accent))',
                   textShadow: '0 0 25px hsl(var(--accent) / 0.5)',
                   letterSpacing: '-0.03em',
                 }}
-                initial={{ clipPath: 'inset(0 100% 0 0)' }}
-                animate={{ clipPath: 'inset(0 0% 0 0)' }}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
                 transition={{
                   duration: 0.5,
                   delay: 0.22,
@@ -181,15 +181,15 @@ export const Splash: React.FC<SplashProps> = ({ onComplete }) => {
               </motion.h1>
               
               <motion.h2
-                className="text-2xl sm:text-3xl md:text-4xl font-semibold tracking-wide relative -mt-1 font-outfit"
+                className="text-2xl sm:text-3xl md:text-4xl font-semibold tracking-wide relative -mt-1 font-outfit whitespace-nowrap"
                 style={{
                   color: 'hsl(var(--accent))',
                   WebkitTextStroke: '0.5px hsl(var(--accent))',
                   textShadow: '0 0 25px hsl(var(--accent) / 0.5)',
                   letterSpacing: '0.15em',
                 }}
-                initial={{ clipPath: 'inset(0 0 0 100%)' }}
-                animate={{ clipPath: 'inset(0 0 0 0%)' }}
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
                 transition={{
                   duration: 0.5,
                   delay: 0.32,
