@@ -73,31 +73,131 @@ Deno.serve(async (req) => {
     );
 
     // Delete related records first to avoid foreign key constraints
-    // 1. Delete push tokens
+    console.log(`Starting deletion process for user: ${userId}`);
+
+    // 1. Delete post reactions
+    console.log('Deleting post_reactions...');
+    await supabaseAdmin
+      .from('post_reactions')
+      .delete()
+      .eq('user_id', userId);
+
+    // 2. Delete post likes
+    console.log('Deleting post_likes...');
+    await supabaseAdmin
+      .from('post_likes')
+      .delete()
+      .eq('user_id', userId);
+
+    // 3. Delete post comments
+    console.log('Deleting post_comments...');
+    await supabaseAdmin
+      .from('post_comments')
+      .delete()
+      .eq('user_id', userId);
+
+    // 4. Delete posts and associated images
+    console.log('Deleting posts and post_images...');
+    const { data: userPosts } = await supabaseAdmin
+      .from('posts')
+      .select('id')
+      .eq('author_id', userId);
+    
+    if (userPosts && userPosts.length > 0) {
+      const postIds = userPosts.map(p => p.id);
+      await supabaseAdmin
+        .from('post_images')
+        .delete()
+        .in('post_id', postIds);
+    }
+    
+    await supabaseAdmin
+      .from('posts')
+      .delete()
+      .eq('author_id', userId);
+
+    // 5. Delete contact replies
+    console.log('Deleting contact_replies...');
+    await supabaseAdmin
+      .from('contact_replies')
+      .delete()
+      .eq('sender_id', userId);
+
+    // 6. Delete contact messages
+    console.log('Deleting contact_messages...');
+    await supabaseAdmin
+      .from('contact_messages')
+      .delete()
+      .eq('user_id', userId);
+
+    // 7. Update discipleship_contacts (set NULL for references, delete where registered_by)
+    console.log('Updating discipleship_contacts...');
+    await supabaseAdmin
+      .from('discipleship_contacts')
+      .update({ assigned_collaborator_id: null, assigned_by: null })
+      .eq('assigned_collaborator_id', userId);
+    
+    await supabaseAdmin
+      .from('discipleship_contacts')
+      .update({ assigned_by: null })
+      .eq('assigned_by', userId);
+    
+    await supabaseAdmin
+      .from('discipleship_contacts')
+      .delete()
+      .eq('registered_by', userId);
+
+    // 8. Delete gallery media
+    console.log('Deleting gallery_media...');
+    await supabaseAdmin
+      .from('gallery_media')
+      .delete()
+      .eq('created_by', userId);
+
+    // 9. Delete gallery folders
+    console.log('Deleting gallery_folders...');
+    await supabaseAdmin
+      .from('gallery_folders')
+      .delete()
+      .eq('created_by', userId);
+
+    // 10. Delete testimonials
+    console.log('Deleting testimonials...');
+    await supabaseAdmin
+      .from('testimonials')
+      .delete()
+      .eq('created_by', userId);
+
+    // 11. Delete push tokens
+    console.log('Deleting push_tokens...');
     await supabaseAdmin
       .from('push_tokens')
       .delete()
       .eq('user_id', userId);
 
-    // 2. Delete collaborator profile (if exists)
+    // 12. Delete collaborator profile (if exists)
+    console.log('Deleting collaborator_profiles...');
     await supabaseAdmin
       .from('collaborator_profiles')
       .delete()
       .eq('user_id', userId);
 
-    // 3. Delete user roles
+    // 13. Delete user roles
+    console.log('Deleting user_roles...');
     await supabaseAdmin
       .from('user_roles')
       .delete()
       .eq('user_id', userId);
 
-    // 4. Delete profile
+    // 14. Delete profile
+    console.log('Deleting profiles...');
     await supabaseAdmin
       .from('profiles')
       .delete()
       .eq('id', userId);
 
-    // 5. Finally, delete user from auth
+    // 15. Finally, delete user from auth
+    console.log('Deleting user from auth...');
     const { error: deleteError } = await supabaseAdmin.auth.admin.deleteUser(userId);
 
     if (deleteError) {
