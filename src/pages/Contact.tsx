@@ -411,6 +411,19 @@ export default function Contact() {
                             {unreadCounts[msg.id]}
                           </Badge>
                         )}
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-muted-foreground hover:text-destructive flex-shrink-0"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setMessageToDelete(msg);
+                            setDeleteDialogOpen(true);
+                          }}
+                          disabled={deleteMessage.isPending}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
                       </div>
                     </div>
                   </div>
@@ -495,6 +508,19 @@ export default function Contact() {
                             {unreadCounts[msg.id]}
                           </Badge>
                         )}
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-muted-foreground hover:text-destructive flex-shrink-0"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setMessageToDelete(msg);
+                            setDeleteDialogOpen(true);
+                          }}
+                          disabled={deleteMessage.isPending}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
                       </div>
                     </div>
                   </div>
@@ -624,6 +650,19 @@ export default function Contact() {
                                 {unreadCounts[msg.id]}
                               </Badge>
                             )}
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 text-muted-foreground hover:text-destructive flex-shrink-0"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setMessageToDelete(msg);
+                                setDeleteDialogOpen(true);
+                              }}
+                              disabled={deleteMessage.isPending}
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
                           </div>
                         </div>
                       </div>
