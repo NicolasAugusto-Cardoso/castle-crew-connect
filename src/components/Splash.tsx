@@ -104,11 +104,11 @@ export const Splash: React.FC<SplashProps> = ({ onComplete }) => {
             }}
             className="relative flex flex-col items-center justify-center"
           >
-            {/* Golden glow behind text */}
+            {/* Golden glow behind text - Multiple layers */}
             <motion.div
               className="absolute inset-0 blur-3xl"
               initial={{ opacity: 0 }}
-              animate={{ opacity: [0, 0.3, 0.5] }}
+              animate={{ opacity: [0, 0.6, 0.8] }}
               transition={{
                 duration: 0.7,
                 delay: 0.25,
@@ -116,7 +116,23 @@ export const Splash: React.FC<SplashProps> = ({ onComplete }) => {
                 ease: "easeOut",
               }}
               style={{
-                background: 'radial-gradient(circle, hsl(var(--accent) / 0.4) 0%, transparent 65%)',
+                background: 'radial-gradient(circle, hsl(var(--accent) / 0.8) 0%, transparent 70%)',
+              }}
+            />
+            
+            {/* Extra bright core glow */}
+            <motion.div
+              className="absolute inset-0 blur-2xl"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: [0, 0.7, 0.9] }}
+              transition={{
+                duration: 0.8,
+                delay: 0.3,
+                times: [0, 0.5, 1],
+                ease: "easeOut",
+              }}
+              style={{
+                background: 'radial-gradient(circle, hsl(var(--accent)) 0%, transparent 50%)',
               }}
             />
 
@@ -133,14 +149,32 @@ export const Splash: React.FC<SplashProps> = ({ onComplete }) => {
                   ease: [0.22, 1, 0.36, 1],
                 }}
               >
-                {/* Glow behind crown */}
+                {/* Outer glow layer - strongest */}
                 <motion.div
-                  className="absolute inset-0 blur-2xl"
+                  className="absolute inset-0 blur-3xl"
                   initial={{ opacity: 0 }}
-                  animate={{ opacity: [0, 0.4, 0.3] }}
+                  animate={{ opacity: [0, 0.8, 0.9] }}
                   transition={{
                     duration: 0.8,
                     delay: 0.1,
+                    times: [0, 0.5, 1],
+                    ease: "easeOut",
+                  }}
+                >
+                  <Crown 
+                    className="w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 lg:w-32 lg:h-32 text-accent"
+                    strokeWidth={1}
+                  />
+                </motion.div>
+                
+                {/* Middle glow layer */}
+                <motion.div
+                  className="absolute inset-0 blur-xl"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: [0, 0.7, 0.8] }}
+                  transition={{
+                    duration: 0.8,
+                    delay: 0.15,
                     times: [0, 0.5, 1],
                     ease: "easeOut",
                   }}
@@ -156,7 +190,7 @@ export const Splash: React.FC<SplashProps> = ({ onComplete }) => {
                   className="w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 lg:w-32 lg:h-32 text-accent relative z-10"
                   strokeWidth={1}
                   style={{
-                    filter: 'drop-shadow(0 0 10px hsl(var(--accent) / 0.6))',
+                    filter: 'drop-shadow(0 0 20px hsl(var(--accent))) drop-shadow(0 0 40px hsl(var(--accent) / 0.6))',
                   }}
                 />
               </motion.div>
@@ -166,7 +200,7 @@ export const Splash: React.FC<SplashProps> = ({ onComplete }) => {
                 style={{
                   color: 'hsl(var(--accent))',
                   WebkitTextStroke: '1px hsl(var(--accent))',
-                  textShadow: '0 0 25px hsl(var(--accent) / 0.5)',
+                  textShadow: '0 0 30px hsl(var(--accent)), 0 0 50px hsl(var(--accent) / 0.8), 0 0 70px hsl(var(--accent) / 0.5)',
                   letterSpacing: '-0.03em',
                 }}
                 initial={{ opacity: 0 }}
@@ -185,7 +219,7 @@ export const Splash: React.FC<SplashProps> = ({ onComplete }) => {
                 style={{
                   color: 'hsl(var(--accent))',
                   WebkitTextStroke: '0.5px hsl(var(--accent))',
-                  textShadow: '0 0 25px hsl(var(--accent) / 0.5)',
+                  textShadow: '0 0 30px hsl(var(--accent)), 0 0 50px hsl(var(--accent) / 0.8), 0 0 70px hsl(var(--accent) / 0.5)',
                   letterSpacing: '0.15em',
                 }}
                 initial={{ opacity: 0 }}
