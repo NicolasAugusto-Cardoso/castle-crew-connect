@@ -111,10 +111,10 @@ export const Splash: React.FC<SplashProps> = ({ onComplete }) => {
                 {'Castle'.split('').map((letter, i) => (
                   <motion.span
                     key={`castle-${i}`}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
+                    initial={{ opacity: 0, y: 10, scale: 0.85 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
                     transition={{
-                      duration: 0.3,
+                      duration: 0.6,
                       delay: 0.08 + i * 0.05,
                       ease: [0.22, 1, 0.36, 1],
                     }}
@@ -137,10 +137,10 @@ export const Splash: React.FC<SplashProps> = ({ onComplete }) => {
                 {'Movement'.split('').map((letter, i) => (
                   <motion.span
                     key={`movement-${i}`}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
+                    initial={{ opacity: 0, y: 10, scale: 0.85 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
                     transition={{
-                      duration: 0.3,
+                      duration: 0.6,
                       delay: 0.38 + i * 0.04,
                       ease: [0.22, 1, 0.36, 1],
                     }}
