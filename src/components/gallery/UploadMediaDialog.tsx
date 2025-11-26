@@ -12,6 +12,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Upload } from 'lucide-react';
 import { toast } from 'sonner';
 import { useQueryClient } from '@tanstack/react-query';
+import { Progress } from '@/components/ui/progress';
 
 interface UploadMediaDialogProps {
   folderId: string;
@@ -22,6 +23,7 @@ export function UploadMediaDialog({ folderId }: UploadMediaDialogProps) {
   const [open, setOpen] = useState(false);
   const [files, setFiles] = useState<FileList | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState({ current: 0, total: 0 });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,91 +38,114 @@ export function UploadMediaDialog({ folderId }: UploadMediaDialogProps) {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Não autenticado');
 
-      let uploadedCount = 0;
+      const fileArray = Array.from(files);
+      setUploadProgress({ current: 0, total: fileArray.length });
 
-      for (const file of Array.from(files)) {
-        // Validar tipo de arquivo com fallback para extensão
-        const fileExtension = file.name.split('.').pop()?.toLowerCase();
-        const validExtensions = ['jpeg', 'jpg', 'mp4', 'png'];
-        const validMimeTypes = ['image/jpeg', 'image/jpg', 'image/png', 'video/mp4', 'video/quicktime'];
-        
-        const isValidExtension = fileExtension && validExtensions.includes(fileExtension);
-        const isValidMimeType = validMimeTypes.includes(file.type);
-        
-        if (!isValidExtension && !isValidMimeType) {
-          toast.error(`Arquivo ${file.name} não é um formato válido (.jpeg, .jpg, .png ou .mp4)`);
-          continue;
-        }
-        
-        // Determinar tipo MIME correto baseado na extensão
-        let mimeType: string;
-        if (fileExtension === 'mp4') {
-          mimeType = 'video/mp4';
-        } else if (fileExtension === 'jpeg' || fileExtension === 'jpg') {
-          mimeType = 'image/jpeg';
-        } else if (fileExtension === 'png') {
-          mimeType = 'image/png';
-        } else {
-          mimeType = file.type || 'application/octet-stream';
-        }
-
-        // Upload para storage bucket 'gallery'
-        const fileExt = file.name.split('.').pop();
-        const fileName = `${folderId}/${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
-        
-        const { error: uploadError } = await supabase.storage
-          .from('gallery')
-          .upload(fileName, file, {
-            cacheControl: '3600',
-            upsert: false
-          });
-
-        if (uploadError) {
-          if (uploadError.message.includes('new row violates row-level security')) {
-            toast.error('Você não tem permissão para fazer upload. Apenas admins e social media.');
-          } else if (uploadError.message.includes('Payload too large')) {
-            toast.error(`Arquivo ${file.name} é muito grande. Máximo: 50MB`);
-          } else {
-            toast.error(`Erro ao enviar ${file.name}`);
+      // Função para fazer upload de um arquivo
+      const uploadSingleFile = async (file: File, index: number) => {
+        try {
+          // Validar tipo de arquivo com fallback para extensão
+          const fileExtension = file.name.split('.').pop()?.toLowerCase();
+          const validExtensions = ['jpeg', 'jpg', 'mp4', 'png'];
+          const validMimeTypes = ['image/jpeg', 'image/jpg', 'image/png', 'video/mp4', 'video/quicktime'];
+          
+          const isValidExtension = fileExtension && validExtensions.includes(fileExtension);
+          const isValidMimeType = validMimeTypes.includes(file.type);
+          
+          if (!isValidExtension && !isValidMimeType) {
+            return { success: false, error: `${file.name} não é um formato válido` };
           }
-          continue;
+          
+          // Determinar tipo MIME correto baseado na extensão
+          let mimeType: string;
+          if (fileExtension === 'mp4') {
+            mimeType = 'video/mp4';
+          } else if (fileExtension === 'jpeg' || fileExtension === 'jpg') {
+            mimeType = 'image/jpeg';
+          } else if (fileExtension === 'png') {
+            mimeType = 'image/png';
+          } else {
+            mimeType = file.type || 'application/octet-stream';
+          }
+
+          // Upload para storage bucket 'gallery'
+          const fileExt = file.name.split('.').pop();
+          const fileName = `${folderId}/${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
+          
+          const { error: uploadError } = await supabase.storage
+            .from('gallery')
+            .upload(fileName, file, {
+              cacheControl: '3600',
+              upsert: false
+            });
+
+          if (uploadError) {
+            if (uploadError.message.includes('new row violates row-level security')) {
+              return { success: false, error: 'Sem permissão' };
+            } else if (uploadError.message.includes('Payload too large')) {
+              return { success: false, error: `${file.name} muito grande (máx 50MB)` };
+            } else {
+              return { success: false, error: `Erro ao enviar ${file.name}` };
+            }
+          }
+
+          // Obter URL pública
+          const { data: { publicUrl } } = supabase.storage
+            .from('gallery')
+            .getPublicUrl(fileName);
+
+          // Inserir registro no banco
+          const { error: dbError } = await supabase
+            .from('gallery_media')
+            .insert({
+              folder_id: folderId,
+              url: publicUrl,
+              type: mimeType,
+              created_by: user.id
+            });
+
+          if (dbError) {
+            return { success: false, error: `Erro ao registrar ${file.name}` };
+          }
+
+          // Atualizar progresso
+          setUploadProgress(prev => ({ ...prev, current: prev.current + 1 }));
+          
+          return { success: true };
+        } catch (error) {
+          return { success: false, error: `Erro ao processar ${file.name}` };
         }
+      };
 
-        // Obter URL pública
-        const { data: { publicUrl } } = supabase.storage
-          .from('gallery')
-          .getPublicUrl(fileName);
+      // Upload paralelo de todos os arquivos
+      const results = await Promise.allSettled(
+        fileArray.map((file, index) => uploadSingleFile(file, index))
+      );
 
-        // Inserir registro no banco
-        const { error: dbError } = await supabase
-          .from('gallery_media')
-          .insert({
-            folder_id: folderId,
-            url: publicUrl,
-            type: mimeType,
-            created_by: user.id
-          });
+      // Contar sucessos e falhas
+      const successful = results.filter(r => r.status === 'fulfilled' && r.value.success).length;
+      const failed = results.filter(r => r.status === 'rejected' || (r.status === 'fulfilled' && !r.value.success));
 
-        if (dbError) {
-          toast.error(`Erro ao registrar ${file.name}`);
-          continue;
+      // Mostrar erros específicos
+      failed.forEach(result => {
+        if (result.status === 'fulfilled' && !result.value.success) {
+          toast.error(result.value.error);
         }
+      });
 
-        uploadedCount++;
-      }
-
-      if (uploadedCount > 0) {
+      if (successful > 0) {
         queryClient.invalidateQueries({ queryKey: ['gallery-media', folderId] });
-        toast.success(`${uploadedCount} arquivo(s) enviado(s) com sucesso!`);
+        toast.success(`${successful} arquivo(s) enviado(s)!`);
         setFiles(null);
         setOpen(false);
       } else {
-        toast.error('Nenhum arquivo foi enviado com sucesso');
+        toast.error('Nenhum arquivo foi enviado');
       }
     } catch (error: any) {
       toast.error('Erro ao enviar arquivos');
     } finally {
       setIsUploading(false);
+      setUploadProgress({ current: 0, total: 0 });
     }
   };
 
@@ -167,6 +192,16 @@ export function UploadMediaDialog({ folderId }: UploadMediaDialogProps) {
                   </div>
                 ))}
               </div>
+            </div>
+          )}
+
+          {isUploading && uploadProgress.total > 0 && (
+            <div className="space-y-2">
+              <div className="flex justify-between text-sm">
+                <span>Enviando...</span>
+                <span>{uploadProgress.current}/{uploadProgress.total}</span>
+              </div>
+              <Progress value={(uploadProgress.current / uploadProgress.total) * 100} />
             </div>
           )}
 
