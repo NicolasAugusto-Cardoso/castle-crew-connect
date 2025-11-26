@@ -244,7 +244,7 @@ export const Splash: React.FC<SplashProps> = ({ onComplete }) => {
                 style={{
                   color: 'hsl(var(--accent))',
                   WebkitTextStroke: '1px hsl(var(--accent))',
-                  textShadow: '0 0 20px hsl(var(--accent) / 0.5), 0 0 40px hsl(var(--accent) / 0.3)',
+                  textShadow: '0 0 12px hsl(var(--accent) / 0.3), 0 0 24px hsl(var(--accent) / 0.2)',
                   letterSpacing: '-0.03em',
                 }}
               >
@@ -270,7 +270,7 @@ export const Splash: React.FC<SplashProps> = ({ onComplete }) => {
                 style={{
                   color: 'hsl(var(--accent))',
                   WebkitTextStroke: '0.5px hsl(var(--accent))',
-                  textShadow: '0 0 20px hsl(var(--accent) / 0.5), 0 0 40px hsl(var(--accent) / 0.3)',
+                  textShadow: '0 0 12px hsl(var(--accent) / 0.3), 0 0 24px hsl(var(--accent) / 0.2)',
                   letterSpacing: '0.15em',
                 }}
               >
