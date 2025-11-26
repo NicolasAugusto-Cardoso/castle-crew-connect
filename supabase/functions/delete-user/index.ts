@@ -72,7 +72,32 @@ Deno.serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    // Delete user (cascade will handle roles and profile)
+    // Delete related records first to avoid foreign key constraints
+    // 1. Delete push tokens
+    await supabaseAdmin
+      .from('push_tokens')
+      .delete()
+      .eq('user_id', userId);
+
+    // 2. Delete collaborator profile (if exists)
+    await supabaseAdmin
+      .from('collaborator_profiles')
+      .delete()
+      .eq('user_id', userId);
+
+    // 3. Delete user roles
+    await supabaseAdmin
+      .from('user_roles')
+      .delete()
+      .eq('user_id', userId);
+
+    // 4. Delete profile
+    await supabaseAdmin
+      .from('profiles')
+      .delete()
+      .eq('id', userId);
+
+    // 5. Finally, delete user from auth
     const { error: deleteError } = await supabaseAdmin.auth.admin.deleteUser(userId);
 
     if (deleteError) {
