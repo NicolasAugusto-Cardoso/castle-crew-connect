@@ -143,7 +143,12 @@ export const Layout = () => {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 pt-[60px] pb-24 md:pb-4 md:ml-64 overflow-x-hidden overflow-y-auto">
+      <main 
+        className="flex-1 pt-[60px] md:pb-4 md:ml-64 overflow-x-hidden overflow-y-auto"
+        style={{
+          paddingBottom: 'calc(80px + env(safe-area-inset-bottom))'
+        }}
+      >
         <div className="flex justify-center w-full">
           <div className="w-full max-w-7xl">
             <Outlet />
