@@ -102,7 +102,7 @@ export const Splash: React.FC<SplashProps> = ({ onComplete }) => {
               delay: 0.05,
               ease: [0.22, 1, 0.36, 1],
             }}
-            className="relative px-12"
+            className="relative flex flex-col items-center justify-center"
           >
             {/* Golden glow behind text */}
             <motion.div
@@ -121,10 +121,10 @@ export const Splash: React.FC<SplashProps> = ({ onComplete }) => {
             />
 
             {/* Minimalist text with crown */}
-            <motion.div className="relative flex flex-col items-center">
+            <motion.div className="relative flex flex-col items-center justify-center">
               {/* Crown icon */}
               <motion.div
-                className="mb-4 relative"
+                className="mb-4 relative flex items-center justify-center"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{
