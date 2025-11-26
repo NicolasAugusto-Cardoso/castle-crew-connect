@@ -122,11 +122,11 @@ export const Splash: React.FC<SplashProps> = ({ onComplete }) => {
             {/* Minimalist text with stroke reveal */}
             <motion.div className="relative">
               <motion.h1
-                className="text-5xl sm:text-6xl md:text-7xl font-light tracking-tight relative font-outfit"
+                className="text-5xl sm:text-6xl md:text-7xl font-semibold tracking-tight relative font-outfit"
                 style={{
-                  color: 'transparent',
-                  WebkitTextStroke: '1.5px hsl(var(--accent))',
-                  textShadow: '0 0 20px hsl(var(--accent) / 0.3)',
+                  color: 'hsl(var(--accent))',
+                  WebkitTextStroke: '1px hsl(var(--accent))',
+                  textShadow: '0 0 25px hsl(var(--accent) / 0.5)',
                   letterSpacing: '-0.03em',
                 }}
                 initial={{ clipPath: 'inset(0 100% 0 0)' }}
@@ -141,11 +141,11 @@ export const Splash: React.FC<SplashProps> = ({ onComplete }) => {
               </motion.h1>
               
               <motion.h2
-                className="text-2xl sm:text-3xl md:text-4xl font-light tracking-wide relative -mt-1 font-outfit"
+                className="text-2xl sm:text-3xl md:text-4xl font-semibold tracking-wide relative -mt-1 font-outfit"
                 style={{
-                  color: 'transparent',
-                  WebkitTextStroke: '1px hsl(var(--accent))',
-                  textShadow: '0 0 20px hsl(var(--accent) / 0.3)',
+                  color: 'hsl(var(--accent))',
+                  WebkitTextStroke: '0.5px hsl(var(--accent))',
+                  textShadow: '0 0 25px hsl(var(--accent) / 0.5)',
                   letterSpacing: '0.15em',
                 }}
                 initial={{ clipPath: 'inset(0 0 0 100%)' }}
