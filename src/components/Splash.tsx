@@ -113,13 +113,13 @@ export const Splash: React.FC<SplashProps> = ({ onComplete }) => {
                   animate={{
                     x: x,
                     y: y,
-                    scale: [0, 2, 1],
-                    opacity: [0, 0.6, 0],
+                    scale: [0, 2, 1.5, 2.5, 1],
+                    opacity: [0, 0.6, 0.5, 0.8, 0],
                   }}
                   transition={{
-                    duration: 0.7,
+                    duration: 0.9,
                     delay: 0.15 + i * 0.03,
-                    times: [0, 0.5, 1],
+                    times: [0, 0.3, 0.5, 0.7, 1],
                     ease: [0.22, 1, 0.36, 1],
                   }}
                 />
@@ -151,13 +151,13 @@ export const Splash: React.FC<SplashProps> = ({ onComplete }) => {
                   animate={{
                     x: x,
                     y: y,
-                    scale: [0, 1.5, 0.8],
-                    opacity: [0, 0.8, 0],
+                    scale: [0, 1.5, 1, 2, 0.8],
+                    opacity: [0, 0.8, 0.7, 1, 0],
                   }}
                   transition={{
-                    duration: 0.7,
+                    duration: 0.9,
                     delay: i * 0.05,
-                    times: [0, 0.5, 1],
+                    times: [0, 0.3, 0.5, 0.7, 1],
                     ease: [0.22, 1, 0.36, 1],
                   }}
                 />
