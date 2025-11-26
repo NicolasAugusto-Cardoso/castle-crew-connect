@@ -38,7 +38,7 @@ export const Splash: React.FC<SplashProps> = ({ onComplete }) => {
             willChange: 'opacity',
           }}
         >
-          {/* Very subtle texture overlay (optional, barely visible) */}
+          {/* Very subtle texture overlay */}
           <motion.div
             className="absolute inset-0 opacity-[0.015]"
             style={{
@@ -91,7 +91,7 @@ export const Splash: React.FC<SplashProps> = ({ onComplete }) => {
             />
           ))}
 
-          {/* Main text container with graffiti style */}
+          {/* Main text container */}
           <motion.div
             initial={{ scale: 1.08, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
@@ -119,17 +119,15 @@ export const Splash: React.FC<SplashProps> = ({ onComplete }) => {
               }}
             />
 
-            {/* Graffiti-style text with stroke reveal */}
+            {/* Minimalist text with stroke reveal */}
             <motion.div className="relative">
               <motion.h1
-                className="text-4xl sm:text-5xl md:text-6xl font-black tracking-tight relative"
+                className="text-5xl sm:text-6xl md:text-7xl font-light tracking-tight relative font-outfit"
                 style={{
                   color: 'transparent',
-                  WebkitTextStroke: '2px hsl(var(--accent))',
-                  textShadow: '2px 2px 0px rgba(0,0,0,0.2), 0 0 15px hsl(var(--accent) / 0.4)',
-                  fontFamily: 'system-ui, -apple-system, sans-serif',
-                  textTransform: 'uppercase',
-                  letterSpacing: '-0.02em',
+                  WebkitTextStroke: '1.5px hsl(var(--accent))',
+                  textShadow: '0 0 20px hsl(var(--accent) / 0.3)',
+                  letterSpacing: '-0.03em',
                 }}
                 initial={{ clipPath: 'inset(0 100% 0 0)' }}
                 animate={{ clipPath: 'inset(0 0% 0 0)' }}
@@ -143,14 +141,12 @@ export const Splash: React.FC<SplashProps> = ({ onComplete }) => {
               </motion.h1>
               
               <motion.h2
-                className="text-2xl sm:text-3xl md:text-4xl font-black tracking-wide relative -mt-1"
+                className="text-2xl sm:text-3xl md:text-4xl font-light tracking-wide relative -mt-1 font-outfit"
                 style={{
                   color: 'transparent',
-                  WebkitTextStroke: '1.5px hsl(var(--accent))',
-                  textShadow: '2px 2px 0px rgba(0,0,0,0.2), 0 0 15px hsl(var(--accent) / 0.4)',
-                  fontFamily: 'system-ui, -apple-system, sans-serif',
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.08em',
+                  WebkitTextStroke: '1px hsl(var(--accent))',
+                  textShadow: '0 0 20px hsl(var(--accent) / 0.3)',
+                  letterSpacing: '0.15em',
                 }}
                 initial={{ clipPath: 'inset(0 0 0 100%)' }}
                 animate={{ clipPath: 'inset(0 0 0 0%)' }}
@@ -163,60 +159,6 @@ export const Splash: React.FC<SplashProps> = ({ onComplete }) => {
                 Movement
               </motion.h2>
             </motion.div>
-
-            {/* Subtle drip effects */}
-            <motion.div
-              className="absolute -bottom-3 left-1/4 w-0.5 bg-accent"
-              style={{
-                height: '12px',
-                filter: 'blur(0.5px)',
-                opacity: 0.5,
-              }}
-              initial={{ scaleY: 0 }}
-              animate={{ scaleY: 1 }}
-              transition={{
-                duration: 0.3,
-                delay: 0.55,
-                ease: "easeOut",
-              }}
-            />
-            <motion.div
-              className="absolute -bottom-3 right-1/3 w-0.5 bg-accent"
-              style={{
-                height: '10px',
-                filter: 'blur(0.5px)',
-                opacity: 0.4,
-              }}
-              initial={{ scaleY: 0 }}
-              animate={{ scaleY: 1 }}
-              transition={{
-                duration: 0.3,
-                delay: 0.6,
-                ease: "easeOut",
-              }}
-            />
-
-            {/* Urban accent marks */}
-            <motion.div
-              className="absolute -top-3 -left-2 w-6 h-0.5 bg-accent rotate-45 opacity-60"
-              initial={{ scaleX: 0 }}
-              animate={{ scaleX: 1 }}
-              transition={{ duration: 0.15, delay: 0.48 }}
-            />
-            <motion.div
-              className="absolute -bottom-2 -right-3 w-7 h-0.5 bg-accent -rotate-45 opacity-60"
-              initial={{ scaleX: 0 }}
-              animate={{ scaleX: 1 }}
-              transition={{ duration: 0.15, delay: 0.52 }}
-            />
-            
-            {/* Small tag marks */}
-            <motion.div
-              className="absolute top-0 right-0 w-3 h-3 border border-accent rounded-sm opacity-50"
-              initial={{ scale: 0, rotate: 0 }}
-              animate={{ scale: 1, rotate: 45 }}
-              transition={{ duration: 0.2, delay: 0.5 }}
-            />
           </motion.div>
         </motion.div>
       )}
