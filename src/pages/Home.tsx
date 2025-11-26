@@ -134,7 +134,7 @@ export default function Home() {
     <div className="container mx-auto px-3 xs:px-4 sm:px-6 py-4 xs:py-5 sm:py-6 max-w-2xl">
       {/* Welcome Section */}
       <div className="mb-6 xs:mb-7 sm:mb-8 text-center animate-fade-in px-2">
-        <h1 className="text-xl xs:text-2xl sm:text-2xl md:text-3xl font-bold text-foreground mb-1.5 xs:mb-2">
+        <h1 className="text-lg xs:text-xl sm:text-2xl md:text-3xl font-bold text-foreground mb-1.5 xs:mb-2 break-words leading-tight">
           Bem-vindo ao Castle Movement
         </h1>
         <p className="text-sm xs:text-base text-muted-foreground">
