@@ -6,8 +6,8 @@ interface SplashProps {
   onComplete: () => void;
 }
 
-// Particle positions around the crown (polar coordinates)
-const particlePositions = [
+// Primary particles - larger, closer
+const primaryParticles = [
   { angle: 0, distance: 60 },
   { angle: 45, distance: 55 },
   { angle: 90, distance: 65 },
@@ -16,6 +16,22 @@ const particlePositions = [
   { angle: 225, distance: 56 },
   { angle: 270, distance: 64 },
   { angle: 315, distance: 59 },
+];
+
+// Secondary particles - smaller, farther, more numerous
+const secondaryParticles = [
+  { angle: 22, distance: 75 },
+  { angle: 68, distance: 80 },
+  { angle: 112, distance: 78 },
+  { angle: 158, distance: 82 },
+  { angle: 202, distance: 76 },
+  { angle: 248, distance: 79 },
+  { angle: 292, distance: 77 },
+  { angle: 338, distance: 81 },
+  { angle: 15, distance: 85 },
+  { angle: 105, distance: 88 },
+  { angle: 195, distance: 84 },
+  { angle: 285, distance: 86 },
 ];
 
 export const Splash: React.FC<SplashProps> = ({ onComplete }) => {
@@ -37,7 +53,7 @@ export const Splash: React.FC<SplashProps> = ({ onComplete }) => {
           initial={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
-          className="fixed inset-0 z-[9999] flex items-center justify-center bg-background"
+          className="fixed inset-0 z-[9999] flex items-center justify-center bg-gradient-to-br from-primary-light via-primary to-primary-dark"
           style={{ 
             isolation: 'isolate',
             willChange: 'opacity'
@@ -71,15 +87,55 @@ export const Splash: React.FC<SplashProps> = ({ onComplete }) => {
             />
           </motion.svg>
 
-          {/* Particles */}
+          {/* Secondary particles - smaller, farther, later */}
           <div className="absolute">
-            {particlePositions.map((pos, i) => {
+            {secondaryParticles.map((pos, i) => {
               const x = Math.cos((pos.angle * Math.PI) / 180) * pos.distance;
               const y = Math.sin((pos.angle * Math.PI) / 180) * pos.distance;
               
               return (
                 <motion.div
-                  key={i}
+                  key={`sec-${i}`}
+                  className="absolute rounded-full bg-accent"
+                  style={{
+                    width: '0.5px',
+                    height: '0.5px',
+                    left: '50%',
+                    top: '50%',
+                    boxShadow: '0 0 6px hsl(var(--accent))',
+                  }}
+                  initial={{
+                    x: 0,
+                    y: 0,
+                    scale: 0,
+                    opacity: 0,
+                  }}
+                  animate={{
+                    x: x,
+                    y: y,
+                    scale: [0, 2, 1],
+                    opacity: [0, 0.6, 0],
+                  }}
+                  transition={{
+                    duration: 0.7,
+                    delay: 0.15 + i * 0.03,
+                    times: [0, 0.5, 1],
+                    ease: [0.22, 1, 0.36, 1],
+                  }}
+                />
+              );
+            })}
+          </div>
+
+          {/* Primary particles - larger, closer */}
+          <div className="absolute">
+            {primaryParticles.map((pos, i) => {
+              const x = Math.cos((pos.angle * Math.PI) / 180) * pos.distance;
+              const y = Math.sin((pos.angle * Math.PI) / 180) * pos.distance;
+              
+              return (
+                <motion.div
+                  key={`pri-${i}`}
                   className="absolute w-1 h-1 rounded-full bg-accent"
                   style={{
                     left: '50%',
