@@ -169,8 +169,8 @@ export const Splash: React.FC<SplashProps> = ({ onComplete }) => {
                   textShadow: '0 0 25px hsl(var(--accent) / 0.5)',
                   letterSpacing: '-0.03em',
                 }}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
                 transition={{
                   duration: 0.4,
                   delay: 0.08,
@@ -188,8 +188,8 @@ export const Splash: React.FC<SplashProps> = ({ onComplete }) => {
                   textShadow: '0 0 25px hsl(var(--accent) / 0.5)',
                   letterSpacing: '0.15em',
                 }}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
                 transition={{
                   duration: 0.4,
                   delay: 0.15,
