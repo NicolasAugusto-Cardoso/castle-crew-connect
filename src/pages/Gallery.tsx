@@ -1,17 +1,26 @@
+import { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useGallery } from '@/hooks/useGallery';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Folder, Calendar, Loader2, Image, AlertCircle } from 'lucide-react';
+import { Folder, Calendar, Loader2, Image, Search } from 'lucide-react';
 import { CreateFolderDialog } from '@/components/gallery/CreateFolderDialog';
 import { UploadMediaDialog } from '@/components/gallery/UploadMediaDialog';
 import { useNavigate } from 'react-router-dom';
+import { Input } from '@/components/ui/input';
 
 export default function Gallery() {
   const navigate = useNavigate();
   const { hasRole, loading: authLoading } = useAuth();
   const { folders, isLoading } = useGallery();
+  const [searchTerm, setSearchTerm] = useState('');
 
   const canManage = hasRole(['admin', 'social_media']);
+
+  // Filtrar pastas por nome ou descrição
+  const filteredFolders = folders.filter(folder => 
+    folder.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    folder.description?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   if (authLoading) {
     return (
@@ -35,11 +44,20 @@ export default function Gallery() {
         </p>
       </div>
 
-      {canManage && (
-        <div className="mb-6">
-          <CreateFolderDialog />
+      <div className="mb-6 space-y-4">
+        {canManage && <CreateFolderDialog />}
+        
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <Input
+            type="text"
+            placeholder="Buscar pastas..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-10"
+          />
         </div>
-      )}
+      </div>
 
       {isLoading ? (
         <div className="flex justify-center py-12">
@@ -62,9 +80,17 @@ export default function Gallery() {
             )}
           </CardContent>
         </Card>
+      ) : filteredFolders.length === 0 ? (
+        <Card className="card-elevated">
+          <CardContent className="py-12 text-center text-muted-foreground">
+            <Search className="w-12 h-12 mx-auto mb-3" />
+            <p>Nenhuma pasta encontrada</p>
+            <p className="text-sm mt-2">Tente buscar com outros termos</p>
+          </CardContent>
+        </Card>
       ) : (
-        <div className="grid gap-4 xs:gap-5 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-          {folders.map((folder) => (
+        <div className="grid gap-3 xs:gap-4 sm:gap-5 grid-cols-2 sm:grid-cols-3 lg:grid-cols-3">
+          {filteredFolders.map((folder) => (
             <Card 
               key={folder.id} 
               className="card-elevated cursor-pointer hover:scale-105 transition-transform"
@@ -74,7 +100,7 @@ export default function Gallery() {
                 navigate(`/gallery/${folder.id}`);
               }}
             >
-              <div className="aspect-video overflow-hidden bg-muted">
+              <div className="aspect-[4/3] overflow-hidden bg-muted">
                 {folder.cover_url ? (
                   <img
                     src={folder.cover_url}
@@ -83,26 +109,30 @@ export default function Gallery() {
                   />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center">
-                    <Folder className="w-16 h-16 text-muted-foreground" />
+                    <Folder className="w-12 h-12 text-muted-foreground" />
                   </div>
                 )}
               </div>
-              <CardHeader>
-                <div className="flex flex-col xs:flex-row xs:items-center xs:justify-between gap-3">
-                  <div className="flex-1 min-w-0">
-                    <CardTitle className="text-base sm:text-lg break-words">{folder.name}</CardTitle>
-                    {folder.description && (
-                      <p className="text-sm text-muted-foreground break-words">{folder.description}</p>
+              <CardHeader className="p-3 xs:p-4">
+                <div className="flex flex-col gap-2">
+                  <div className="flex items-start justify-between gap-2">
+                    <CardTitle className="text-sm xs:text-base break-words line-clamp-2 flex-1">{folder.name}</CardTitle>
+                    {canManage && (
+                      <div className="flex-shrink-0">
+                        <UploadMediaDialog folderId={folder.id} />
+                      </div>
                     )}
                   </div>
-                  {canManage && <div className="self-start xs:self-auto"><UploadMediaDialog folderId={folder.id} /></div>}
+                  {folder.description && (
+                    <p className="text-xs text-muted-foreground break-words line-clamp-2">{folder.description}</p>
+                  )}
                 </div>
               </CardHeader>
-              <CardContent>
+              <CardContent className="p-3 xs:p-4 pt-0">
                 {folder.event_date && (
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Calendar className="w-4 h-4" />
-                    {new Date(folder.event_date).toLocaleDateString('pt-BR')}
+                  <div className="flex items-center gap-1.5 text-xs xs:text-sm text-muted-foreground">
+                    <Calendar className="w-3 h-3 xs:w-4 xs:h-4 flex-shrink-0" />
+                    <span>{new Date(folder.event_date).toLocaleDateString('pt-BR')}</span>
                   </div>
                 )}
               </CardContent>
