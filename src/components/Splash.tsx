@@ -21,7 +21,7 @@ export const Splash: React.FC<SplashProps> = ({ onComplete }) => {
     const timer = setTimeout(() => {
       setShow(false);
       setTimeout(onComplete, 200);
-    }, 950);
+    }, 700);
 
     return () => clearTimeout(timer);
   }, [onComplete]);
@@ -98,8 +98,8 @@ export const Splash: React.FC<SplashProps> = ({ onComplete }) => {
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.96, opacity: 0 }}
             transition={{
-              duration: 0.45,
-              delay: 0.15,
+              duration: 0.4,
+              delay: 0.05,
               ease: [0.22, 1, 0.36, 1],
             }}
             className="relative px-12"
@@ -128,8 +128,8 @@ export const Splash: React.FC<SplashProps> = ({ onComplete }) => {
                 initial={{ scale: 0.8, opacity: 0, y: 10 }}
                 animate={{ scale: 1, opacity: 1, y: 0 }}
                 transition={{
-                  duration: 0.5,
-                  delay: 0.15,
+                  duration: 0.4,
+                  delay: 0.05,
                   ease: [0.22, 1, 0.36, 1],
                 }}
               >
@@ -169,11 +169,11 @@ export const Splash: React.FC<SplashProps> = ({ onComplete }) => {
                   textShadow: '0 0 25px hsl(var(--accent) / 0.5)',
                   letterSpacing: '-0.03em',
                 }}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
                 transition={{
-                  duration: 0.5,
-                  delay: 0.1,
+                  duration: 0.4,
+                  delay: 0.08,
                   ease: [0.22, 1, 0.36, 1],
                 }}
               >
@@ -188,11 +188,11 @@ export const Splash: React.FC<SplashProps> = ({ onComplete }) => {
                   textShadow: '0 0 25px hsl(var(--accent) / 0.5)',
                   letterSpacing: '0.15em',
                 }}
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
                 transition={{
-                  duration: 0.5,
-                  delay: 0.18,
+                  duration: 0.4,
+                  delay: 0.15,
                   ease: [0.22, 1, 0.36, 1],
                 }}
               >
