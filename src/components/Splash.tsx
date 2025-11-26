@@ -239,7 +239,7 @@ export const Splash: React.FC<SplashProps> = ({ onComplete }) => {
                 />
               </motion.div>
 
-              <motion.h1
+              <h1
                 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-semibold tracking-tight relative font-outfit whitespace-nowrap text-center"
                 style={{
                   color: 'hsl(var(--accent))',
@@ -247,18 +247,25 @@ export const Splash: React.FC<SplashProps> = ({ onComplete }) => {
                   textShadow: '0 0 20px hsl(var(--accent) / 0.5), 0 0 40px hsl(var(--accent) / 0.3)',
                   letterSpacing: '-0.03em',
                 }}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{
-                  duration: 0.4,
-                  delay: 0.08,
-                  ease: [0.22, 1, 0.36, 1],
-                }}
               >
-                Castle
-              </motion.h1>
+                {'Castle'.split('').map((letter, i) => (
+                  <motion.span
+                    key={`castle-${i}`}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{
+                      duration: 0.3,
+                      delay: 0.08 + i * 0.05,
+                      ease: [0.22, 1, 0.36, 1],
+                    }}
+                    style={{ display: 'inline-block' }}
+                  >
+                    {letter}
+                  </motion.span>
+                ))}
+              </h1>
               
-              <motion.h2
+              <h2
                 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-semibold tracking-wide relative -mt-1 font-outfit whitespace-nowrap text-center"
                 style={{
                   color: 'hsl(var(--accent))',
@@ -266,16 +273,23 @@ export const Splash: React.FC<SplashProps> = ({ onComplete }) => {
                   textShadow: '0 0 20px hsl(var(--accent) / 0.5), 0 0 40px hsl(var(--accent) / 0.3)',
                   letterSpacing: '0.15em',
                 }}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{
-                  duration: 0.4,
-                  delay: 0.15,
-                  ease: [0.22, 1, 0.36, 1],
-                }}
               >
-                Movement
-              </motion.h2>
+                {'Movement'.split('').map((letter, i) => (
+                  <motion.span
+                    key={`movement-${i}`}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{
+                      duration: 0.3,
+                      delay: 0.38 + i * 0.04,
+                      ease: [0.22, 1, 0.36, 1],
+                    }}
+                    style={{ display: 'inline-block' }}
+                  >
+                    {letter}
+                  </motion.span>
+                ))}
+              </h2>
             </motion.div>
           </motion.div>
         </motion.div>
