@@ -146,14 +146,14 @@ export const Splash: React.FC<SplashProps> = ({ onComplete }) => {
                   }}
                 >
                   <Crown 
-                    className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 text-accent"
+                    className="w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 lg:w-32 lg:h-32 text-accent"
                     strokeWidth={1}
                   />
                 </motion.div>
                 
                 {/* Main crown */}
                 <Crown 
-                  className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 text-accent relative z-10"
+                  className="w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 lg:w-32 lg:h-32 text-accent relative z-10"
                   strokeWidth={1}
                   style={{
                     filter: 'drop-shadow(0 0 10px hsl(var(--accent) / 0.6))',
@@ -162,7 +162,7 @@ export const Splash: React.FC<SplashProps> = ({ onComplete }) => {
               </motion.div>
 
               <motion.h1
-                className="text-5xl sm:text-6xl md:text-7xl font-semibold tracking-tight relative font-outfit whitespace-nowrap text-center"
+                className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-semibold tracking-tight relative font-outfit whitespace-nowrap text-center"
                 style={{
                   color: 'hsl(var(--accent))',
                   WebkitTextStroke: '1px hsl(var(--accent))',
@@ -181,7 +181,7 @@ export const Splash: React.FC<SplashProps> = ({ onComplete }) => {
               </motion.h1>
               
               <motion.h2
-                className="text-2xl sm:text-3xl md:text-4xl font-semibold tracking-wide relative -mt-1 font-outfit whitespace-nowrap text-center"
+                className="text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-semibold tracking-wide relative -mt-1 font-outfit whitespace-nowrap text-center"
                 style={{
                   color: 'hsl(var(--accent))',
                   WebkitTextStroke: '0.5px hsl(var(--accent))',
