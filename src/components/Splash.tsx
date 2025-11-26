@@ -173,7 +173,7 @@ export const Splash: React.FC<SplashProps> = ({ onComplete }) => {
                 animate={{ opacity: 1, x: 0 }}
                 transition={{
                   duration: 0.5,
-                  delay: 0.22,
+                  delay: 0.1,
                   ease: [0.22, 1, 0.36, 1],
                 }}
               >
@@ -192,7 +192,7 @@ export const Splash: React.FC<SplashProps> = ({ onComplete }) => {
                 animate={{ opacity: 1, x: 0 }}
                 transition={{
                   duration: 0.5,
-                  delay: 0.32,
+                  delay: 0.18,
                   ease: [0.22, 1, 0.36, 1],
                 }}
               >
