@@ -16,9 +16,10 @@ import { Progress } from '@/components/ui/progress';
 
 interface UploadMediaDialogProps {
   folderId: string;
+  compact?: boolean;
 }
 
-export function UploadMediaDialog({ folderId }: UploadMediaDialogProps) {
+export function UploadMediaDialog({ folderId, compact = false }: UploadMediaDialogProps) {
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
   const [files, setFiles] = useState<FileList | null>(null);
@@ -152,10 +153,16 @@ export function UploadMediaDialog({ folderId }: UploadMediaDialogProps) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="btn-accent">
-          <Upload className="w-4 h-4 mr-2" />
-          Enviar Mídia
-        </Button>
+        {compact ? (
+          <Button variant="ghost" size="icon" className="h-8 w-8">
+            <Upload className="w-4 h-4" />
+          </Button>
+        ) : (
+          <Button className="btn-accent">
+            <Upload className="w-4 h-4 mr-2" />
+            Enviar Mídia
+          </Button>
+        )}
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
