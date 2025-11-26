@@ -14,6 +14,22 @@ const splatters = [
   { x: '82%', y: '72%', size: 4, delay: 0.26 },
 ];
 
+// Floating golden particles around crown
+const particles = [
+  { x: -70, y: -45, size: 3, delay: 0.3, duration: 2.8 },
+  { x: 65, y: -50, size: 2, delay: 0.5, duration: 3.2 },
+  { x: -55, y: -20, size: 4, delay: 0.4, duration: 2.5 },
+  { x: 60, y: -15, size: 2.5, delay: 0.6, duration: 3 },
+  { x: -80, y: 10, size: 3, delay: 0.35, duration: 2.9 },
+  { x: 75, y: 15, size: 2, delay: 0.55, duration: 3.1 },
+  { x: -50, y: 35, size: 3.5, delay: 0.45, duration: 2.7 },
+  { x: 55, y: 40, size: 2.5, delay: 0.5, duration: 2.8 },
+  { x: -35, y: -60, size: 2, delay: 0.4, duration: 3.3 },
+  { x: 40, y: -55, size: 3, delay: 0.35, duration: 2.6 },
+  { x: 0, y: -70, size: 2.5, delay: 0.5, duration: 3 },
+  { x: -10, y: 50, size: 3, delay: 0.6, duration: 2.9 },
+];
+
 export const Splash: React.FC<SplashProps> = ({ onComplete }) => {
   const [show, setShow] = useState(true);
 
@@ -149,6 +165,34 @@ export const Splash: React.FC<SplashProps> = ({ onComplete }) => {
                   ease: [0.22, 1, 0.36, 1],
                 }}
               >
+                {/* Floating golden particles around crown */}
+                {particles.map((particle, i) => (
+                  <motion.div
+                    key={i}
+                    className="absolute rounded-full bg-accent"
+                    style={{
+                      left: `calc(50% + ${particle.x}px)`,
+                      top: `calc(50% + ${particle.y}px)`,
+                      width: particle.size,
+                      height: particle.size,
+                      filter: 'blur(0.5px)',
+                      boxShadow: '0 0 4px hsl(var(--accent) / 0.4)',
+                    }}
+                    initial={{ opacity: 0, y: 0, x: 0 }}
+                    animate={{ 
+                      opacity: [0, 0.5, 0.3, 0.5, 0],
+                      y: [0, -15, -10, -20, 0],
+                      x: [0, 3, -2, 4, 0],
+                    }}
+                    transition={{
+                      duration: particle.duration,
+                      delay: particle.delay,
+                      repeat: Infinity,
+                      ease: "easeInOut",
+                    }}
+                  />
+                ))}
+
                 {/* Outer glow layer - sutil no mobile, mais visível no desktop */}
                 <motion.div
                   className="absolute inset-0 blur-2xl md:blur-3xl"
