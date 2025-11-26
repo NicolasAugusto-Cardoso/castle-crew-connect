@@ -12,68 +12,86 @@ export const Splash: React.FC<SplashProps> = ({ onComplete }) => {
   useEffect(() => {
     const timer = setTimeout(() => {
       setShow(false);
-      setTimeout(onComplete, 500);
-    }, 2900);
+      setTimeout(onComplete, 200);
+    }, 700);
 
     return () => clearTimeout(timer);
   }, [onComplete]);
 
   return (
-    <AnimatePresence>
+    <AnimatePresence mode="wait">
       {show && (
         <motion.div
           initial={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 0.5, ease: 'easeOut' }}
-          className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-gradient-to-br from-primary-light via-primary to-primary-dark overflow-hidden"
+          transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
+          className="fixed inset-0 z-[9999] flex items-center justify-center bg-background"
+          style={{ 
+            isolation: 'isolate',
+            willChange: 'opacity'
+          }}
         >
-          <div className="relative flex flex-col items-center justify-center">
-            {/* Crown Icon */}
+          {/* Animated circle stroke */}
+          <motion.svg
+            className="absolute w-48 h-48 sm:w-56 sm:h-56"
+            viewBox="0 0 100 100"
+            initial={{ rotate: 0, opacity: 0 }}
+            animate={{ rotate: 180, opacity: 0.3 }}
+            transition={{
+              duration: 0.7,
+              ease: [0.22, 1, 0.36, 1]
+            }}
+          >
+            <motion.circle
+              cx="50"
+              cy="50"
+              r="45"
+              fill="none"
+              stroke="hsl(var(--accent))"
+              strokeWidth="0.5"
+              strokeLinecap="round"
+              initial={{ pathLength: 0, opacity: 0 }}
+              animate={{ pathLength: 1, opacity: 0.4 }}
+              transition={{
+                duration: 0.6,
+                ease: [0.22, 1, 0.36, 1]
+              }}
+            />
+          </motion.svg>
+
+          {/* Crown logo with glow */}
+          <motion.div
+            initial={{ scale: 0.85, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{
+              duration: 0.5,
+              ease: [0.22, 1, 0.36, 1]
+            }}
+            className="relative"
+          >
+            {/* Glow effect */}
             <motion.div
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.6, ease: 'easeOut' }}
+              className="absolute inset-0 blur-2xl"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: [0, 0.6, 0.4] }}
+              transition={{
+                duration: 0.7,
+                times: [0, 0.5, 1],
+                ease: "easeInOut"
+              }}
             >
               <Crown 
-                className="w-32 h-32 xs:w-40 xs:h-40 sm:w-48 sm:h-48 md:w-56 md:h-56 lg:w-64 lg:h-64 text-accent"
-                strokeWidth={1.5}
+                className="w-20 h-20 sm:w-24 sm:h-24 text-accent"
+                strokeWidth={2}
               />
             </motion.div>
 
-            {/* Text fade in with delay */}
-            <motion.div
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ 
-                duration: 0.6,
-                delay: 2.3,
-                ease: 'easeOut'
-              }}
-              className="mt-3 sm:mt-4 px-4 mx-auto max-w-full"
-            >
-              <h1 className="text-xl xs:text-2xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-white text-center tracking-wide drop-shadow-lg">
-                Castle Movement
-              </h1>
-            </motion.div>
-
-            {/* Accent line with graffiti style */}
-            <motion.div
-              className="mt-2 sm:mt-3 mx-auto h-0.5 sm:h-1 rounded-full overflow-hidden"
-              style={{
-                background: 'linear-gradient(90deg, transparent, #FFD700, #FFA500, transparent)',
-                boxShadow: '0 0 20px rgba(255, 215, 0, 0.5)',
-                width: '200px',
-                maxWidth: '70vw'
-              }}
-              initial={{ width: 0, opacity: 0 }}
-              animate={{ width: '100%', opacity: 1 }}
-              transition={{ 
-                duration: 0.5,
-                delay: 2.5,
-                ease: 'easeOut'
-              }}
+            {/* Main icon */}
+            <Crown 
+              className="w-20 h-20 sm:w-24 sm:h-24 text-accent relative z-10"
+              strokeWidth={1.5}
             />
-          </div>
+          </motion.div>
         </motion.div>
       )}
     </AnimatePresence>
