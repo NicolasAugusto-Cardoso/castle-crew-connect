@@ -35,6 +35,7 @@ export default function Contact() {
   const [searchParams, setSearchParams] = useSearchParams();
   const messageIdFromUrl = searchParams.get('messageId');
   const [collaboratorProfileId, setCollaboratorProfileId] = useState<string | null>(null);
+  const [collaboratorProfileLoaded, setCollaboratorProfileLoaded] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
 
   // Subscribe to realtime notifications for new replies
@@ -125,10 +126,13 @@ export default function Contact() {
         .from('collaborator_profiles')
         .select('id')
         .eq('user_id', user.id)
-        .single()
+        .maybeSingle()
         .then(({ data }) => {
           setCollaboratorProfileId(data?.id || null);
+          setCollaboratorProfileLoaded(true);
         });
+    } else if (!isCollaborator) {
+      setCollaboratorProfileLoaded(true);
     }
   }, [isCollaborator, user?.id]);
 
@@ -432,10 +436,17 @@ export default function Contact() {
             />
           </div>
 
-          {isLoading || !collaboratorProfileId ? (
+          {isLoading || !collaboratorProfileLoaded ? (
             <div className="flex justify-center py-12">
               <Loader2 className="w-8 h-8 animate-spin text-primary" />
             </div>
+          ) : !collaboratorProfileId ? (
+            <Card className="card-elevated">
+              <CardContent className="py-12 text-center text-muted-foreground">
+                <Mail className="w-12 h-12 mx-auto mb-3" />
+                <p>Complete seu perfil de colaborador para receber mensagens</p>
+              </CardContent>
+            </Card>
           ) : filterMessages(displayedMessages).length === 0 ? (
             <Card className="card-elevated">
               <CardContent className="py-12 text-center text-muted-foreground">
