@@ -53,7 +53,7 @@ export const Splash: React.FC<SplashProps> = ({ onComplete }) => {
           initial={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
-          className="fixed inset-0 z-[9999] flex items-center justify-center bg-gradient-to-br from-primary-light via-primary to-primary-dark"
+          className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-gradient-to-br from-primary-light via-primary to-primary-dark"
           style={{ 
             isolation: 'isolate',
             willChange: 'opacity'
@@ -196,6 +196,36 @@ export const Splash: React.FC<SplashProps> = ({ onComplete }) => {
             <Crown 
               className="w-20 h-20 sm:w-24 sm:h-24 text-accent relative z-10"
               strokeWidth={1.5}
+            />
+          </motion.div>
+
+          {/* Text Castle Movement */}
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{
+              duration: 0.4,
+              delay: 0.35,
+              ease: [0.22, 1, 0.36, 1]
+            }}
+            className="mt-6 relative z-10"
+          >
+            <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-wide">
+              Castle Movement
+            </h1>
+            <motion.div
+              className="h-px w-full mt-2 rounded-full"
+              style={{
+                background: 'linear-gradient(90deg, transparent, hsl(var(--accent)), transparent)',
+                boxShadow: '0 0 10px hsl(var(--accent) / 0.5)',
+              }}
+              initial={{ scaleX: 0, opacity: 0 }}
+              animate={{ scaleX: 1, opacity: 0.6 }}
+              transition={{
+                duration: 0.4,
+                delay: 0.45,
+                ease: [0.22, 1, 0.36, 1]
+              }}
             />
           </motion.div>
         </motion.div>
