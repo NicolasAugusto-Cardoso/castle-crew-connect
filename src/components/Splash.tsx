@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Crown } from 'lucide-react';
+import crownImage from '@/assets/splash-crown.png';
 
 interface SplashProps {
   onComplete: () => void;
@@ -135,28 +135,27 @@ export const Splash: React.FC<SplashProps> = ({ onComplete }) => {
               >
                 {/* Glow behind crown */}
                 <motion.div
-                  className="absolute inset-0 blur-xl"
+                  className="absolute inset-0 blur-2xl"
                   initial={{ opacity: 0 }}
-                  animate={{ opacity: [0, 0.6, 0.4] }}
+                  animate={{ opacity: [0, 0.5, 0.35] }}
                   transition={{
                     duration: 0.8,
-                    delay: 0.2,
+                    delay: 0.1,
                     times: [0, 0.5, 1],
                     ease: "easeOut",
                   }}
-                >
-                  <Crown 
-                    className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 text-accent"
-                    strokeWidth={1.5}
-                  />
-                </motion.div>
-                
-                {/* Main crown */}
-                <Crown 
-                  className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 text-accent relative z-10"
-                  strokeWidth={1.5}
                   style={{
-                    filter: 'drop-shadow(0 0 8px hsl(var(--accent) / 0.6))',
+                    background: 'radial-gradient(circle, hsl(var(--accent) / 0.6) 0%, transparent 70%)',
+                  }}
+                />
+                
+                {/* Main crown image */}
+                <motion.img
+                  src={crownImage}
+                  alt="Castle Crown"
+                  className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 relative z-10"
+                  style={{
+                    filter: 'drop-shadow(0 0 12px hsl(var(--accent) / 0.7))',
                   }}
                 />
               </motion.div>
