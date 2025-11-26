@@ -22,14 +22,40 @@ export const Splash: React.FC<SplashProps> = ({ onComplete }) => {
       {show && (
         <motion.div
           initial={{ opacity: 1 }}
+          animate={{ 
+            opacity: 1,
+            scale: [1, 1.02, 1],
+          }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
+          transition={{ 
+            opacity: { duration: 0.2, ease: [0.22, 1, 0.36, 1] },
+            scale: { 
+              duration: 3,
+              repeat: Infinity,
+              ease: "easeInOut",
+            }
+          }}
           className="fixed inset-0 z-[9999] flex items-center justify-center bg-gradient-to-br from-primary-light via-primary to-primary-dark overflow-hidden"
           style={{ 
             isolation: 'isolate',
-            willChange: 'opacity',
+            willChange: 'opacity, transform',
           }}
         >
+          {/* Subtle animated overlay for depth */}
+          <motion.div
+            className="absolute inset-0"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: [0, 0.15, 0.1, 0.15] }}
+            transition={{
+              duration: 4,
+              repeat: Infinity,
+              ease: "easeInOut",
+            }}
+            style={{
+              background: 'radial-gradient(circle at 50% 50%, hsl(var(--accent) / 0.08) 0%, transparent 60%)',
+            }}
+          />
+
           {/* Very subtle texture overlay */}
           <motion.div
             className="absolute inset-0 opacity-[0.015]"
