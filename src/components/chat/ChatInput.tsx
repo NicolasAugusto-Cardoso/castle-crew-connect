@@ -26,7 +26,7 @@ export function ChatInput({
     <div
       className="bg-background border-t border-border fixed bottom-0 left-0 right-0 z-50 shadow-lg"
       style={{
-        marginBottom: "calc(60px + env(safe-area-inset-bottom))",
+        marginBottom: "calc(70px + env(safe-area-inset-bottom))",
       }}
     >
       <div className="flex items-end gap-2 p-3 max-w-screen-xl mx-auto">

@@ -129,19 +129,13 @@ All colors MUST be HSL.
   body {
     @apply text-foreground;
     background: linear-gradient(to bottom right, hsl(195, 85%, 58%), hsl(205, 80%, 48%), hsl(218, 65%, 35%));
-    min-height: 100vh;
+    min-height: 100dvh;
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     font-size: clamp(14px, 2.5vw, 16px);
     overflow-x: hidden;
     width: 100%;
     max-width: 100vw;
     overscroll-behavior: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    overflow-y: auto;
   }
 
   html {

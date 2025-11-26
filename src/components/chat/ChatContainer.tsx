@@ -98,9 +98,9 @@ export function ChatContainer({
     <div
       className="flex flex-col bg-muted/30"
       style={{
-        height: "100vh",
+        height: "100dvh",
         paddingTop: "120px",
-        paddingBottom: "calc(120px + env(safe-area-inset-bottom))",
+        paddingBottom: "calc(140px + env(safe-area-inset-bottom))",
       }}
     >
       <ChatHeader
