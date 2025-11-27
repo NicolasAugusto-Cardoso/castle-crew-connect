@@ -127,6 +127,43 @@ export const Splash: React.FC<SplashProps> = ({ onComplete }) => {
             }}
           />
 
+          {/* Floating particles */}
+          {[...Array(12)].map((_, i) => (
+            <motion.div
+              key={`particle-${i}`}
+              className="absolute rounded-full blur-sm"
+              initial={{ 
+                opacity: 0,
+                x: `${Math.random() * 100}vw`,
+                y: `${Math.random() * 100}vh`,
+              }}
+              animate={{ 
+                opacity: [0, 0.015 + Math.random() * 0.015, 0.01 + Math.random() * 0.01, 0],
+                x: [
+                  `${Math.random() * 100}vw`,
+                  `${Math.random() * 100}vw`,
+                  `${Math.random() * 100}vw`,
+                ],
+                y: [
+                  `${Math.random() * 100}vh`,
+                  `${Math.random() * 100}vh`,
+                  `${Math.random() * 100}vh`,
+                ],
+              }}
+              transition={{
+                duration: 1.5 + Math.random() * 0.5,
+                delay: Math.random() * 0.3,
+                ease: "easeInOut",
+              }}
+              style={{
+                width: `${3 + Math.random() * 4}px`,
+                height: `${3 + Math.random() * 4}px`,
+                background: 'hsl(var(--accent) / 0.8)',
+                boxShadow: '0 0 4px hsl(var(--accent) / 0.3)',
+              }}
+            />
+          ))}
+
           {/* Cinematic grain overlay */}
           <motion.div
             className="absolute inset-0 opacity-[0.06]"
