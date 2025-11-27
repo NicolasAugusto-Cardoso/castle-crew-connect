@@ -128,41 +128,40 @@ export const Splash: React.FC<SplashProps> = ({ onComplete }) => {
           />
 
           {/* Floating particles */}
-          {[...Array(25)].map((_, i) => (
-            <motion.div
-              key={`particle-${i}`}
-              className="absolute rounded-full"
-              initial={{ 
-                opacity: 0,
-                x: `${Math.random() * 100}vw`,
-                y: `${Math.random() * 100}vh`,
-              }}
-              animate={{ 
-                opacity: [0, 0.5 + Math.random() * 0.3, 0.4 + Math.random() * 0.2, 0],
-                x: [
-                  `${Math.random() * 100}vw`,
-                  `${Math.random() * 100}vw`,
-                  `${Math.random() * 100}vw`,
-                ],
-                y: [
-                  `${Math.random() * 100}vh`,
-                  `${Math.random() * 100}vh`,
-                  `${Math.random() * 100}vh`,
-                ],
-              }}
-              transition={{
-                duration: 1.5 + Math.random() * 0.5,
-                delay: Math.random() * 0.3,
-                ease: "easeInOut",
-              }}
-              style={{
-                width: `${4 + Math.random() * 5}px`,
-                height: `${4 + Math.random() * 5}px`,
-                background: 'hsl(var(--accent) / 1)',
-                boxShadow: '0 0 8px hsl(var(--accent) / 0.6), 0 0 16px hsl(var(--accent) / 0.3)',
-              }}
-            />
-          ))}
+          {[...Array(25)].map((_, i) => {
+            const startLeft = Math.random() * 100;
+            const startTop = Math.random() * 100;
+            
+            return (
+              <motion.div
+                key={`particle-${i}`}
+                className="absolute rounded-full"
+                style={{
+                  left: `${startLeft}%`,
+                  top: `${startTop}%`,
+                  width: `${4 + Math.random() * 5}px`,
+                  height: `${4 + Math.random() * 5}px`,
+                  background: 'hsl(var(--accent) / 1)',
+                  boxShadow: '0 0 8px hsl(var(--accent) / 0.6), 0 0 16px hsl(var(--accent) / 0.3)',
+                }}
+                initial={{ 
+                  opacity: 0,
+                  scale: 0.5,
+                }}
+                animate={{ 
+                  opacity: [0, 0.5 + Math.random() * 0.3, 0.4 + Math.random() * 0.2, 0],
+                  scale: [0.5, 1.2, 1, 0.8],
+                  x: [0, (Math.random() - 0.5) * 50, (Math.random() - 0.5) * 30],
+                  y: [0, (Math.random() - 0.5) * 50, (Math.random() - 0.5) * 30],
+                }}
+                transition={{
+                  duration: 1.5 + Math.random() * 0.5,
+                  delay: Math.random() * 0.3,
+                  ease: "easeInOut",
+                }}
+              />
+            );
+          })}
 
           {/* Cinematic grain overlay */}
           <motion.div
