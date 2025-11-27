@@ -121,13 +121,13 @@ export function ChatMessage({
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="absolute -top-2 -right-2 h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity bg-background shadow-sm hover:bg-muted"
+                        className="absolute -top-2 -right-2 h-7 w-7 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity bg-background shadow-sm hover:bg-muted"
                         disabled={isDeleting}
                       >
                         <MoreVertical className="h-4 w-4" />
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
+                    <DropdownMenuContent align="end" className="z-[100] bg-background border shadow-lg">
                       <DropdownMenuItem
                         onClick={() => onEditStart(message.id, message.content)}
                       >
