@@ -131,14 +131,14 @@ export const Splash: React.FC<SplashProps> = ({ onComplete }) => {
           {[...Array(25)].map((_, i) => (
             <motion.div
               key={`particle-${i}`}
-              className="absolute rounded-full blur-sm"
+              className="absolute rounded-full"
               initial={{ 
                 opacity: 0,
                 x: `${Math.random() * 100}vw`,
                 y: `${Math.random() * 100}vh`,
               }}
               animate={{ 
-                opacity: [0, 0.15 + Math.random() * 0.1, 0.1 + Math.random() * 0.08, 0],
+                opacity: [0, 0.5 + Math.random() * 0.3, 0.4 + Math.random() * 0.2, 0],
                 x: [
                   `${Math.random() * 100}vw`,
                   `${Math.random() * 100}vw`,
@@ -156,8 +156,8 @@ export const Splash: React.FC<SplashProps> = ({ onComplete }) => {
                 ease: "easeInOut",
               }}
               style={{
-                width: `${3 + Math.random() * 4}px`,
-                height: `${3 + Math.random() * 4}px`,
+                width: `${4 + Math.random() * 5}px`,
+                height: `${4 + Math.random() * 5}px`,
                 background: 'hsl(var(--accent) / 1)',
                 boxShadow: '0 0 8px hsl(var(--accent) / 0.6), 0 0 16px hsl(var(--accent) / 0.3)',
               }}
