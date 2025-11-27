@@ -224,6 +224,7 @@ export default function ChatThread() {
       sender_avatar: senderProfile?.avatar_url || null, // Avatar do usuário que enviou
       created_at: message.created_at,
       updated_at: message.created_at,
+      is_edited: false,
     },
     ...replies.map((reply) => ({
       id: reply.id,
@@ -233,6 +234,7 @@ export default function ChatThread() {
       sender_avatar: reply.sender?.avatar_url || null,
       created_at: reply.created_at,
       updated_at: reply.updated_at,
+      is_edited: reply.is_edited,
     })),
   ];
 
