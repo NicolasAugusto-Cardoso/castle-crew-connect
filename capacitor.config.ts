@@ -1,18 +1,25 @@
 import { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'app.lovable.a451d4b96dd64800b70d61b5a786f131',
+  appId: 'com.castlemovement.app',
   appName: 'Castle Movement',
   webDir: 'dist',
-  server: {
-    url: 'https://a451d4b9-6dd6-4800-b70d-61b5a786f131.lovableproject.com?forceHideBadge=true',
-    cleartext: true
-  },
+  // Remove this server block for production builds
+  // Uncomment only for development with hot-reload
+  // server: {
+  //   url: 'https://a451d4b9-6dd6-4800-b70d-61b5a786f131.lovableproject.com?forceHideBadge=true',
+  //   cleartext: true
+  // },
   plugins: {
     SplashScreen: {
       launchShowDuration: 2000,
+      launchAutoHide: true,
       backgroundColor: "#2B96D9",
-      showSpinner: false
+      androidSplashResourceName: "splash",
+      androidScaleType: "CENTER_CROP",
+      showSpinner: false,
+      splashFullScreen: true,
+      splashImmersive: true,
     }
   }
 };
