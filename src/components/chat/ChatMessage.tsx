@@ -20,6 +20,7 @@ interface ChatMessageProps {
     sender_avatar?: string | null;
     created_at: string;
     updated_at: string;
+    is_edited?: boolean;
   };
   currentUserId: string;
   isEditing: boolean;
@@ -47,7 +48,7 @@ export function ChatMessage({
   isDeleting,
 }: ChatMessageProps) {
   const isOwnMessage = message.sender_id === currentUserId;
-  const isEdited = message.updated_at !== message.created_at;
+  const isEdited = message.is_edited === true;
 
   return (
     <div className={cn("flex mb-4", isOwnMessage ? "justify-end" : "justify-start")}>

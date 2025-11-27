@@ -11,6 +11,7 @@ export interface ContactReply {
   created_at: string;
   updated_at: string;
   is_read: boolean;
+  is_edited: boolean;
   sender?: {
     id: string;
     name: string;
@@ -124,7 +125,10 @@ export function useContactReplies(messageId: string | null) {
     mutationFn: async ({ replyId, content, messageId }: { replyId: string; content: string; messageId: string }) => {
       const { data, error } = await supabase
         .from('contact_replies')
-        .update({ content: content.trim() })
+        .update({ 
+          content: content.trim(),
+          is_edited: true
+        })
         .eq('id', replyId)
         .select()
         .single();
