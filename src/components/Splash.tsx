@@ -11,8 +11,8 @@ export const Splash: React.FC<SplashProps> = ({ onComplete }) => {
   useEffect(() => {
     const timer = setTimeout(() => {
       setShow(false);
-      setTimeout(onComplete, 200);
-    }, 2000);
+      setTimeout(onComplete, 150);
+    }, 1850);
 
     return () => clearTimeout(timer);
   }, [onComplete]);
@@ -22,18 +22,11 @@ export const Splash: React.FC<SplashProps> = ({ onComplete }) => {
       {show && (
         <motion.div
           initial={{ opacity: 1 }}
-          animate={{ 
-            opacity: 1,
-            scale: [1, 1.02, 1],
-          }}
+          animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ 
-            opacity: { duration: 0.2, ease: [0.22, 1, 0.36, 1] },
-            scale: { 
-              duration: 3,
-              repeat: Infinity,
-              ease: "easeInOut",
-            }
+            duration: 0.15,
+            ease: [0.22, 1, 0.36, 1]
           }}
           className="fixed inset-0 z-[9999] flex items-center justify-center bg-gradient-to-br from-primary-light via-primary to-primary-dark overflow-hidden"
           style={{ 
@@ -41,32 +34,110 @@ export const Splash: React.FC<SplashProps> = ({ onComplete }) => {
             willChange: 'opacity, transform',
           }}
         >
-          {/* Subtle animated overlay for depth */}
+          {/* Soft glow effect 1 - top left */}
           <motion.div
             className="absolute inset-0"
             initial={{ opacity: 0 }}
-            animate={{ opacity: [0, 0.15, 0.1, 0.15] }}
+            animate={{ 
+              opacity: [0, 0.02, 0.03, 0.01, 0],
+              scale: [1, 1.1, 1.05, 1.15, 1],
+              x: [0, 20, -10, 30, 0],
+              y: [0, -15, 25, -20, 0]
+            }}
             transition={{
-              duration: 4,
-              repeat: Infinity,
+              duration: 1.8,
               ease: "easeInOut",
             }}
             style={{
-              background: 'radial-gradient(circle at 50% 50%, hsl(var(--accent) / 0.08) 0%, transparent 60%)',
+              background: 'radial-gradient(circle at 20% 30%, hsl(var(--accent) / 0.15) 0%, transparent 50%)',
+            }}
+          />
+
+          {/* Soft glow effect 2 - bottom right */}
+          <motion.div
+            className="absolute inset-0"
+            initial={{ opacity: 0 }}
+            animate={{ 
+              opacity: [0, 0.03, 0.02, 0.03, 0],
+              scale: [1, 1.15, 1.05, 1.2, 1],
+              x: [0, -25, 15, -30, 0],
+              y: [0, 20, -15, 25, 0]
+            }}
+            transition={{
+              duration: 1.8,
+              delay: 0.2,
+              ease: "easeInOut",
+            }}
+            style={{
+              background: 'radial-gradient(circle at 80% 70%, hsl(var(--accent) / 0.12) 0%, transparent 50%)',
+            }}
+          />
+
+          {/* Light flash effect - center */}
+          <motion.div
+            className="absolute inset-0"
+            initial={{ opacity: 0 }}
+            animate={{ 
+              opacity: [0, 0.015, 0.025, 0.01, 0],
+            }}
+            transition={{
+              duration: 1.6,
+              delay: 0.4,
+              ease: "easeInOut",
+            }}
+            style={{
+              background: 'radial-gradient(circle at 50% 50%, hsl(var(--accent) / 0.2) 0%, transparent 60%)',
+            }}
+          />
+
+          {/* Luminous point 1 */}
+          <motion.div
+            className="absolute w-32 h-32 rounded-full blur-2xl"
+            initial={{ opacity: 0, x: '20vw', y: '30vh' }}
+            animate={{ 
+              opacity: [0, 0.02, 0.01, 0],
+              x: ['20vw', '25vw', '18vw'],
+              y: ['30vh', '35vh', '28vh'],
+            }}
+            transition={{
+              duration: 1.7,
+              ease: "easeInOut",
+            }}
+            style={{
+              background: 'hsl(var(--accent) / 0.1)',
+            }}
+          />
+
+          {/* Luminous point 2 */}
+          <motion.div
+            className="absolute w-24 h-24 rounded-full blur-xl"
+            initial={{ opacity: 0, x: '70vw', y: '60vh' }}
+            animate={{ 
+              opacity: [0, 0.025, 0.015, 0],
+              x: ['70vw', '75vw', '68vw'],
+              y: ['60vh', '55vh', '62vh'],
+            }}
+            transition={{
+              duration: 1.8,
+              delay: 0.3,
+              ease: "easeInOut",
+            }}
+            style={{
+              background: 'hsl(var(--accent) / 0.12)',
             }}
           />
 
           {/* Cinematic grain overlay */}
           <motion.div
-            className="absolute inset-0 opacity-[0.08]"
+            className="absolute inset-0 opacity-[0.06]"
             style={{
               backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")`,
               backgroundSize: '180px 180px',
               mixBlendMode: 'overlay',
             }}
             initial={{ opacity: 0 }}
-            animate={{ opacity: 0.08 }}
-            transition={{ duration: 0.3 }}
+            animate={{ opacity: 0.06 }}
+            transition={{ duration: 0.2 }}
           />
 
           {/* Main text container */}
@@ -75,8 +146,7 @@ export const Splash: React.FC<SplashProps> = ({ onComplete }) => {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{
-              duration: 0.4,
-              delay: 0.05,
+              duration: 0.3,
               ease: [0.22, 1, 0.36, 1],
             }}
             className="relative flex flex-col items-center justify-center"
@@ -85,10 +155,9 @@ export const Splash: React.FC<SplashProps> = ({ onComplete }) => {
             <motion.div
               className="absolute inset-0 blur-3xl"
               initial={{ opacity: 0 }}
-              animate={{ opacity: [0, 0.25, 0.3] }}
+              animate={{ opacity: [0, 0.3, 0.35] }}
               transition={{
-                duration: 0.7,
-                delay: 0.2,
+                duration: 0.6,
                 times: [0, 0.5, 1],
                 ease: "easeOut",
               }}
@@ -112,11 +181,11 @@ export const Splash: React.FC<SplashProps> = ({ onComplete }) => {
                 {'Castle'.split('').map((letter, i) => (
                   <motion.span
                     key={`castle-${i}`}
-                    initial={{ opacity: 0, y: 10, scale: 0.7 }}
+                    initial={{ opacity: 0, y: 8, scale: 0.75 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     transition={{
-                      duration: 0.6,
-                      delay: 0.08 + i * 0.05,
+                      duration: 0.5,
+                      delay: 0.05 + i * 0.04,
                       ease: [0.22, 1, 0.36, 1],
                     }}
                     style={{ display: 'inline-block' }}
@@ -138,11 +207,11 @@ export const Splash: React.FC<SplashProps> = ({ onComplete }) => {
                 {'Movement'.split('').map((letter, i) => (
                   <motion.span
                     key={`movement-${i}`}
-                    initial={{ opacity: 0, y: 10, scale: 0.7 }}
+                    initial={{ opacity: 0, y: 8, scale: 0.75 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     transition={{
-                      duration: 0.6,
-                      delay: 0.38 + i * 0.04,
+                      duration: 0.5,
+                      delay: 0.32 + i * 0.035,
                       ease: [0.22, 1, 0.36, 1],
                     }}
                     style={{ display: 'inline-block' }}
