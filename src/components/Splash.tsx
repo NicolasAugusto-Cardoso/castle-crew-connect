@@ -128,7 +128,7 @@ export const Splash: React.FC<SplashProps> = ({ onComplete }) => {
           />
 
           {/* Floating particles */}
-          {[...Array(12)].map((_, i) => (
+          {[...Array(25)].map((_, i) => (
             <motion.div
               key={`particle-${i}`}
               className="absolute rounded-full blur-sm"
