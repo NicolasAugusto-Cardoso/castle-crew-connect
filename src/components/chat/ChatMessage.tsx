@@ -121,10 +121,10 @@ export function ChatMessage({
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="absolute -top-2 -right-2 h-7 w-7 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity bg-background shadow-sm hover:bg-muted"
+                        className="absolute top-1 right-1 h-6 w-6 opacity-60 hover:opacity-100 transition-opacity rounded-full"
                         disabled={isDeleting}
                       >
-                        <MoreVertical className="h-4 w-4" />
+                        <MoreVertical className="h-3.5 w-3.5" />
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="z-[100] bg-background border shadow-lg">
