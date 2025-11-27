@@ -138,7 +138,7 @@ export const Splash: React.FC<SplashProps> = ({ onComplete }) => {
                 y: `${Math.random() * 100}vh`,
               }}
               animate={{ 
-                opacity: [0, 0.015 + Math.random() * 0.015, 0.01 + Math.random() * 0.01, 0],
+                opacity: [0, 0.4 + Math.random() * 0.3, 0.3 + Math.random() * 0.2, 0],
                 x: [
                   `${Math.random() * 100}vw`,
                   `${Math.random() * 100}vw`,
@@ -158,8 +158,8 @@ export const Splash: React.FC<SplashProps> = ({ onComplete }) => {
               style={{
                 width: `${3 + Math.random() * 4}px`,
                 height: `${3 + Math.random() * 4}px`,
-                background: 'hsl(var(--accent) / 0.8)',
-                boxShadow: '0 0 4px hsl(var(--accent) / 0.3)',
+                background: 'hsl(var(--accent) / 1)',
+                boxShadow: '0 0 8px hsl(var(--accent) / 0.6), 0 0 16px hsl(var(--accent) / 0.3)',
               }}
             />
           ))}
