@@ -107,7 +107,7 @@ export function ChatMessage({
                 className={cn(
                   "rounded-2xl shadow-sm px-4 py-2.5 relative group",
                   isOwnMessage
-                    ? "bg-primary text-primary-foreground rounded-tr-sm"
+                    ? "bg-primary text-primary-foreground rounded-tr-sm pr-8"
                     : "bg-background border border-border rounded-tl-sm"
                 )}
               >
