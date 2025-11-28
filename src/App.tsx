@@ -47,6 +47,14 @@ const App = () => {
   const [showInitialSplash, setShowInitialSplash] = useState(true);
   const [appReady, setAppReady] = useState(false);
 
+  // Esconder splash estático quando React carregar
+  useEffect(() => {
+    const staticSplash = document.getElementById('splash-static');
+    if (staticSplash) {
+      staticSplash.style.display = 'none';
+    }
+  }, []);
+
   // Start loading resources during splash
   useEffect(() => {
     // Preload critical resources in background
