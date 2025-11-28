@@ -43,6 +43,10 @@ export const Layout = () => {
     
     // Se tem condição showWhen, verifica ela também
     if ('showWhen' in item) {
+      // Admin sempre vê Colaboradores, independente do showWhen
+      if (item.path === '/colaboradores' && hasRole(['admin'])) {
+        return true;
+      }
       return item.showWhen === true;
     }
     
@@ -58,7 +62,7 @@ export const Layout = () => {
       <InstallPWABanner />
       
       {/* Header */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-white shadow-[0_1px_3px_rgba(0,0,0,0.1)] h-[60px]">
+      <header className="fixed top-0 left-0 right-0 z-50 bg-white shadow-[0_1px_3px_rgba(0,0,0,0.1)] h-[60px] backdrop-blur-sm">
         <div className="w-full h-full px-2 xs:px-3 sm:px-4 flex items-center justify-between md:px-8">
           <div className="w-8 xs:w-16 sm:w-24 md:w-32"></div>
           
@@ -148,7 +152,7 @@ export const Layout = () => {
 
       {/* Main Content */}
       <main 
-        className="flex-1 pt-[60px] md:pb-4 md:ml-64 overflow-x-hidden overflow-y-auto"
+        className="flex-1 pt-[60px] md:pb-4 md:ml-64 overflow-x-hidden overflow-y-auto relative z-0"
         style={{
           paddingBottom: 'calc(80px + env(safe-area-inset-bottom))'
         }}
