@@ -21,6 +21,7 @@ import CollaboratorDetails from "./pages/CollaboratorDetails";
 import CollaboratorChat from "./pages/CollaboratorChat";
 import Users from "./pages/Users";
 import NotFound from "./pages/NotFound";
+import Install from "./pages/Install";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 
 const queryClient = new QueryClient();
@@ -76,6 +77,7 @@ const App = () => {
             <Sonner />
             <Routes>
               <Route path="/login" element={<Login />} />
+              <Route path="/install" element={<Install />} />
               <Route element={<ProtectedLayout />}>
                 <Route path="/" element={<Home />} />
                 <Route path="/testimonials" element={<Testimonials />} />

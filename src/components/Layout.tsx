@@ -8,6 +8,7 @@ import { useShowCollaboratorsTab } from '@/hooks/useCollaborators';
 import castleLogo from '@/assets/castle-logo-final.png';
 import { Badge } from '@/components/ui/badge';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { InstallPWABanner } from '@/components/InstallPWABanner';
 
 export const Layout = () => {
   const { user, signOut, hasRole, userRoles } = useAuth();
@@ -53,6 +54,9 @@ export const Layout = () => {
 
   return (
     <div className="min-h-[100dvh] bg-background flex flex-col overflow-x-hidden">
+      {/* Install PWA Banner */}
+      <InstallPWABanner />
+      
       {/* Header */}
       <header className="fixed top-0 left-0 right-0 z-50 bg-white shadow-[0_1px_3px_rgba(0,0,0,0.1)] h-[60px]">
         <div className="w-full h-full px-2 xs:px-3 sm:px-4 flex items-center justify-between md:px-8">
