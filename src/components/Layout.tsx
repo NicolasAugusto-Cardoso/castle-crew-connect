@@ -1,5 +1,5 @@
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
-import { Home, MessageSquare, Users, FolderOpen, BookOpen, LogOut, UserCircle, Settings, UserCog, UserPlus } from 'lucide-react';
+import { Home, MessageSquare, Users, FolderOpen, BookOpen, LogOut, UserCircle, Settings, UserCog, UserPlus, Trash2 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useUnreadReplies } from '@/hooks/useUnreadReplies';
 import { useUnreadDiscipleship } from '@/hooks/useUnreadDiscipleship';
@@ -99,7 +99,14 @@ export const Layout = () => {
                   </>
                 )}
                 
-                <DropdownMenuItem onClick={handleLogout} className="text-destructive focus:text-destructive">
+                <DropdownMenuItem onClick={() => navigate('/delete-account')} className="text-destructive focus:text-destructive">
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  <span>Excluir conta e dados</span>
+                </DropdownMenuItem>
+                
+                <DropdownMenuSeparator />
+                
+                <DropdownMenuItem onClick={handleLogout}>
                   <LogOut className="mr-2 h-4 w-4" />
                   <span>Sair</span>
                 </DropdownMenuItem>

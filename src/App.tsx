@@ -19,6 +19,7 @@ import CollaboratorProfile from "./pages/CollaboratorProfile";
 import Collaborators from "./pages/Collaborators";
 import CollaboratorDetails from "./pages/CollaboratorDetails";
 import CollaboratorChat from "./pages/CollaboratorChat";
+import DeleteAccount from "./pages/DeleteAccount";
 import Users from "./pages/Users";
 import NotFound from "./pages/NotFound";
 import Install from "./pages/Install";
@@ -112,6 +113,7 @@ const App = () => {
                   </ProtectedRoute>
                 } />
                 <Route path="/users" element={<Users />} />
+                <Route path="/delete-account" element={<DeleteAccount />} />
               </Route>
               <Route path="*" element={<NotFound />} />
             </Routes>
