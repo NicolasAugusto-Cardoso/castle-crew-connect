@@ -161,8 +161,8 @@ export const Layout = () => {
       </main>
 
       {/* Bottom Navigation (Mobile) */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-gradient-to-r from-[#33C2FF] to-[#2367FF] md:hidden z-40" style={{ paddingBottom: 'calc(0.75rem + env(safe-area-inset-bottom))' }}>
-        <div className="flex justify-around items-center py-3 pb-2">
+      <nav className="fixed bottom-0 left-0 right-0 bg-gradient-to-r from-[#33C2FF] to-[#2367FF] md:hidden z-40" style={{ paddingBottom: 'calc(1.5rem + env(safe-area-inset-bottom, 16px))' }}>
+        <div className="flex justify-around items-center pt-3 pb-4">
           {visibleNavItems.map((item) => {
             const isActive = location.pathname === item.path;
             return (
