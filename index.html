@@ -15,7 +15,8 @@
     <meta name="apple-mobile-web-app-title" content="Castle" />
     
     <!-- PWA Icons -->
-    <link rel="icon" type="image/x-icon" href="https://storage.googleapis.com/gpt-engineer-file-uploads/u75sygz4qTMv1xYCayNih1B92Hn1/uploads/1764248706517-Design sem nome (6).png">
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="/pwa-192x192.png" />
     <link rel="icon" type="image/png" sizes="512x512" href="/pwa-512x512.png" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="manifest" href="/manifest.json" />
@@ -42,6 +43,25 @@
 </head>
 
   <body style="margin: 0; padding: 0; background: linear-gradient(to bottom right, hsl(195, 85%, 58%), hsl(205, 80%, 48%), hsl(218, 65%, 35%)); min-height: 100vh;">
+    <!-- Splash screen estático para PWA - aparece imediatamente -->
+    <div id="splash-static" style="position: fixed; inset: 0; z-index: 9999; display: flex; align-items: center; justify-content: center; background: linear-gradient(to bottom right, hsl(195, 85%, 58%), hsl(205, 80%, 48%), hsl(218, 65%, 35%));">
+      <div style="text-align: center; animation: fadeInZoom 0.6s ease-out;">
+        <h1 style="font-family: 'Outfit', sans-serif; font-size: clamp(3rem, 12vw, 5rem); font-weight: 600; color: #F5A623; text-shadow: 0 0 20px rgba(245, 166, 35, 0.4), 0 0 40px rgba(245, 166, 35, 0.2); margin: 0; letter-spacing: 0.02em;">Castle</h1>
+        <h2 style="font-family: 'Outfit', sans-serif; font-size: clamp(1.25rem, 4vw, 1.875rem); font-weight: 600; color: #F5A623; letter-spacing: 0.15em; margin-top: 0.5rem; text-shadow: 0 0 12px rgba(245, 166, 35, 0.3);">Movement</h2>
+      </div>
+    </div>
+    <style>
+      @keyframes fadeInZoom {
+        from {
+          opacity: 0;
+          transform: scale(0.7);
+        }
+        to {
+          opacity: 1;
+          transform: scale(1);
+        }
+      }
+    </style>
     <div id="root" style="background: linear-gradient(to bottom right, hsl(195, 85%, 58%), hsl(205, 80%, 48%), hsl(218, 65%, 35%)); min-height: 100vh;"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
