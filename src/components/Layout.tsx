@@ -32,7 +32,7 @@ export const Layout = () => {
     { icon: MessageSquare, label: 'Contato', path: '/contact', roles: ['admin', 'social_media', 'collaborator', 'user'] },
     { icon: FolderOpen, label: 'Galeria', path: '/gallery', roles: ['admin', 'social_media', 'user', 'volunteer'] },
     { icon: Users, label: 'Colaboradores', path: '/colaboradores', roles: ['user', 'admin', 'volunteer'], showWhen: showCollaboratorsTab },
-    { icon: UserPlus, label: 'Discipulado', path: '/discipleship', roles: ['admin', 'social_media', 'collaborator', 'volunteer'] },
+    { icon: UserPlus, label: 'Discipulado', path: '/discipleship', roles: ['admin', 'collaborator', 'volunteer'] },
     { icon: UserCircle, label: 'Meu Perfil', path: '/collaborator/profile', roles: ['collaborator'] },
   ];
 
@@ -43,8 +43,8 @@ export const Layout = () => {
     
     // Se tem condição showWhen, verifica ela também
     if ('showWhen' in item) {
-      // Admin sempre vê Colaboradores, independente do showWhen
-      if (item.path === '/colaboradores' && hasRole(['admin'])) {
+      // Admin, user e volunteer sempre veem Colaboradores, independente do showWhen
+      if (item.path === '/colaboradores' && hasRole(['admin', 'user', 'volunteer'])) {
         return true;
       }
       return item.showWhen === true;
