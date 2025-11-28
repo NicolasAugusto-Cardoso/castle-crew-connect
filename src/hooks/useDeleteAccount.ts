@@ -10,11 +10,8 @@ export function useDeleteAccount() {
         throw new Error('Você precisa estar autenticado');
       }
 
-      const { data, error } = await supabase.functions.invoke('delete-account', {
-        headers: {
-          Authorization: `Bearer ${session.access_token}`,
-        },
-      });
+      // supabase.functions.invoke automatically includes the auth token
+      const { data, error } = await supabase.functions.invoke('delete-account');
 
       if (error) {
         console.error('Error deleting account:', error);
