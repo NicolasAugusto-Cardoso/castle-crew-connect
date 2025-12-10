@@ -136,3 +136,74 @@ Após abrir o projeto:
 - O projeto já está configurado com Splash Screen nativa (cor: `#2B96D9`)
 - Push Notifications já está integrado via `@capacitor/push-notifications`
 - Para builds de produção, o servidor de desenvolvimento está desabilitado no `capacitor.config.ts`
+
+---
+
+## 🍎 Build iOS com Capacitor
+
+### Requisitos
+
+- **macOS** (obrigatório para builds iOS)
+- **Xcode** instalado (App Store)
+- **CocoaPods** instalado (`sudo gem install cocoapods`)
+- Conta Apple Developer (para publicar na App Store)
+
+### Como gerar o projeto iOS
+
+#### 1. Build do projeto web
+```sh
+npm run build
+```
+
+#### 2. Sincronizar com iOS
+```sh
+npx cap sync ios
+```
+Este comando:
+- Copia os arquivos web de `dist/` para o projeto iOS
+- Atualiza plugins nativos e dependências CocoaPods
+- Gera/atualiza a pasta `ios/` com o projeto nativo
+
+#### 3. Abrir no Xcode
+```sh
+npx cap open ios
+```
+Ou abra manualmente o arquivo `ios/App/App.xcworkspace` no Xcode.
+
+### Comandos completos (sequência)
+
+```sh
+# Gerar build + sincronizar iOS
+npm run build && npx cap sync ios
+
+# Abrir no Xcode
+npx cap open ios
+```
+
+### No Xcode
+
+Após abrir o projeto:
+1. Selecione o **Team** nas configurações de Signing & Capabilities
+2. Conecte um iPhone ou use o Simulador
+3. Clique em **Run** (▶️) para testar o app
+4. Para publicar: **Product → Archive** → Distribute App
+
+### Arquivos importantes do iOS
+
+- `ios/App/App/Info.plist` - Configurações e permissões
+- `ios/App/App/Assets.xcassets/` - Ícones e recursos
+- `ios/App/App.xcworkspace` - Projeto Xcode (abrir este, não o .xcodeproj)
+- `ios/App/Podfile` - Dependências CocoaPods
+
+### Configuração do App Store
+
+Para publicar na App Store:
+1. Configure o **Bundle Identifier**: `com.castlemovement.app`
+2. Gere certificados e provisioning profiles no Apple Developer
+3. No Xcode: Product → Archive → Distribute App → App Store Connect
+
+### Notas iOS
+
+- A Splash Screen nativa usa a mesma cor azul (`#2B96D9`)
+- Push Notifications requer configuração adicional de APNs no Apple Developer
+- Teste em dispositivo real para funcionalidades como câmera e notificações
