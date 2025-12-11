@@ -23,6 +23,8 @@ import DeleteAccount from "./pages/DeleteAccount";
 import Users from "./pages/Users";
 import NotFound from "./pages/NotFound";
 import Install from "./pages/Install";
+import Events from "./pages/Events";
+import EventDetails from "./pages/EventDetails";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 
 const queryClient = new QueryClient();
@@ -82,6 +84,8 @@ const App = () => {
               <Route path="/install" element={<Install />} />
               <Route element={<ProtectedLayout />}>
                 <Route path="/" element={<Home />} />
+                <Route path="/events" element={<Events />} />
+                <Route path="/events/:eventId" element={<EventDetails />} />
                 <Route path="/testimonials" element={<Testimonials />} />
                 <Route path="/contact" element={<Contact />} />
                 <Route path="/contact/:messageId" element={<ChatThread />} />
