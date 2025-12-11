@@ -12,7 +12,7 @@ import { Label } from '@/components/ui/label';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { useEvents, Event } from '@/hooks/useEvents';
+import { useEventMutations, Event } from '@/hooks/useEvents';
 import { cn } from '@/lib/utils';
 
 const eventSchema = z.object({
@@ -34,7 +34,7 @@ interface EditEventDialogProps {
 }
 
 export function EditEventDialog({ open, onOpenChange, event }: EditEventDialogProps) {
-  const { updateEvent, uploadEventImage } = useEvents();
+  const { updateEvent, uploadEventImage } = useEventMutations();
   const [coverImage, setCoverImage] = useState<File | null>(null);
   const [coverPreview, setCoverPreview] = useState<string | null>(event.cover_image_url);
   const [isUploading, setIsUploading] = useState(false);

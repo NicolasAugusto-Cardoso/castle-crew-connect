@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useEvents } from '@/hooks/useEvents';
+import { useEventDetails, useEventRegistrations, useEventMutations } from '@/hooks/useEvents';
 import { useAuth } from '@/hooks/useAuth';
 import { EditEventDialog } from '@/components/events/EditEventDialog';
 import { cn } from '@/lib/utils';
@@ -17,28 +17,26 @@ import { cn } from '@/lib/utils';
 export default function EventDetails() {
   const { eventId } = useParams<{ eventId: string }>();
   const navigate = useNavigate();
-  const { hasRole, user } = useAuth();
+  const { hasRole } = useAuth();
+  
+  const { data: event, isLoading: eventLoading } = useEventDetails(eventId);
+  const { data: registrations, isLoading: registrationsLoading } = useEventRegistrations(eventId);
   const {
-    eventDetailsQuery,
-    registrationsQuery,
     registerForEvent,
     cancelRegistration,
     deleteEvent,
     checkIn,
     undoCheckIn,
-  } = useEvents();
+  } = useEventMutations();
 
   const [editDialogOpen, setEditDialogOpen] = useState(false);
-
-  const { data: event, isLoading: eventLoading } = eventDetailsQuery(eventId || '');
-  const { data: registrations, isLoading: registrationsLoading } = registrationsQuery(eventId || '');
 
   const canManageEvents = hasRole(['admin', 'volunteer']);
   const canDelete = hasRole(['admin']);
 
   if (eventLoading) {
     return (
-      <div className="space-y-4 pb-20">
+      <div className="space-y-4 pb-20 p-4">
         <div className="h-8 bg-muted rounded w-1/4 animate-pulse" />
         <div className="h-48 bg-muted rounded animate-pulse" />
         <div className="h-32 bg-muted rounded animate-pulse" />
@@ -48,7 +46,7 @@ export default function EventDetails() {
 
   if (!event) {
     return (
-      <div className="space-y-4 pb-20">
+      <div className="space-y-4 pb-20 p-4">
         <Button variant="ghost" onClick={() => navigate('/events')}>
           <ArrowLeft className="w-4 h-4 mr-2" />
           Voltar
@@ -102,7 +100,7 @@ export default function EventDetails() {
   const checkedInCount = registrations?.filter((r) => r.checked_in).length || 0;
 
   return (
-    <div className="space-y-4 pb-20">
+    <div className="space-y-4 pb-20 p-4">
       {/* Header */}
       <div className="flex items-center justify-between">
         <Button variant="ghost" onClick={() => navigate('/events')} className="p-0">
