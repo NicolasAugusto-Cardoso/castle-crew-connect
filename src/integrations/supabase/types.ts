@@ -240,6 +240,121 @@ export type Database = {
         }
         Relationships: []
       }
+      event_registrations: {
+        Row: {
+          checked_in: boolean | null
+          checked_in_at: string | null
+          checked_in_by: string | null
+          event_id: string
+          id: string
+          registered_at: string | null
+          user_id: string
+        }
+        Insert: {
+          checked_in?: boolean | null
+          checked_in_at?: string | null
+          checked_in_by?: string | null
+          event_id: string
+          id?: string
+          registered_at?: string | null
+          user_id: string
+        }
+        Update: {
+          checked_in?: boolean | null
+          checked_in_at?: string | null
+          checked_in_by?: string | null
+          event_id?: string
+          id?: string
+          registered_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_registrations_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      event_reminders: {
+        Row: {
+          event_id: string
+          id: string
+          reminder_time: string
+          sent: boolean | null
+          sent_at: string | null
+        }
+        Insert: {
+          event_id: string
+          id?: string
+          reminder_time: string
+          sent?: boolean | null
+          sent_at?: string | null
+        }
+        Update: {
+          event_id?: string
+          id?: string
+          reminder_time?: string
+          sent?: boolean | null
+          sent_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_reminders_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      events: {
+        Row: {
+          cover_image_url: string | null
+          created_at: string | null
+          created_by: string
+          description: string | null
+          end_date: string | null
+          event_date: string
+          id: string
+          is_active: boolean | null
+          location: string | null
+          max_participants: number | null
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          cover_image_url?: string | null
+          created_at?: string | null
+          created_by: string
+          description?: string | null
+          end_date?: string | null
+          event_date: string
+          id?: string
+          is_active?: boolean | null
+          location?: string | null
+          max_participants?: number | null
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          cover_image_url?: string | null
+          created_at?: string | null
+          created_by?: string
+          description?: string | null
+          end_date?: string | null
+          event_date?: string
+          id?: string
+          is_active?: boolean | null
+          location?: string | null
+          max_participants?: number | null
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       gallery_folders: {
         Row: {
           cover_url: string | null
