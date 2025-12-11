@@ -2,23 +2,30 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { format, isSameDay, startOfMonth, endOfMonth, eachDayOfInterval, addMonths, subMonths, isToday, isBefore, startOfDay } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Plus, MapPin, Users, Clock } from 'lucide-react';
+import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Plus, MapPin, Users, Clock, MoreVertical, Pencil, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useEvents, Event } from '@/hooks/useEvents';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import { useEvents, useEventMutations, Event } from '@/hooks/useEvents';
 import { useAuth } from '@/hooks/useAuth';
 import { CreateEventDialog } from '@/components/events/CreateEventDialog';
+import { EditEventDialog } from '@/components/events/EditEventDialog';
 import { cn } from '@/lib/utils';
 
 export default function Events() {
   const navigate = useNavigate();
   const { events, isLoading } = useEvents();
   const { hasRole } = useAuth();
+  const { deleteEvent } = useEventMutations();
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
 
   const canManageEvents = hasRole(['admin', 'volunteer']);
 
@@ -49,6 +56,26 @@ export default function Events() {
       setSelectedDate(null);
     } else {
       setSelectedDate(day);
+    }
+  };
+
+  const handleEditClick = (event: Event, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setSelectedEvent(event);
+    setEditDialogOpen(true);
+  };
+
+  const handleDeleteClick = (event: Event, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setSelectedEvent(event);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (selectedEvent) {
+      await deleteEvent.mutateAsync(selectedEvent.id);
+      setDeleteDialogOpen(false);
+      setSelectedEvent(null);
     }
   };
 
@@ -84,12 +111,39 @@ export default function Events() {
                 </p>
               )}
             </div>
-            <div className="flex flex-col items-end gap-1">
+            <div className="flex items-center gap-1">
               {event.is_registered && (
                 <Badge variant="default" className="text-xs">Inscrito</Badge>
               )}
               {isFull && !event.is_registered && (
                 <Badge variant="secondary" className="text-xs">Lotado</Badge>
+              )}
+              {canManageEvents && (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="h-8 w-8"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <MoreVertical className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="bg-popover">
+                    <DropdownMenuItem onClick={(e) => handleEditClick(event, e as unknown as React.MouseEvent)}>
+                      <Pencil className="w-4 h-4 mr-2" />
+                      Editar
+                    </DropdownMenuItem>
+                    <DropdownMenuItem 
+                      onClick={(e) => handleDeleteClick(event, e as unknown as React.MouseEvent)}
+                      className="text-destructive focus:text-destructive"
+                    >
+                      <Trash2 className="w-4 h-4 mr-2" />
+                      Excluir
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               )}
             </div>
           </div>
@@ -257,6 +311,35 @@ export default function Events() {
       </Tabs>
 
       <CreateEventDialog open={createDialogOpen} onOpenChange={setCreateDialogOpen} />
+      
+      {selectedEvent && (
+        <EditEventDialog 
+          open={editDialogOpen} 
+          onOpenChange={setEditDialogOpen} 
+          event={selectedEvent}
+        />
+      )}
+
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Excluir evento</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem certeza que deseja excluir o evento "{selectedEvent?.title}"? 
+              Esta ação não pode ser desfeita e todas as inscrições serão removidas.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleConfirmDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Excluir
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
