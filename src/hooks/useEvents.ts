@@ -34,9 +34,9 @@ export interface EventRegistration {
   };
 }
 
+// Hook for listing events
 export function useEvents() {
   const { user } = useAuth();
-  const queryClient = useQueryClient();
 
   const eventsQuery = useQuery({
     queryKey: ['events'],
@@ -81,13 +81,25 @@ export function useEvents() {
     enabled: !!user,
   });
 
-  const eventDetailsQuery = (eventId: string) => useQuery({
+  return {
+    events: eventsQuery.data || [],
+    isLoading: eventsQuery.isLoading,
+    error: eventsQuery.error,
+    refetch: eventsQuery.refetch,
+  };
+}
+
+// Hook for event details
+export function useEventDetails(eventId: string | undefined) {
+  const { user } = useAuth();
+
+  return useQuery({
     queryKey: ['event', eventId],
     queryFn: async () => {
       const { data: event, error } = await supabase
         .from('events')
         .select('*')
-        .eq('id', eventId)
+        .eq('id', eventId!)
         .single();
 
       if (error) throw error;
@@ -95,14 +107,14 @@ export function useEvents() {
       const { count } = await supabase
         .from('event_registrations')
         .select('*', { count: 'exact', head: true })
-        .eq('event_id', eventId);
+        .eq('event_id', eventId!);
 
       let isRegistered = false;
       if (user) {
         const { data: registration } = await supabase
           .from('event_registrations')
           .select('id')
-          .eq('event_id', eventId)
+          .eq('event_id', eventId!)
           .eq('user_id', user.id)
           .maybeSingle();
         isRegistered = !!registration;
@@ -116,14 +128,17 @@ export function useEvents() {
     },
     enabled: !!eventId && !!user,
   });
+}
 
-  const registrationsQuery = (eventId: string) => useQuery({
+// Hook for event registrations
+export function useEventRegistrations(eventId: string | undefined) {
+  return useQuery({
     queryKey: ['event-registrations', eventId],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('event_registrations')
         .select('*')
-        .eq('event_id', eventId)
+        .eq('event_id', eventId!)
         .order('registered_at', { ascending: true });
 
       if (error) throw error;
@@ -148,6 +163,12 @@ export function useEvents() {
     },
     enabled: !!eventId,
   });
+}
+
+// Hook for event mutations
+export function useEventMutations() {
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
 
   const createEvent = useMutation({
     mutationFn: async (eventData: {
@@ -374,12 +395,6 @@ export function useEvents() {
   };
 
   return {
-    events: eventsQuery.data || [],
-    isLoading: eventsQuery.isLoading,
-    error: eventsQuery.error,
-    refetch: eventsQuery.refetch,
-    eventDetailsQuery,
-    registrationsQuery,
     createEvent,
     updateEvent,
     deleteEvent,
