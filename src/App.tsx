@@ -29,6 +29,11 @@ import { ProtectedRoute } from "@/components/ProtectedRoute";
 
 const queryClient = new QueryClient();
 
+// Pre-splash loading screen with same gradient as splash
+const PreSplashScreen = () => (
+  <div className="fixed inset-0 z-[9999] bg-gradient-to-br from-primary-light via-primary to-primary-dark" />
+);
+
 // Protected Layout Wrapper
 const ProtectedLayout = () => {
   const { isAuthenticated, loading } = useAuth();
@@ -47,83 +52,83 @@ const ProtectedLayout = () => {
 };
 
 const App = () => {
-  const [showInitialSplash, setShowInitialSplash] = useState(true);
-  const [appReady, setAppReady] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [showSplash, setShowSplash] = useState(false);
 
-
-  // Start loading resources during splash
+  // Show pre-splash for a brief moment, then transition to animated splash
   useEffect(() => {
-    // Preload critical resources in background
-    const initApp = async () => {
-      // Allow splash to show for minimum duration
-      const minSplashTime = new Promise(resolve => setTimeout(resolve, 100));
-      
-      // Wait for both splash time and any critical loads
-      await Promise.all([
-        minSplashTime,
-        // Add any critical data fetching here if needed
-      ]);
-      
-      setAppReady(true);
-    };
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+      setShowSplash(true);
+    }, 500); // 500ms of blue gradient screen before splash animation
 
-    initApp();
+    return () => clearTimeout(timer);
   }, []);
+
+  const handleSplashComplete = () => {
+    setShowSplash(false);
+  };
+
+  // Show pre-splash loading screen
+  if (isLoading) {
+    return <PreSplashScreen />;
+  }
+
+  // Show animated splash
+  if (showSplash) {
+    return <Splash onComplete={handleSplashComplete} />;
+  }
 
   return (
     <QueryClientProvider client={queryClient}>
-      {showInitialSplash ? (
-        <Splash onComplete={() => setShowInitialSplash(false)} />
-      ) : (
-        <BrowserRouter>
-          <TooltipProvider>
-            <Toaster />
-            <Sonner />
-            <Routes>
-              <Route path="/login" element={<Login />} />
-              <Route path="/install" element={<Install />} />
-              <Route element={<ProtectedLayout />}>
-                <Route path="/" element={<Home />} />
-                <Route path="/events" element={<Events />} />
-                <Route path="/events/:eventId" element={<EventDetails />} />
-                <Route path="/testimonials" element={<Testimonials />} />
-                <Route path="/contact" element={<Contact />} />
-                <Route path="/contact/:messageId" element={<ChatThread />} />
-                <Route path="/gallery" element={<Gallery />} />
-                <Route path="/gallery/:folderId" element={<GalleryFolder />} />
-                <Route path="/colaboradores" element={
-                  <ProtectedRoute allowedRoles={['user', 'admin', 'volunteer']}>
-                    <Collaborators />
-                  </ProtectedRoute>
-                } />
-                <Route path="/colaboradores/:userId" element={
-                  <ProtectedRoute allowedRoles={['user', 'admin', 'volunteer']}>
-                    <CollaboratorDetails />
-                  </ProtectedRoute>
-                } />
-                <Route path="/colaboradores/:userId/chat" element={
-                  <ProtectedRoute allowedRoles={['user', 'admin', 'volunteer']}>
-                    <CollaboratorChat />
-                  </ProtectedRoute>
-                } />
-                <Route path="/discipleship" element={
-                  <ProtectedRoute allowedRoles={['admin', 'social_media', 'collaborator', 'volunteer']}>
-                    <Discipleship />
-                  </ProtectedRoute>
-                } />
-                <Route path="/collaborator/profile" element={
-                  <ProtectedRoute allowedRoles={['collaborator', 'admin']}>
-                    <CollaboratorProfile />
-                  </ProtectedRoute>
-                } />
-                <Route path="/users" element={<Users />} />
-                <Route path="/delete-account" element={<DeleteAccount />} />
-              </Route>
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </TooltipProvider>
-        </BrowserRouter>
-      )}
+      <BrowserRouter>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <Routes>
+            <Route path="/login" element={<Login />} />
+            <Route path="/install" element={<Install />} />
+            <Route element={<ProtectedLayout />}>
+              <Route path="/" element={<Home />} />
+              <Route path="/events" element={<Events />} />
+              <Route path="/events/:eventId" element={<EventDetails />} />
+              <Route path="/testimonials" element={<Testimonials />} />
+              <Route path="/contact" element={<Contact />} />
+              <Route path="/contact/:messageId" element={<ChatThread />} />
+              <Route path="/gallery" element={<Gallery />} />
+              <Route path="/gallery/:folderId" element={<GalleryFolder />} />
+              <Route path="/colaboradores" element={
+                <ProtectedRoute allowedRoles={['user', 'admin', 'volunteer']}>
+                  <Collaborators />
+                </ProtectedRoute>
+              } />
+              <Route path="/colaboradores/:userId" element={
+                <ProtectedRoute allowedRoles={['user', 'admin', 'volunteer']}>
+                  <CollaboratorDetails />
+                </ProtectedRoute>
+              } />
+              <Route path="/colaboradores/:userId/chat" element={
+                <ProtectedRoute allowedRoles={['user', 'admin', 'volunteer']}>
+                  <CollaboratorChat />
+                </ProtectedRoute>
+              } />
+              <Route path="/discipleship" element={
+                <ProtectedRoute allowedRoles={['admin', 'social_media', 'collaborator', 'volunteer']}>
+                  <Discipleship />
+                </ProtectedRoute>
+              } />
+              <Route path="/collaborator/profile" element={
+                <ProtectedRoute allowedRoles={['collaborator', 'admin']}>
+                  <CollaboratorProfile />
+                </ProtectedRoute>
+              } />
+              <Route path="/users" element={<Users />} />
+              <Route path="/delete-account" element={<DeleteAccount />} />
+            </Route>
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </TooltipProvider>
+      </BrowserRouter>
     </QueryClientProvider>
   );
 };
