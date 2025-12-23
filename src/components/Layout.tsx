@@ -72,6 +72,21 @@ export const Layout = () => {
           </div>
           
           <div className="flex items-center gap-1 xs:gap-2 sm:gap-3 w-auto justify-end">
+            {/* Events Button - Only for user and collaborator roles */}
+            {hasRole(['user', 'collaborator']) && (
+              <button
+                onClick={() => navigate('/events')}
+                className={`flex items-center justify-center p-2 rounded-lg transition-colors ${
+                  location.pathname.startsWith('/events')
+                    ? 'text-primary bg-primary/10'
+                    : 'text-foreground hover:text-primary hover:bg-primary/5'
+                }`}
+                title="Agenda"
+              >
+                <Calendar className="w-5 h-5" />
+              </button>
+            )}
+
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button className="flex items-center gap-1 xs:gap-1.5 sm:gap-2 text-foreground hover:text-primary transition-colors p-1.5 xs:p-2">
