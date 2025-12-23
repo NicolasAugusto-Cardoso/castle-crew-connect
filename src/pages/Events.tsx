@@ -27,7 +27,7 @@ export default function Events() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
 
-  const canManageEvents = hasRole(['admin', 'volunteer']);
+  const canManageEvents = hasRole(['admin', 'volunteer', 'social_media']);
 
   const monthStart = startOfMonth(currentMonth);
   const monthEnd = endOfMonth(currentMonth);

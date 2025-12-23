@@ -29,6 +29,7 @@ export const Layout = () => {
   const navItems = [
     { icon: Home, label: 'Home', path: '/', roles: ['admin', 'social_media', 'collaborator', 'user', 'volunteer'] },
     { icon: BookOpen, label: 'Testemunhos', path: '/testimonials', roles: ['admin', 'social_media', 'collaborator', 'user', 'volunteer'] },
+    { icon: Calendar, label: 'Agenda', path: '/events', roles: ['admin', 'social_media', 'volunteer'] },
     { icon: MessageSquare, label: 'Contato', path: '/contact', roles: ['admin', 'social_media', 'collaborator', 'user'] },
     { icon: FolderOpen, label: 'Galeria', path: '/gallery', roles: ['admin', 'social_media', 'user', 'volunteer'] },
     { icon: Users, label: 'Colaboradores', path: '/colaboradores', roles: ['user', 'admin', 'volunteer'], showWhen: showCollaboratorsTab },
@@ -71,19 +72,6 @@ export const Layout = () => {
           </div>
           
           <div className="flex items-center gap-1 xs:gap-2 sm:gap-3 w-auto justify-end">
-            {/* Events Button */}
-            <button
-              onClick={() => navigate('/events')}
-              className={`flex items-center justify-center p-2 rounded-lg transition-colors ${
-                location.pathname.startsWith('/events')
-                  ? 'text-primary bg-primary/10'
-                  : 'text-foreground hover:text-primary hover:bg-primary/5'
-              }`}
-              title="Agenda"
-            >
-              <Calendar className="w-5 h-5" />
-            </button>
-
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button className="flex items-center gap-1 xs:gap-1.5 sm:gap-2 text-foreground hover:text-primary transition-colors p-1.5 xs:p-2">
