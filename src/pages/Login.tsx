@@ -165,7 +165,7 @@ export default function Login() {
             <img 
               src={castleLogo} 
               alt="Castle App Logo" 
-              className="w-32 xs:w-40 h-auto"
+              className="w-20 h-20 xs:w-24 xs:h-24 rounded-full ring-4 ring-primary shadow-lg object-contain bg-white p-2"
             />
           </div>
           <div>
