@@ -64,28 +64,30 @@ export const Layout = () => {
       
       {/* Header */}
       <header className="fixed top-0 left-0 right-0 z-50 bg-white shadow-[0_1px_3px_rgba(0,0,0,0.1)] h-[60px] backdrop-blur-sm">
-        <div className="w-full h-full px-2 xs:px-3 sm:px-4 flex items-center justify-between md:px-8">
-          <div className="w-8 xs:w-16 sm:w-24 md:w-32"></div>
-          
-          <div className="flex items-center justify-center flex-1">
+        <div className="w-full h-full px-2 xs:px-3 sm:px-4 flex items-center justify-between md:px-8 relative">
+          {/* Logo centralizada com position absolute */}
+          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
             <img src={castleLogo} alt="Castle App" className="h-10 xs:h-11 sm:h-12 md:h-14 w-auto" />
           </div>
           
+          {/* Espaçador esquerdo */}
+          <div className="w-8 xs:w-16 sm:w-24 md:w-32"></div>
+          
           <div className="flex items-center gap-1 xs:gap-2 sm:gap-3 w-auto justify-end">
-            {/* Events Button - Only for user and collaborator roles */}
-            {hasRole(['user', 'collaborator']) && (
-              <button
-                onClick={() => navigate('/events')}
-                className={`flex items-center justify-center p-2 rounded-lg transition-colors ${
-                  location.pathname.startsWith('/events')
-                    ? 'text-primary bg-primary/10'
-                    : 'text-foreground hover:text-primary hover:bg-primary/5'
-                }`}
-                title="Agenda"
-              >
-                <Calendar className="w-5 h-5" />
-              </button>
-            )}
+            {/* Events Button - Only for user and collaborator roles - sempre renderizado para evitar atraso */}
+            <button
+              onClick={() => navigate('/events')}
+              className={`flex items-center justify-center p-2 rounded-lg transition-colors ${
+                !hasRole(['user', 'collaborator']) ? 'invisible' : ''
+              } ${
+                location.pathname.startsWith('/events')
+                  ? 'text-primary bg-primary/10'
+                  : 'text-foreground hover:text-primary hover:bg-primary/5'
+              }`}
+              title="Agenda"
+            >
+              <Calendar className="w-5 h-5" />
+            </button>
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
