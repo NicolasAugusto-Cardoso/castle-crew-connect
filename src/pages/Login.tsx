@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 import { Eye, EyeOff } from 'lucide-react';
-import castleLogo from '@/assets/castle-app-logo.png';
+import castleLogo from '@/assets/castle-logo-login-new.png';
 import { loginSchema, signupSchema } from '@/lib/validations';
 
 export default function Login() {
@@ -164,8 +164,8 @@ export default function Login() {
           <div className="flex justify-center">
             <img 
               src={castleLogo} 
-              alt="Castle Movement Logo" 
-              className="w-20 h-20 xs:w-24 xs:h-24 rounded-full ring-4 ring-primary shadow-lg"
+              alt="Castle App Logo" 
+              className="w-32 xs:w-40 h-auto"
             />
           </div>
           <div>
