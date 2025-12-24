@@ -5,7 +5,7 @@ import { useUnreadReplies } from '@/hooks/useUnreadReplies';
 import { useUnreadDiscipleship } from '@/hooks/useUnreadDiscipleship';
 import { usePushNotifications } from '@/hooks/usePushNotifications';
 import { useShowCollaboratorsTab } from '@/hooks/useCollaborators';
-import castleLogo from '@/assets/castle-logo-final.png';
+import castleLogo from '@/assets/castle-app-home.png';
 import { Badge } from '@/components/ui/badge';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { InstallPWABanner } from '@/components/InstallPWABanner';
@@ -68,7 +68,7 @@ export const Layout = () => {
           <div className="w-8 xs:w-16 sm:w-24 md:w-32"></div>
           
           <div className="flex items-center justify-center flex-1">
-            <img src={castleLogo} alt="Castle Movement" className="h-10 xs:h-11 sm:h-12 md:h-14 w-auto" />
+            <img src={castleLogo} alt="Castle App" className="h-10 xs:h-11 sm:h-12 md:h-14 w-auto" />
           </div>
           
           <div className="flex items-center gap-1 xs:gap-2 sm:gap-3 w-auto justify-end">
