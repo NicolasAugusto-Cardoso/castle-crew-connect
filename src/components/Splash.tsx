@@ -240,7 +240,7 @@ export const Splash: React.FC<SplashProps> = ({ onComplete }) => {
                   letterSpacing: '0.15em',
                 }}
               >
-                {'Movement'.split('').map((letter, i) => (
+                {'App'.split('').map((letter, i) => (
                   <motion.span
                     key={`movement-${i}`}
                     initial={{ opacity: 0, y: 8, scale: 0.75 }}

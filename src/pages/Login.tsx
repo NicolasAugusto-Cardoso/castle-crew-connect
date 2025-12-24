@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 import { Eye, EyeOff } from 'lucide-react';
-import castleLogo from '@/assets/castle-logo-main.png';
+import castleLogo from '@/assets/castle-app-logo.png';
 import { loginSchema, signupSchema } from '@/lib/validations';
 
 export default function Login() {
@@ -169,7 +169,7 @@ export default function Login() {
             />
           </div>
           <div>
-            <CardTitle className="text-2xl xs:text-3xl gradient-text mb-1.5 xs:mb-2">Castle Movement</CardTitle>
+            <CardTitle className="text-2xl xs:text-3xl gradient-text mb-1.5 xs:mb-2">Castle App</CardTitle>
             <CardDescription className="text-xs xs:text-sm">Faça login ou crie sua conta</CardDescription>
           </div>
         </CardHeader>
