@@ -6,10 +6,10 @@ import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent } from '@/components/ui/card';
-import { Copy, QrCode, Upload, Check, Loader2 } from 'lucide-react';
+import { Copy, QrCode, Upload, Check, Loader2, AlertCircle } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
-import { useBasketModels, useDonationCampaigns, useCreateDonation, useUploadReceipt } from '@/hooks/useDonations';
+import { useBasketModels, useDonationCampaigns, useCreateDonation, useUploadReceipt, useActivePaymentSettings } from '@/hooks/useDonations';
 import { Database } from '@/integrations/supabase/types';
 
 type BasketModel = Database['public']['Tables']['basket_models']['Row'];
@@ -20,14 +20,19 @@ interface DonationDialogProps {
   selectedBasket?: BasketModel | null;
 }
 
-// PIX data - these would typically come from admin settings
-const PIX_KEY = 'contato@castlemovement.org';
-const PIX_RECEIVER = 'Castle Movement';
+const PIX_KEY_TYPE_LABELS: Record<string, string> = {
+  cpf: 'CPF',
+  cnpj: 'CNPJ',
+  email: 'E-mail',
+  phone: 'Telefone',
+  random: 'Chave Aleatória',
+};
 
 export const DonationDialog = ({ open, onOpenChange, selectedBasket }: DonationDialogProps) => {
   const { user } = useAuth();
   const { data: baskets } = useBasketModels();
   const { data: campaigns } = useDonationCampaigns(true);
+  const { data: paymentSettings, isLoading: loadingPayment } = useActivePaymentSettings();
   const createDonation = useCreateDonation();
   const uploadReceipt = useUploadReceipt();
 
@@ -69,7 +74,8 @@ export const DonationDialog = ({ open, onOpenChange, selectedBasket }: DonationD
   };
 
   const handleCopyPix = () => {
-    navigator.clipboard.writeText(PIX_KEY);
+    if (!paymentSettings?.pix_key) return;
+    navigator.clipboard.writeText(paymentSettings.pix_key);
     setCopied(true);
     toast({
       title: 'PIX copiado!',
@@ -77,6 +83,8 @@ export const DonationDialog = ({ open, onOpenChange, selectedBasket }: DonationD
     });
     setTimeout(() => setCopied(false), 2000);
   };
+
+  const isDonationAvailable = paymentSettings?.is_active && paymentSettings?.pix_key;
 
   const handleUploadReceipt = async () => {
     if (!receiptFile || !currentDonationId) return;
@@ -120,6 +128,21 @@ export const DonationDialog = ({ open, onOpenChange, selectedBasket }: DonationD
 
         {step === 'form' && (
           <div className="space-y-4">
+            {/* Unavailable Warning */}
+            {!isDonationAvailable && !loadingPayment && (
+              <Card className="border-yellow-200 bg-yellow-50">
+                <CardContent className="pt-4">
+                  <div className="flex items-center gap-2 text-yellow-700">
+                    <AlertCircle className="w-5 h-5" />
+                    <span className="text-sm font-medium">Doações temporariamente indisponíveis</span>
+                  </div>
+                  <p className="text-xs text-yellow-600 mt-1">
+                    Os dados de pagamento ainda não foram configurados.
+                  </p>
+                </CardContent>
+              </Card>
+            )}
+
             {/* Basket Selection */}
             <div className="space-y-2">
               <Label>Tipo de Cesta *</Label>
@@ -129,6 +152,7 @@ export const DonationDialog = ({ open, onOpenChange, selectedBasket }: DonationD
                   const selected = activeBaskets.find(b => b.id === value);
                   setBasket(selected || null);
                 }}
+                disabled={!isDonationAvailable}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Selecione uma cesta" />
@@ -147,7 +171,7 @@ export const DonationDialog = ({ open, onOpenChange, selectedBasket }: DonationD
             {campaigns && campaigns.length > 0 && (
               <div className="space-y-2">
                 <Label>Campanha (opcional)</Label>
-                <Select value={campaignId} onValueChange={setCampaignId}>
+                <Select value={campaignId} onValueChange={setCampaignId} disabled={!isDonationAvailable}>
                   <SelectTrigger>
                     <SelectValue placeholder="Doação geral" />
                   </SelectTrigger>
@@ -169,6 +193,7 @@ export const DonationDialog = ({ open, onOpenChange, selectedBasket }: DonationD
                 id="anonymous"
                 checked={anonymous}
                 onCheckedChange={(checked) => setAnonymous(checked === true)}
+                disabled={!isDonationAvailable}
               />
               <Label htmlFor="anonymous" className="text-sm cursor-pointer">
                 Doar de forma anônima
@@ -183,6 +208,7 @@ export const DonationDialog = ({ open, onOpenChange, selectedBasket }: DonationD
                   value={donorName}
                   onChange={(e) => setDonorName(e.target.value)}
                   placeholder="Como deseja aparecer"
+                  disabled={!isDonationAvailable}
                 />
               </div>
             )}
@@ -204,13 +230,15 @@ export const DonationDialog = ({ open, onOpenChange, selectedBasket }: DonationD
             <Button 
               onClick={handleCreateDonation} 
               className="w-full"
-              disabled={!basket || createDonation.isPending}
+              disabled={!basket || createDonation.isPending || !isDonationAvailable}
             >
               {createDonation.isPending ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                   Processando...
                 </>
+              ) : !isDonationAvailable ? (
+                'Doações indisponíveis'
               ) : (
                 'Continuar para Pagamento'
               )}
@@ -223,9 +251,19 @@ export const DonationDialog = ({ open, onOpenChange, selectedBasket }: DonationD
             {/* PIX Info */}
             <Card>
               <CardContent className="pt-4 space-y-4">
-                <div className="flex items-center justify-center p-4 bg-muted rounded-lg">
-                  <QrCode className="w-32 h-32 text-muted-foreground" />
-                </div>
+                {paymentSettings?.qr_code_url ? (
+                  <div className="flex items-center justify-center p-4 bg-muted rounded-lg">
+                    <img 
+                      src={paymentSettings.qr_code_url} 
+                      alt="QR Code PIX" 
+                      className="w-32 h-32 object-contain"
+                    />
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-center p-4 bg-muted rounded-lg">
+                    <QrCode className="w-32 h-32 text-muted-foreground" />
+                  </div>
+                )}
                 
                 <div className="text-center">
                   <p className="text-sm text-muted-foreground">Valor:</p>
@@ -235,9 +273,9 @@ export const DonationDialog = ({ open, onOpenChange, selectedBasket }: DonationD
                 </div>
 
                 <div className="space-y-2">
-                  <Label>Chave PIX (E-mail)</Label>
+                  <Label>Chave PIX ({PIX_KEY_TYPE_LABELS[paymentSettings?.pix_key_type || 'email'] || 'E-mail'})</Label>
                   <div className="flex gap-2">
-                    <Input value={PIX_KEY} readOnly className="font-mono text-sm" />
+                    <Input value={paymentSettings?.pix_key || ''} readOnly className="font-mono text-sm" />
                     <Button 
                       variant="outline" 
                       size="icon"
@@ -249,7 +287,10 @@ export const DonationDialog = ({ open, onOpenChange, selectedBasket }: DonationD
                 </div>
 
                 <div className="text-sm text-muted-foreground text-center">
-                  <p>Destinatário: <strong>{PIX_RECEIVER}</strong></p>
+                  <p>Destinatário: <strong>{paymentSettings?.receiver_name || 'Castle Movement'}</strong></p>
+                  {paymentSettings?.description && (
+                    <p className="mt-1 text-xs">{paymentSettings.description}</p>
+                  )}
                 </div>
               </CardContent>
             </Card>

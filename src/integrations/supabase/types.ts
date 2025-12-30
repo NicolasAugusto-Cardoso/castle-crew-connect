@@ -315,6 +315,80 @@ export type Database = {
         }
         Relationships: []
       }
+      donation_payment_audit: {
+        Row: {
+          changed_by: string | null
+          created_at: string | null
+          id: string
+          new_data: Json | null
+          old_data: Json | null
+          payment_id: string | null
+        }
+        Insert: {
+          changed_by?: string | null
+          created_at?: string | null
+          id?: string
+          new_data?: Json | null
+          old_data?: Json | null
+          payment_id?: string | null
+        }
+        Update: {
+          changed_by?: string | null
+          created_at?: string | null
+          id?: string
+          new_data?: Json | null
+          old_data?: Json | null
+          payment_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "donation_payment_audit_payment_id_fkey"
+            columns: ["payment_id"]
+            isOneToOne: false
+            referencedRelation: "donation_payment_settings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      donation_payment_settings: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          id: string
+          is_active: boolean | null
+          pix_key: string
+          pix_key_type: string
+          qr_code_url: string | null
+          receiver_name: string
+          updated_at: string | null
+          updated_by: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          pix_key: string
+          pix_key_type: string
+          qr_code_url?: string | null
+          receiver_name: string
+          updated_at?: string | null
+          updated_by?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          pix_key?: string
+          pix_key_type?: string
+          qr_code_url?: string | null
+          receiver_name?: string
+          updated_at?: string | null
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       donations: {
         Row: {
           amount: number

@@ -9,6 +9,29 @@ type Donation = Database['public']['Tables']['donations']['Row'];
 type BasketType = Database['public']['Enums']['basket_type'];
 type DonationStatus = Database['public']['Enums']['donation_status'];
 
+// Payment Settings types
+export interface PaymentSettings {
+  id: string;
+  receiver_name: string;
+  pix_key: string;
+  pix_key_type: string;
+  description: string | null;
+  qr_code_url: string | null;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+  updated_by: string | null;
+}
+
+export interface PaymentAuditLog {
+  id: string;
+  payment_id: string | null;
+  old_data: Record<string, unknown> | null;
+  new_data: Record<string, unknown> | null;
+  changed_by: string | null;
+  created_at: string;
+}
+
 export interface DonationWithDetails extends Donation {
   donor_profile?: {
     name: string;
@@ -391,6 +414,153 @@ export const useManageCampaign = () => {
     onError: (error: Error) => {
       toast({
         title: 'Erro ao salvar campanha',
+        description: error.message,
+        variant: 'destructive',
+      });
+    },
+  });
+};
+
+// ============== PAYMENT SETTINGS HOOKS ==============
+
+// Fetch active payment settings
+export const usePaymentSettings = () => {
+  return useQuery({
+    queryKey: ['payment-settings'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('donation_payment_settings')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (error) throw error;
+      return data as PaymentSettings | null;
+    },
+  });
+};
+
+// Fetch active payment settings for donations (public)
+export const useActivePaymentSettings = () => {
+  return useQuery({
+    queryKey: ['active-payment-settings'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('donation_payment_settings')
+        .select('*')
+        .eq('is_active', true)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (error) throw error;
+      return data as PaymentSettings | null;
+    },
+  });
+};
+
+// Fetch payment audit logs
+export const usePaymentAuditLogs = () => {
+  return useQuery({
+    queryKey: ['payment-audit-logs'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('donation_payment_audit')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(50);
+
+      if (error) throw error;
+      return data as PaymentAuditLog[];
+    },
+  });
+};
+
+// Admin: Manage payment settings
+export const useManagePaymentSettings = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (data: {
+      id?: string;
+      receiver_name: string;
+      pix_key: string;
+      pix_key_type: string;
+      description?: string | null;
+      qr_code_url?: string | null;
+      is_active: boolean;
+    }) => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Usuário não autenticado');
+
+      // Get old data for audit
+      let oldData = null;
+      if (data.id) {
+        const { data: existing } = await supabase
+          .from('donation_payment_settings')
+          .select('*')
+          .eq('id', data.id)
+          .single();
+        oldData = existing;
+      }
+
+      const settingsData = {
+        receiver_name: data.receiver_name,
+        pix_key: data.pix_key,
+        pix_key_type: data.pix_key_type,
+        description: data.description,
+        qr_code_url: data.qr_code_url,
+        is_active: data.is_active,
+        updated_by: user.id,
+      };
+
+      let result;
+      if (data.id) {
+        const { data: updated, error } = await supabase
+          .from('donation_payment_settings')
+          .update(settingsData)
+          .eq('id', data.id)
+          .select()
+          .single();
+
+        if (error) throw error;
+        result = updated;
+      } else {
+        const { data: created, error } = await supabase
+          .from('donation_payment_settings')
+          .insert(settingsData)
+          .select()
+          .single();
+
+        if (error) throw error;
+        result = created;
+      }
+
+      // Create audit log
+      await supabase
+        .from('donation_payment_audit')
+        .insert({
+          payment_id: result.id,
+          old_data: oldData,
+          new_data: result,
+          changed_by: user.id,
+        });
+
+      return result;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['payment-settings'] });
+      queryClient.invalidateQueries({ queryKey: ['active-payment-settings'] });
+      queryClient.invalidateQueries({ queryKey: ['payment-audit-logs'] });
+      toast({
+        title: 'Configurações salvas',
+        description: 'Os dados de pagamento foram atualizados.',
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: 'Erro ao salvar configurações',
         description: error.message,
         variant: 'destructive',
       });
