@@ -25,6 +25,7 @@ import NotFound from "./pages/NotFound";
 import Install from "./pages/Install";
 import Events from "./pages/Events";
 import EventDetails from "./pages/EventDetails";
+import Donations from "./pages/Donations";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 
 const queryClient = new QueryClient();
@@ -92,6 +93,11 @@ const App = () => {
               <Route path="/" element={<Home />} />
               <Route path="/events" element={<Events />} />
               <Route path="/events/:eventId" element={<EventDetails />} />
+              <Route path="/donations" element={
+                <ProtectedRoute allowedRoles={['admin', 'user']}>
+                  <Donations />
+                </ProtectedRoute>
+              } />
               <Route path="/testimonials" element={<Testimonials />} />
               <Route path="/contact" element={<Contact />} />
               <Route path="/contact/:messageId" element={<ChatThread />} />
