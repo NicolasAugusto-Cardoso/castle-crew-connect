@@ -20,7 +20,9 @@ import {
   Eye,
   Loader2,
   DollarSign,
-  FileImage
+  FileImage,
+  CreditCard,
+  Settings
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -30,9 +32,11 @@ import {
   useDonations, 
   useManageBasketModel, 
   useManageCampaign,
-  useUpdateDonationStatus 
+  useUpdateDonationStatus,
+  useActivePaymentSettings
 } from '@/hooks/useDonations';
 import { Database } from '@/integrations/supabase/types';
+import { PaymentSettingsDialog } from './PaymentSettingsDialog';
 
 type BasketModel = Database['public']['Tables']['basket_models']['Row'];
 type DonationCampaign = Database['public']['Tables']['donation_campaigns']['Row'];
@@ -200,6 +204,7 @@ export const AdminPanel = () => {
   const { data: baskets, isLoading: loadingBaskets } = useBasketModels();
   const { data: campaigns, isLoading: loadingCampaigns } = useDonationCampaigns();
   const { data: donations, isLoading: loadingDonations } = useDonations(undefined, true);
+  const { data: paymentSettings } = useActivePaymentSettings();
   const updateStatus = useUpdateDonationStatus();
 
   const [editingBasket, setEditingBasket] = useState<BasketModel | null>(null);
@@ -207,6 +212,7 @@ export const AdminPanel = () => {
   const [editingCampaign, setEditingCampaign] = useState<DonationCampaign | null>(null);
   const [showNewCampaign, setShowNewCampaign] = useState(false);
   const [viewingReceipt, setViewingReceipt] = useState<string | null>(null);
+  const [showPaymentSettings, setShowPaymentSettings] = useState(false);
 
   const stats = {
     totalAmount: donations?.filter(d => d.status === 'confirmed').reduce((sum, d) => sum + Number(d.amount), 0) || 0,
@@ -258,6 +264,40 @@ export const AdminPanel = () => {
           </CardContent>
         </Card>
       </div>
+
+      {/* Payment Settings Card */}
+      <Card className={!paymentSettings?.is_active ? 'border-yellow-200 bg-yellow-50/50' : ''}>
+        <CardContent className="pt-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className={`p-2 rounded-full ${paymentSettings?.is_active ? 'bg-primary/10' : 'bg-yellow-100'}`}>
+                <CreditCard className={`w-5 h-5 ${paymentSettings?.is_active ? 'text-primary' : 'text-yellow-600'}`} />
+              </div>
+              <div>
+                <p className="font-medium">Configurações de Pagamento</p>
+                <p className="text-sm text-muted-foreground">
+                  {paymentSettings?.receiver_name ? (
+                    <>PIX: {paymentSettings.pix_key}</>
+                  ) : (
+                    'Nenhum dado configurado'
+                  )}
+                </p>
+                {!paymentSettings?.is_active && (
+                  <Badge variant="outline" className="mt-1 text-yellow-600 border-yellow-300">
+                    Pagamentos desativados
+                  </Badge>
+                )}
+              </div>
+            </div>
+            <Button variant="outline" size="sm" onClick={() => setShowPaymentSettings(true)}>
+              <Settings className="w-4 h-4 mr-2" />
+              Editar
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      <PaymentSettingsDialog open={showPaymentSettings} onOpenChange={setShowPaymentSettings} />
 
       <Tabs defaultValue="donations" className="w-full">
         <TabsList className="grid w-full grid-cols-3">
