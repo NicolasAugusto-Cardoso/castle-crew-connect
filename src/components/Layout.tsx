@@ -1,5 +1,5 @@
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
-import { Home, MessageSquare, Users, FolderOpen, BookOpen, LogOut, UserCircle, Settings, UserCog, UserPlus, Trash2, Calendar } from 'lucide-react';
+import { Home, MessageSquare, Users, FolderOpen, BookOpen, LogOut, UserCircle, Settings, UserCog, UserPlus, Trash2, Calendar, Heart } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useUnreadReplies } from '@/hooks/useUnreadReplies';
 import { useUnreadDiscipleship } from '@/hooks/useUnreadDiscipleship';
@@ -28,6 +28,7 @@ export const Layout = () => {
 
   const navItems = [
     { icon: Home, label: 'Home', path: '/', roles: ['admin', 'social_media', 'collaborator', 'user', 'volunteer'] },
+    { icon: Heart, label: 'Doações', path: '/donations', roles: ['admin', 'social_media', 'collaborator', 'user', 'volunteer'] },
     { icon: BookOpen, label: 'Testemunhos', path: '/testimonials', roles: ['admin', 'social_media', 'collaborator', 'user', 'volunteer'] },
     { icon: Calendar, label: 'Agenda', path: '/events', roles: ['admin', 'social_media', 'volunteer'] },
     { icon: MessageSquare, label: 'Contato', path: '/contact', roles: ['admin', 'social_media', 'collaborator', 'user'] },

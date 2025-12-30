@@ -25,6 +25,8 @@ import NotFound from "./pages/NotFound";
 import Install from "./pages/Install";
 import Events from "./pages/Events";
 import EventDetails from "./pages/EventDetails";
+import Donations from "./pages/Donations";
+import DonationsAdmin from "./pages/DonationsAdmin";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 
 const queryClient = new QueryClient();
@@ -124,6 +126,12 @@ const App = () => {
               } />
               <Route path="/users" element={<Users />} />
               <Route path="/delete-account" element={<DeleteAccount />} />
+              <Route path="/donations" element={<Donations />} />
+              <Route path="/donations/admin" element={
+                <ProtectedRoute allowedRoles={['admin', 'volunteer']}>
+                  <DonationsAdmin />
+                </ProtectedRoute>
+              } />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
