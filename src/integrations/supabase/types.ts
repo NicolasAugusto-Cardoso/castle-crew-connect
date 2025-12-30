@@ -14,42 +14,6 @@ export type Database = {
   }
   public: {
     Tables: {
-      basket_models: {
-        Row: {
-          active: boolean | null
-          created_at: string | null
-          description: string | null
-          id: string
-          image_url: string | null
-          price: number
-          title: string
-          type: Database["public"]["Enums"]["basket_type"]
-          updated_at: string | null
-        }
-        Insert: {
-          active?: boolean | null
-          created_at?: string | null
-          description?: string | null
-          id?: string
-          image_url?: string | null
-          price: number
-          title: string
-          type: Database["public"]["Enums"]["basket_type"]
-          updated_at?: string | null
-        }
-        Update: {
-          active?: boolean | null
-          created_at?: string | null
-          description?: string | null
-          id?: string
-          image_url?: string | null
-          price?: number
-          title?: string
-          type?: Database["public"]["Enums"]["basket_type"]
-          updated_at?: string | null
-        }
-        Relationships: []
-      }
       collaborator_profiles: {
         Row: {
           accepting_new: boolean | null
@@ -275,101 +239,6 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
-      }
-      donation_campaigns: {
-        Row: {
-          active: boolean | null
-          created_at: string | null
-          description: string | null
-          end_date: string | null
-          goal_amount: number | null
-          goal_baskets: number | null
-          id: string
-          start_date: string | null
-          title: string
-          updated_at: string | null
-        }
-        Insert: {
-          active?: boolean | null
-          created_at?: string | null
-          description?: string | null
-          end_date?: string | null
-          goal_amount?: number | null
-          goal_baskets?: number | null
-          id?: string
-          start_date?: string | null
-          title: string
-          updated_at?: string | null
-        }
-        Update: {
-          active?: boolean | null
-          created_at?: string | null
-          description?: string | null
-          end_date?: string | null
-          goal_amount?: number | null
-          goal_baskets?: number | null
-          id?: string
-          start_date?: string | null
-          title?: string
-          updated_at?: string | null
-        }
-        Relationships: []
-      }
-      donations: {
-        Row: {
-          amount: number
-          anonymous: boolean | null
-          basket_type: Database["public"]["Enums"]["basket_type"]
-          campaign_id: string | null
-          confirmed_at: string | null
-          confirmed_by: string | null
-          created_at: string | null
-          donor_name: string | null
-          id: string
-          receipt_url: string | null
-          reference_code: string
-          status: Database["public"]["Enums"]["donation_status"] | null
-          user_id: string | null
-        }
-        Insert: {
-          amount: number
-          anonymous?: boolean | null
-          basket_type: Database["public"]["Enums"]["basket_type"]
-          campaign_id?: string | null
-          confirmed_at?: string | null
-          confirmed_by?: string | null
-          created_at?: string | null
-          donor_name?: string | null
-          id?: string
-          receipt_url?: string | null
-          reference_code: string
-          status?: Database["public"]["Enums"]["donation_status"] | null
-          user_id?: string | null
-        }
-        Update: {
-          amount?: number
-          anonymous?: boolean | null
-          basket_type?: Database["public"]["Enums"]["basket_type"]
-          campaign_id?: string | null
-          confirmed_at?: string | null
-          confirmed_by?: string | null
-          created_at?: string | null
-          donor_name?: string | null
-          id?: string
-          receipt_url?: string | null
-          reference_code?: string
-          status?: Database["public"]["Enums"]["donation_status"] | null
-          user_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "donations_campaign_id_fkey"
-            columns: ["campaign_id"]
-            isOneToOne: false
-            referencedRelation: "donation_campaigns"
-            referencedColumns: ["id"]
-          },
-        ]
       }
       event_registrations: {
         Row: {
@@ -871,8 +740,6 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "social_media" | "collaborator" | "user" | "volunteer"
-      basket_type: "P" | "M" | "G"
-      donation_status: "pending" | "reviewing" | "confirmed" | "rejected"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1001,8 +868,6 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "social_media", "collaborator", "user", "volunteer"],
-      basket_type: ["P", "M", "G"],
-      donation_status: ["pending", "reviewing", "confirmed", "rejected"],
     },
   },
 } as const
