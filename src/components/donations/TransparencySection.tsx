@@ -4,9 +4,9 @@ import { Package, DollarSign, Target, Users } from 'lucide-react';
 import { useTransparencyStats, useConfirmedDonations, useDonationCampaigns } from '@/hooks/useDonations';
 
 const BASKET_LABELS = {
-  P: 'Pequena',
-  M: 'Média',
-  G: 'Grande',
+  P: 'Econômica',
+  M: 'Clássica',
+  G: 'Master',
 };
 
 export const TransparencySection = () => {
