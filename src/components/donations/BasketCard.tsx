@@ -13,14 +13,14 @@ interface BasketCardProps {
 }
 
 const BASKET_SIZE_LABELS = {
-  P: 'Pequena',
-  M: 'Média',
-  G: 'Grande',
+  P: 'Econômica',
+  M: 'Clássica',
+  G: 'Master',
 };
 
 const BASKET_SIZE_COLORS = {
-  P: 'bg-blue-100 text-blue-800',
-  M: 'bg-green-100 text-green-800',
+  P: 'bg-emerald-100 text-emerald-800',
+  M: 'bg-blue-100 text-blue-800',
   G: 'bg-purple-100 text-purple-800',
 };
 
