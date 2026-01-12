@@ -86,7 +86,7 @@ export const BibleBookList = ({ books, isLoading, onSelectBook }: BibleBookListP
       </div>
 
       {/* Books Grid */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-[calc(100vh-22rem)] overflow-y-auto pr-1">
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-[calc(100vh-22rem)] overflow-y-auto pr-1 pb-24">
         {filteredBooks.length === 0 ? (
           <p className="col-span-full text-center text-muted-foreground py-8">
             Nenhum livro encontrado

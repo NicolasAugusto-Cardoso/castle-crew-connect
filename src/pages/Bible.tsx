@@ -84,6 +84,10 @@ const Bible = () => {
     }
   };
 
+  const handleGoToSearch = () => {
+    setNavState({ step: 'books' });
+  };
+
   // Check if we're in fullscreen reading mode
   const isReading = navState.step === 'reading';
 
@@ -121,6 +125,7 @@ const Bible = () => {
                 onChangeChapter={handleChangeChapter}
                 onGoToVerse={handleGoToVerse}
                 highlightVerse={navState.highlightVerse}
+                onGoToSearch={handleGoToSearch}
               />
             </div>
           </div>
