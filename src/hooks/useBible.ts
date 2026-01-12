@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { useState, useEffect } from 'react';
+import { BIBLE_BOOKS_FALLBACK, BibleBookFallback } from '@/data/bibleBooks';
 
 const API_BASE_URL = 'https://www.abibliadigital.com.br/api';
 
@@ -70,13 +71,31 @@ export const BIBLE_VERSIONS = [
   { value: 'apee', label: 'APEE - Almeida Padrão Evangélico' },
 ];
 
-// Fetch all books
+// Convert fallback data to API format
+function convertFallbackToApiFormat(fallback: BibleBookFallback[]): BibleBook[] {
+  return fallback.map(book => ({
+    abbrev: book.abbrev,
+    author: book.author,
+    chapters: book.chapters,
+    group: book.group,
+    name: book.name,
+    testament: book.testament,
+  }));
+}
+
+// Fetch all books with fallback
 async function fetchBooks(): Promise<BibleBook[]> {
-  const response = await fetch(`${API_BASE_URL}/books`);
-  if (!response.ok) {
-    throw new Error('Failed to fetch books');
+  try {
+    const response = await fetch(`${API_BASE_URL}/books`);
+    if (!response.ok) {
+      throw new Error(`API returned ${response.status}`);
+    }
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.warn('[Bible] API failed, using fallback books list', error);
+    return convertFallbackToApiFormat(BIBLE_BOOKS_FALLBACK);
   }
-  return response.json();
 }
 
 // Fetch chapter verses
@@ -119,6 +138,7 @@ export function useBibleBooks() {
     queryFn: fetchBooks,
     staleTime: 24 * 60 * 60 * 1000, // 24 hours
     gcTime: 7 * 24 * 60 * 60 * 1000, // 7 days
+    retry: 1, // Only retry once since we have fallback
   });
 }
 
