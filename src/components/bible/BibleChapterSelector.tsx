@@ -1,15 +1,27 @@
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
-import { BibleBook } from '@/hooks/useBible';
+import { BibleBook, usePrefetchChapter } from '@/hooks/useBible';
 
 interface BibleChapterSelectorProps {
   book: BibleBook;
+  version: string;
   onSelectChapter: (chapter: number) => void;
   onBack: () => void;
 }
 
-export const BibleChapterSelector = ({ book, onSelectChapter, onBack }: BibleChapterSelectorProps) => {
+export const BibleChapterSelector = ({ 
+  book, 
+  version,
+  onSelectChapter, 
+  onBack 
+}: BibleChapterSelectorProps) => {
   const chapters = Array.from({ length: book.chapters }, (_, i) => i + 1);
+  const { prefetchChapter } = usePrefetchChapter();
+
+  // Prefetch on hover (desktop) or pointer down (mobile)
+  const handlePrefetch = (chapter: number) => {
+    prefetchChapter(version, book.abbrev.pt, chapter);
+  };
 
   return (
     <div className="space-y-4">
@@ -39,6 +51,8 @@ export const BibleChapterSelector = ({ book, onSelectChapter, onBack }: BibleCha
             variant="outline"
             className="aspect-square p-0 text-sm font-medium bg-card hover:bg-primary hover:text-primary-foreground transition-all"
             onClick={() => onSelectChapter(chapter)}
+            onMouseEnter={() => handlePrefetch(chapter)}
+            onPointerDown={() => handlePrefetch(chapter)}
           >
             {chapter}
           </Button>

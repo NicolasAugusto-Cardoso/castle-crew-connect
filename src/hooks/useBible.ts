@@ -1,5 +1,5 @@
-import { useQuery } from '@tanstack/react-query';
-import { useState, useEffect } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useState, useEffect, useCallback } from 'react';
 import { BIBLE_BOOKS_FALLBACK, BibleBookFallback } from '@/data/bibleBooks';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -293,7 +293,40 @@ export function useBibleChapter(version: string, abbrev: string | null, chapter:
     gcTime: 24 * 60 * 60 * 1000, // 24 hours
     retry: 1,
     refetchOnWindowFocus: false,
+    placeholderData: (previousData) => previousData, // Keep previous data while loading
   });
+}
+
+// Hook for prefetching chapters
+export function usePrefetchChapter() {
+  const queryClient = useQueryClient();
+
+  const prefetchChapter = useCallback(
+    (version: string, abbrev: string, chapter: number) => {
+      // Don't prefetch if already in cache
+      const cached = queryClient.getQueryData(['bible', 'chapter', version, abbrev, chapter]);
+      if (cached) return;
+
+      queryClient.prefetchQuery({
+        queryKey: ['bible', 'chapter', version, abbrev, chapter],
+        queryFn: () => fetchChapter(version, abbrev, chapter),
+        staleTime: 12 * 60 * 60 * 1000,
+      });
+    },
+    [queryClient]
+  );
+
+  const prefetchFirstChapters = useCallback(
+    (version: string, abbrev: string, maxChapters: number = 3) => {
+      const chaptersToFetch = Math.min(maxChapters, 3);
+      for (let i = 1; i <= chaptersToFetch; i++) {
+        prefetchChapter(version, abbrev, i);
+      }
+    },
+    [prefetchChapter]
+  );
+
+  return { prefetchChapter, prefetchFirstChapters };
 }
 
 // Hook for debounced search
