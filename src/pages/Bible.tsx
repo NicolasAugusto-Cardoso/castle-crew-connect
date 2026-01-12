@@ -4,17 +4,28 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { BibleVersionSelector } from '@/components/bible/BibleVersionSelector';
 import { BibleBookList } from '@/components/bible/BibleBookList';
 import { BibleChapterSelector } from '@/components/bible/BibleChapterSelector';
-import { BibleVerseSelector } from '@/components/bible/BibleVerseSelector';
 import { BibleVerseReader } from '@/components/bible/BibleVerseReader';
 import { BibleSearch } from '@/components/bible/BibleSearch';
-import { useBibleBooks, BibleBook, SearchResult } from '@/hooks/useBible';
+import { useBibleBooks, BibleBook, SearchResult, usePrefetchChapter } from '@/hooks/useBible';
 import { BIBLE_BOOKS_FALLBACK } from '@/data/bibleBooks';
+import { motion, AnimatePresence } from 'framer-motion';
 
+// Simplified navigation: books -> chapters -> reading (no intermediate verse selector)
 type NavigationState = 
   | { step: 'books' }
   | { step: 'chapters'; book: BibleBook }
-  | { step: 'verses'; book: BibleBook; chapter: number }
   | { step: 'reading'; book: BibleBook; chapter: number; highlightVerse?: number };
+
+const pageVariants = {
+  initial: { opacity: 0, x: 20 },
+  animate: { opacity: 1, x: 0 },
+  exit: { opacity: 0, x: -20 },
+};
+
+const pageTransition = {
+  duration: 0.15,
+  ease: [0.25, 0.1, 0.25, 1] as const,
+};
 
 const Bible = () => {
   const [version, setVersion] = useState('nvi');
@@ -22,6 +33,7 @@ const Bible = () => {
   const [navState, setNavState] = useState<NavigationState>({ step: 'books' });
   
   const { data: books, isLoading: booksLoading } = useBibleBooks();
+  const { prefetchFirstChapters } = usePrefetchChapter();
 
   // Scroll to highlighted verse when in reading mode
   useEffect(() => {
@@ -37,24 +49,14 @@ const Bible = () => {
 
   const handleSelectBook = (book: BibleBook) => {
     setNavState({ step: 'chapters', book });
+    // Prefetch first chapters when book is selected
+    prefetchFirstChapters(version, book.abbrev.pt, Math.min(book.chapters, 3));
   };
 
   const handleSelectChapter = (chapter: number) => {
     if (navState.step === 'chapters') {
-      // Go to verse selector instead of directly to reading
-      setNavState({ step: 'verses', book: navState.book, chapter });
-    }
-  };
-
-  const handleSelectVerse = (verse: number | null) => {
-    if (navState.step === 'verses') {
-      // Open reading with optional highlight
-      setNavState({ 
-        step: 'reading', 
-        book: navState.book, 
-        chapter: navState.chapter,
-        highlightVerse: verse || undefined,
-      });
+      // Go directly to reading - no intermediate step!
+      setNavState({ step: 'reading', book: navState.book, chapter });
     }
   };
 
@@ -63,20 +65,25 @@ const Bible = () => {
   };
 
   const handleBackToChapters = () => {
-    if (navState.step === 'reading' || navState.step === 'verses') {
-      setNavState({ step: 'chapters', book: navState.book });
-    }
-  };
-
-  const handleBackToVerses = () => {
     if (navState.step === 'reading') {
-      setNavState({ step: 'verses', book: navState.book, chapter: navState.chapter });
+      setNavState({ step: 'chapters', book: navState.book });
     }
   };
 
   const handleChangeChapter = (chapter: number) => {
     if (navState.step === 'reading') {
       setNavState({ step: 'reading', book: navState.book, chapter });
+    }
+  };
+
+  const handleGoToVerse = (verse: number) => {
+    if (navState.step === 'reading') {
+      setNavState({ 
+        step: 'reading', 
+        book: navState.book, 
+        chapter: navState.chapter,
+        highlightVerse: verse,
+      });
     }
   };
 
@@ -128,8 +135,9 @@ const Bible = () => {
                 book={navState.book}
                 chapter={navState.chapter}
                 version={version}
-                onBack={handleBackToVerses}
+                onBack={handleBackToChapters}
                 onChangeChapter={handleChangeChapter}
+                onGoToVerse={handleGoToVerse}
                 highlightVerse={navState.highlightVerse}
               />
             </div>
@@ -158,31 +166,42 @@ const Bible = () => {
               </TabsList>
 
               <TabsContent value="navigate" className="flex-1 overflow-auto mt-0">
-                {navState.step === 'books' && (
-                  <BibleBookList
-                    books={books}
-                    isLoading={booksLoading}
-                    onSelectBook={handleSelectBook}
-                  />
-                )}
+                <AnimatePresence mode="wait">
+                  {navState.step === 'books' && (
+                    <motion.div
+                      key="books"
+                      variants={pageVariants}
+                      initial="initial"
+                      animate="animate"
+                      exit="exit"
+                      transition={pageTransition}
+                    >
+                      <BibleBookList
+                        books={books}
+                        isLoading={booksLoading}
+                        onSelectBook={handleSelectBook}
+                      />
+                    </motion.div>
+                  )}
 
-                {navState.step === 'chapters' && (
-                  <BibleChapterSelector
-                    book={navState.book}
-                    onSelectChapter={handleSelectChapter}
-                    onBack={handleBackToBooks}
-                  />
-                )}
-
-                {navState.step === 'verses' && (
-                  <BibleVerseSelector
-                    book={navState.book}
-                    chapter={navState.chapter}
-                    version={version}
-                    onSelectVerse={handleSelectVerse}
-                    onBack={handleBackToChapters}
-                  />
-                )}
+                  {navState.step === 'chapters' && (
+                    <motion.div
+                      key="chapters"
+                      variants={pageVariants}
+                      initial="initial"
+                      animate="animate"
+                      exit="exit"
+                      transition={pageTransition}
+                    >
+                      <BibleChapterSelector
+                        book={navState.book}
+                        version={version}
+                        onSelectChapter={handleSelectChapter}
+                        onBack={handleBackToBooks}
+                      />
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </TabsContent>
 
               <TabsContent value="search" className="flex-1 overflow-auto mt-0">

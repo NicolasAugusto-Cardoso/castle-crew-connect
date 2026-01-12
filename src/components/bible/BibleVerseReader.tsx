@@ -1,10 +1,15 @@
 import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
-import { ArrowLeft, ChevronLeft, ChevronRight, Copy, Check, Share2 } from 'lucide-react';
-import { BibleBook, useBibleChapter } from '@/hooks/useBible';
+import { ArrowLeft, ChevronLeft, ChevronRight, Copy, Check, Share2, Hash, Loader2 } from 'lucide-react';
+import { BibleBook, useBibleChapter, usePrefetchChapter } from '@/hooks/useBible';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface BibleVerseReaderProps {
   book: BibleBook;
@@ -12,6 +17,7 @@ interface BibleVerseReaderProps {
   version: string;
   onBack: () => void;
   onChangeChapter: (chapter: number) => void;
+  onGoToVerse?: (verse: number) => void;
   highlightVerse?: number;
 }
 
@@ -21,11 +27,24 @@ export const BibleVerseReader = ({
   version, 
   onBack, 
   onChangeChapter,
+  onGoToVerse,
   highlightVerse 
 }: BibleVerseReaderProps) => {
-  const { data, isLoading, error, refetch } = useBibleChapter(version, book.abbrev.pt, chapter);
+  const { data, isLoading, isFetching, error, refetch } = useBibleChapter(version, book.abbrev.pt, chapter);
   const [copiedVerse, setCopiedVerse] = useState<number | null>(null);
+  const [versePopoverOpen, setVersePopoverOpen] = useState(false);
   const highlightRef = useRef<HTMLDivElement>(null);
+  const { prefetchChapter } = usePrefetchChapter();
+
+  // Prefetch adjacent chapters
+  useEffect(() => {
+    if (chapter > 1) {
+      prefetchChapter(version, book.abbrev.pt, chapter - 1);
+    }
+    if (chapter < book.chapters) {
+      prefetchChapter(version, book.abbrev.pt, chapter + 1);
+    }
+  }, [chapter, version, book, prefetchChapter]);
 
   // Scroll to highlighted verse after render
   useEffect(() => {
@@ -68,28 +87,26 @@ export const BibleVerseReader = ({
     }
   };
 
+  const handleSelectVerse = (verse: number) => {
+    setVersePopoverOpen(false);
+    if (onGoToVerse) {
+      onGoToVerse(verse);
+    }
+    // Scroll to verse
+    setTimeout(() => {
+      const element = document.getElementById(`verse-${verse}`);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }, 100);
+  };
+
   const hasPrevChapter = chapter > 1;
   const hasNextChapter = chapter < book.chapters;
+  const verseCount = data?.verses.length || 0;
 
-  if (isLoading) {
-    return (
-      <div className="flex flex-col h-full">
-        <div className="flex items-center justify-between gap-3 pb-4 border-b">
-          <div className="flex items-center gap-3">
-            <Skeleton className="h-10 w-10" />
-            <Skeleton className="h-6 w-48" />
-          </div>
-        </div>
-        <div className="flex-1 space-y-3 pt-4">
-          {[...Array(10)].map((_, i) => (
-            <Skeleton key={i} className="h-16 w-full" />
-          ))}
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
+  // Error state
+  if (error && !data) {
     return (
       <div className="flex flex-col items-center justify-center py-12 text-center">
         <div className="bg-destructive/10 rounded-lg p-6 max-w-md">
@@ -117,8 +134,8 @@ export const BibleVerseReader = ({
   return (
     <div className="flex flex-col h-full min-h-0">
       {/* Sticky Header */}
-      <div className="flex items-center justify-between gap-3 pb-4 border-b border-border bg-background sticky top-0 z-10">
-        <div className="flex items-center gap-3">
+      <div className="flex items-center justify-between gap-2 pb-4 border-b border-border bg-background sticky top-0 z-10">
+        <div className="flex items-center gap-2 min-w-0 flex-1">
           <Button
             variant="ghost"
             size="icon"
@@ -131,7 +148,11 @@ export const BibleVerseReader = ({
             <h3 className="font-semibold text-lg truncate">
               {book.name} {chapter}
             </h3>
-            {data?.source === 'cache' && (
+            {/* Loading indicator - small and discrete */}
+            {(isLoading || isFetching) && (
+              <Loader2 className="w-4 h-4 animate-spin text-muted-foreground flex-shrink-0" />
+            )}
+            {data?.source === 'cache' && !isFetching && (
               <span className="text-xs bg-muted px-2 py-0.5 rounded-full text-muted-foreground flex-shrink-0">
                 💾
               </span>
@@ -139,8 +160,46 @@ export const BibleVerseReader = ({
           </div>
         </div>
         
-        {/* Chapter Navigation */}
+        {/* Actions */}
         <div className="flex items-center gap-1 flex-shrink-0">
+          {/* Go to verse popover */}
+          <Popover open={versePopoverOpen} onOpenChange={setVersePopoverOpen}>
+            <PopoverTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="hover:bg-secondary"
+                disabled={!data}
+              >
+                <Hash className="w-5 h-5" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-64 p-3" align="end">
+              <p className="text-sm font-medium mb-2 text-muted-foreground">
+                Ir para versículo
+              </p>
+              <ScrollArea className="max-h-48">
+                <div className="grid grid-cols-5 gap-1.5">
+                  {Array.from({ length: verseCount }, (_, i) => i + 1).map((verse) => (
+                    <Button
+                      key={verse}
+                      variant="outline"
+                      size="sm"
+                      className={cn(
+                        "h-8 w-8 p-0 text-xs font-medium",
+                        highlightVerse === verse && "bg-primary text-primary-foreground"
+                      )}
+                      onClick={() => handleSelectVerse(verse)}
+                    >
+                      {verse}
+                    </Button>
+                  ))}
+                </div>
+              </ScrollArea>
+            </PopoverContent>
+          </Popover>
+
+          {/* Chapter Navigation */}
           <Button
             variant="ghost"
             size="icon"
@@ -164,58 +223,65 @@ export const BibleVerseReader = ({
 
       {/* Fullscreen Verses - Scrollable area */}
       <div className="flex-1 overflow-y-auto pt-4 -mx-4 px-4 sm:-mx-6 sm:px-6">
-        <div className="space-y-4 pb-8">
-          {data?.verses.map((verse) => {
-            const isHighlighted = highlightVerse === verse.number;
-            
-            return (
-              <div
-                key={verse.number}
-                ref={isHighlighted ? highlightRef : undefined}
-                id={`verse-${verse.number}`}
-                className={cn(
-                  "group p-4 rounded-lg transition-all",
-                  isHighlighted
-                    ? "bg-primary/15 ring-2 ring-primary animate-pulse"
-                    : "hover:bg-secondary/50"
-                )}
-              >
-                <div className="flex gap-3">
-                  <span className="text-primary font-bold text-base flex-shrink-0 w-8 text-right">
-                    {verse.number}
-                  </span>
-                  <p className="text-foreground leading-relaxed text-base sm:text-lg flex-1">
-                    {verse.text}
-                  </p>
+        {/* Show loading state only on first load (no data yet) */}
+        {isLoading && !data ? (
+          <div className="flex items-center justify-center py-12">
+            <Loader2 className="w-8 h-8 animate-spin text-primary" />
+          </div>
+        ) : (
+          <div className="space-y-4 pb-8">
+            {data?.verses.map((verse) => {
+              const isHighlighted = highlightVerse === verse.number;
+              
+              return (
+                <div
+                  key={verse.number}
+                  ref={isHighlighted ? highlightRef : undefined}
+                  id={`verse-${verse.number}`}
+                  className={cn(
+                    "group p-4 rounded-lg transition-all duration-300",
+                    isHighlighted
+                      ? "bg-primary/15 ring-2 ring-primary"
+                      : "hover:bg-secondary/50"
+                  )}
+                >
+                  <div className="flex gap-3">
+                    <span className="text-primary font-bold text-base flex-shrink-0 w-8 text-right">
+                      {verse.number}
+                    </span>
+                    <p className="text-foreground leading-relaxed text-base sm:text-lg flex-1">
+                      {verse.text}
+                    </p>
+                  </div>
+                  
+                  {/* Actions on hover/tap */}
+                  <div className="flex justify-end gap-1 mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 px-2 text-muted-foreground hover:text-foreground"
+                      onClick={() => handleCopyVerse(verse.number, verse.text)}
+                    >
+                      {copiedVerse === verse.number ? (
+                        <Check className="w-4 h-4" />
+                      ) : (
+                        <Copy className="w-4 h-4" />
+                      )}
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 px-2 text-muted-foreground hover:text-foreground"
+                      onClick={() => handleShareVerse(verse.number, verse.text)}
+                    >
+                      <Share2 className="w-4 h-4" />
+                    </Button>
+                  </div>
                 </div>
-                
-                {/* Actions on hover/tap */}
-                <div className="flex justify-end gap-1 mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-8 px-2 text-muted-foreground hover:text-foreground"
-                    onClick={() => handleCopyVerse(verse.number, verse.text)}
-                  >
-                    {copiedVerse === verse.number ? (
-                      <Check className="w-4 h-4" />
-                    ) : (
-                      <Copy className="w-4 h-4" />
-                    )}
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-8 px-2 text-muted-foreground hover:text-foreground"
-                    onClick={() => handleShareVerse(verse.number, verse.text)}
-                  >
-                    <Share2 className="w-4 h-4" />
-                  </Button>
-                </div>
-              </div>
-            );
-          })}
-        </div>
+              );
+            })}
+          </div>
+        )}
       </div>
     </div>
   );
