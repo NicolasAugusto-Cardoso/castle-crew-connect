@@ -26,6 +26,7 @@ import Install from "./pages/Install";
 import Events from "./pages/Events";
 import EventDetails from "./pages/EventDetails";
 import Donations from "./pages/Donations";
+import Bible from "./pages/Bible";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 
 const queryClient = new QueryClient();
@@ -99,6 +100,7 @@ const App = () => {
                 </ProtectedRoute>
               } />
               <Route path="/testimonials" element={<Testimonials />} />
+              <Route path="/bible" element={<Bible />} />
               <Route path="/contact" element={<Contact />} />
               <Route path="/contact/:messageId" element={<ChatThread />} />
               <Route path="/gallery" element={<Gallery />} />
