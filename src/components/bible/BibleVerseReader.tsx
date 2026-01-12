@@ -1,15 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, ChevronLeft, ChevronRight, Copy, Check, Share2, Search, Hash, Loader2 } from 'lucide-react';
+import { ArrowLeft, ChevronLeft, ChevronRight, Copy, Check, Share2, Search, Loader2 } from 'lucide-react';
 import { BibleBook, useBibleChapter, usePrefetchChapter } from '@/hooks/useBible';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
-import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface BibleVerseReaderProps {
   book: BibleBook;
@@ -34,7 +28,6 @@ export const BibleVerseReader = ({
 }: BibleVerseReaderProps) => {
   const { data, isLoading, isFetching, error, refetch } = useBibleChapter(version, book.abbrev.pt, chapter);
   const [copiedVerse, setCopiedVerse] = useState<number | null>(null);
-  const [versePopoverOpen, setVersePopoverOpen] = useState(false);
   const highlightRef = useRef<HTMLDivElement>(null);
   const { prefetchChapter } = usePrefetchChapter();
 
@@ -89,23 +82,8 @@ export const BibleVerseReader = ({
     }
   };
 
-  const handleSelectVerse = (verse: number) => {
-    setVersePopoverOpen(false);
-    if (onGoToVerse) {
-      onGoToVerse(verse);
-    }
-    // Scroll to verse
-    setTimeout(() => {
-      const element = document.getElementById(`verse-${verse}`);
-      if (element) {
-        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }
-    }, 100);
-  };
-
   const hasPrevChapter = chapter > 1;
   const hasNextChapter = chapter < book.chapters;
-  const verseCount = data?.verses.length || 0;
 
   // Error state
   if (error && !data) {
@@ -154,62 +132,22 @@ export const BibleVerseReader = ({
             {(isLoading || isFetching) && (
               <Loader2 className="w-4 h-4 animate-spin text-primary flex-shrink-0" />
             )}
-            {data?.source === 'cache' && !isFetching && (
-              <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full flex-shrink-0">
-                💾
-              </span>
-            )}
           </div>
         </div>
         
         {/* Actions */}
         <div className="flex items-center gap-1 flex-shrink-0">
           {/* Search/Navigate button - opens book navigation */}
-          <Button
-            variant="ghost"
-            size="icon"
-            className="hover:bg-secondary rounded-xl"
-            onClick={onGoToSearch}
-          >
-            <Search className="w-5 h-5" />
-          </Button>
-
-          {/* Go to verse popover */}
-          <Popover open={versePopoverOpen} onOpenChange={setVersePopoverOpen}>
-            <PopoverTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="hover:bg-secondary rounded-xl"
-                disabled={!data}
-              >
-                <Hash className="w-5 h-5" />
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-64 p-3 rounded-xl" align="end">
-              <p className="text-sm font-medium mb-2 text-muted-foreground">
-                Ir para versículo
-              </p>
-              <ScrollArea className="max-h-48">
-                <div className="grid grid-cols-5 gap-1.5">
-                  {Array.from({ length: verseCount }, (_, i) => i + 1).map((verse) => (
-                    <Button
-                      key={verse}
-                      variant="outline"
-                      size="sm"
-                      className={cn(
-                        "h-8 w-8 p-0 text-xs font-medium rounded-lg",
-                        highlightVerse === verse && "bg-primary text-primary-foreground"
-                      )}
-                      onClick={() => handleSelectVerse(verse)}
-                    >
-                      {verse}
-                    </Button>
-                  ))}
-                </div>
-              </ScrollArea>
-            </PopoverContent>
-          </Popover>
+          {onGoToSearch && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="hover:bg-secondary rounded-xl"
+              onClick={onGoToSearch}
+            >
+              <Search className="w-5 h-5" />
+            </Button>
+          )}
 
           {/* Chapter Navigation */}
           <Button
