@@ -1,3 +1,4 @@
+// Bible Proxy v2 - with bolls.life backup
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 const corsHeaders = {
@@ -23,13 +24,14 @@ interface ChapterPayload {
 }
 
 // Map ABíbliaDigital version codes to bolls.life translation IDs
+// bolls.life uses Portuguese versions with different codes
 const BOLLS_VERSION_MAP: Record<string, string> = {
-  'nvi': 'NVI',
-  'ara': 'ARA',
-  'acf': 'ACF',
-  'kjv': 'KJV',
-  'bbe': 'BBE',
-  'rvr': 'LBLA', // Spanish - closest match
+  'nvi': 'NTLH', // Use NTLH (Nova Tradução na Linguagem de Hoje) as fallback for NVI
+  'ara': 'ARA',  // Almeida Revista e Atualizada
+  'acf': 'ACF',  // Almeida Corrigida Fiel
+  'kjv': 'KJV',  // King James Version
+  'bbe': 'BBE',  // Bible in Basic English
+  'rvr': 'RVR', // Reina Valera (Spanish)
 }
 
 // Map book abbreviations to bolls.life book numbers (1-66)
