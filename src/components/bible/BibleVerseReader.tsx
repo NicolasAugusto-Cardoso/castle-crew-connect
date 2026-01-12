@@ -133,27 +133,27 @@ export const BibleVerseReader = ({
 
   return (
     <div className="flex flex-col h-full min-h-0">
-      {/* Sticky Header */}
+      {/* Sticky Header - Clean white with subtle border */}
       <div className="flex items-center justify-between gap-2 pb-4 border-b border-border bg-background sticky top-0 z-10">
         <div className="flex items-center gap-2 min-w-0 flex-1">
           <Button
             variant="ghost"
             size="icon"
             onClick={onBack}
-            className="hover:bg-secondary flex-shrink-0"
+            className="hover:bg-secondary flex-shrink-0 rounded-xl"
           >
             <ArrowLeft className="w-5 h-5" />
           </Button>
           <div className="flex items-center gap-2 min-w-0">
-            <h3 className="font-semibold text-lg truncate">
+            <h3 className="font-semibold text-lg truncate text-foreground">
               {book.name} {chapter}
             </h3>
             {/* Loading indicator - small and discrete */}
             {(isLoading || isFetching) && (
-              <Loader2 className="w-4 h-4 animate-spin text-muted-foreground flex-shrink-0" />
+              <Loader2 className="w-4 h-4 animate-spin text-primary flex-shrink-0" />
             )}
             {data?.source === 'cache' && !isFetching && (
-              <span className="text-xs bg-muted px-2 py-0.5 rounded-full text-muted-foreground flex-shrink-0">
+              <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full flex-shrink-0">
                 💾
               </span>
             )}
@@ -168,13 +168,13 @@ export const BibleVerseReader = ({
               <Button
                 variant="ghost"
                 size="icon"
-                className="hover:bg-secondary"
+                className="hover:bg-secondary rounded-xl"
                 disabled={!data}
               >
                 <Hash className="w-5 h-5" />
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-64 p-3" align="end">
+            <PopoverContent className="w-64 p-3 rounded-xl" align="end">
               <p className="text-sm font-medium mb-2 text-muted-foreground">
                 Ir para versículo
               </p>
@@ -186,7 +186,7 @@ export const BibleVerseReader = ({
                       variant="outline"
                       size="sm"
                       className={cn(
-                        "h-8 w-8 p-0 text-xs font-medium",
+                        "h-8 w-8 p-0 text-xs font-medium rounded-lg",
                         highlightVerse === verse && "bg-primary text-primary-foreground"
                       )}
                       onClick={() => handleSelectVerse(verse)}
@@ -205,7 +205,7 @@ export const BibleVerseReader = ({
             size="icon"
             onClick={() => onChangeChapter(chapter - 1)}
             disabled={!hasPrevChapter}
-            className="hover:bg-secondary"
+            className="hover:bg-secondary rounded-xl"
           >
             <ChevronLeft className="w-5 h-5" />
           </Button>
@@ -214,7 +214,7 @@ export const BibleVerseReader = ({
             size="icon"
             onClick={() => onChangeChapter(chapter + 1)}
             disabled={!hasNextChapter}
-            className="hover:bg-secondary"
+            className="hover:bg-secondary rounded-xl"
           >
             <ChevronRight className="w-5 h-5" />
           </Button>
@@ -229,7 +229,7 @@ export const BibleVerseReader = ({
             <Loader2 className="w-8 h-8 animate-spin text-primary" />
           </div>
         ) : (
-          <div className="space-y-4 pb-8">
+          <div className="space-y-3 pb-8">
             {data?.verses.map((verse) => {
               const isHighlighted = highlightVerse === verse.number;
               
@@ -239,9 +239,9 @@ export const BibleVerseReader = ({
                   ref={isHighlighted ? highlightRef : undefined}
                   id={`verse-${verse.number}`}
                   className={cn(
-                    "group p-4 rounded-lg transition-all duration-300",
+                    "group p-4 rounded-xl transition-all duration-300",
                     isHighlighted
-                      ? "bg-primary/15 ring-2 ring-primary"
+                      ? "bg-primary/10 ring-2 ring-primary/50"
                       : "hover:bg-secondary/50"
                   )}
                 >
@@ -259,7 +259,7 @@ export const BibleVerseReader = ({
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="h-8 px-2 text-muted-foreground hover:text-foreground"
+                      className="h-8 px-2 text-muted-foreground hover:text-foreground rounded-lg"
                       onClick={() => handleCopyVerse(verse.number, verse.text)}
                     >
                       {copiedVerse === verse.number ? (
@@ -271,7 +271,7 @@ export const BibleVerseReader = ({
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="h-8 px-2 text-muted-foreground hover:text-foreground"
+                      className="h-8 px-2 text-muted-foreground hover:text-foreground rounded-lg"
                       onClick={() => handleShareVerse(verse.number, verse.text)}
                     >
                       <Share2 className="w-4 h-4" />
