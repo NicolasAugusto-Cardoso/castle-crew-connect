@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, ChevronLeft, ChevronRight, Copy, Check, Share2, Hash, Loader2 } from 'lucide-react';
+import { ArrowLeft, ChevronLeft, ChevronRight, Copy, Check, Share2, Search, Hash, Loader2 } from 'lucide-react';
 import { BibleBook, useBibleChapter, usePrefetchChapter } from '@/hooks/useBible';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -19,6 +19,7 @@ interface BibleVerseReaderProps {
   onChangeChapter: (chapter: number) => void;
   onGoToVerse?: (verse: number) => void;
   highlightVerse?: number;
+  onGoToSearch?: () => void;
 }
 
 export const BibleVerseReader = ({ 
@@ -28,7 +29,8 @@ export const BibleVerseReader = ({
   onBack, 
   onChangeChapter,
   onGoToVerse,
-  highlightVerse 
+  highlightVerse,
+  onGoToSearch,
 }: BibleVerseReaderProps) => {
   const { data, isLoading, isFetching, error, refetch } = useBibleChapter(version, book.abbrev.pt, chapter);
   const [copiedVerse, setCopiedVerse] = useState<number | null>(null);
@@ -162,6 +164,16 @@ export const BibleVerseReader = ({
         
         {/* Actions */}
         <div className="flex items-center gap-1 flex-shrink-0">
+          {/* Search/Navigate button - opens book navigation */}
+          <Button
+            variant="ghost"
+            size="icon"
+            className="hover:bg-secondary rounded-xl"
+            onClick={onGoToSearch}
+          >
+            <Search className="w-5 h-5" />
+          </Button>
+
           {/* Go to verse popover */}
           <Popover open={versePopoverOpen} onOpenChange={setVersePopoverOpen}>
             <PopoverTrigger asChild>
