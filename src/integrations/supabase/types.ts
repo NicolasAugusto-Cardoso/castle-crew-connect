@@ -56,6 +56,7 @@ export type Database = {
           chapter: number
           fetched_at: string
           id: string
+          language: string | null
           provider: string
           verses: Json
           version: string
@@ -65,6 +66,7 @@ export type Database = {
           chapter: number
           fetched_at?: string
           id?: string
+          language?: string | null
           provider: string
           verses: Json
           version: string
@@ -74,6 +76,7 @@ export type Database = {
           chapter?: number
           fetched_at?: string
           id?: string
+          language?: string | null
           provider?: string
           verses?: Json
           version?: string
