@@ -6,6 +6,7 @@ const corsHeaders = {
 }
 
 const ABIBLIADIGITAL_URL = 'https://www.abibliadigital.com.br/api'
+const BOLLS_LIFE_URL = 'https://bolls.life/get-chapter'
 
 interface NormalizedVerse {
   number: number
@@ -21,11 +22,48 @@ interface ChapterPayload {
   bookName?: string
 }
 
+// Map ABíbliaDigital version codes to bolls.life translation IDs
+const BOLLS_VERSION_MAP: Record<string, string> = {
+  'nvi': 'NVI',
+  'ara': 'ARA',
+  'acf': 'ACF',
+  'kjv': 'KJV',
+  'bbe': 'BBE',
+  'rvr': 'LBLA', // Spanish - closest match
+}
+
+// Map book abbreviations to bolls.life book numbers (1-66)
+const BOOK_NUMBER_MAP: Record<string, number> = {
+  'gn': 1, 'ex': 2, 'lv': 3, 'nm': 4, 'dt': 5,
+  'js': 6, 'jz': 7, 'rt': 8, '1sm': 9, '2sm': 10,
+  '1rs': 11, '2rs': 12, '1cr': 13, '2cr': 14, 'ed': 15,
+  'ne': 16, 'et': 17, 'jó': 18, 'sl': 19, 'pv': 20,
+  'ec': 21, 'ct': 22, 'is': 23, 'jr': 24, 'lm': 25,
+  'ez': 26, 'dn': 27, 'os': 28, 'jl': 29, 'am': 30,
+  'ob': 31, 'jn': 32, 'mq': 33, 'na': 34, 'hc': 35,
+  'sf': 36, 'ag': 37, 'zc': 38, 'ml': 39,
+  'mt': 40, 'mc': 41, 'lc': 42, 'jo': 43, 'at': 44,
+  'rm': 45, '1co': 46, '2co': 47, 'gl': 48, 'ef': 49,
+  'fp': 50, 'cl': 51, '1ts': 52, '2ts': 53, '1tm': 54,
+  '2tm': 55, 'tt': 56, 'fm': 57, 'hb': 58, 'tg': 59,
+  '1pe': 60, '2pe': 61, '1jo': 62, '2jo': 63, '3jo': 64,
+  'jd': 65, 'ap': 66,
+}
+
 // Normalize verses from ABibliaDigital format
 function normalizeABibliaDigital(data: any): NormalizedVerse[] {
   if (!data?.verses || !Array.isArray(data.verses)) return []
   return data.verses.map((v: any) => ({
     number: v.number,
+    text: v.text,
+  }))
+}
+
+// Normalize verses from bolls.life format
+function normalizeBollsLife(data: any[]): NormalizedVerse[] {
+  if (!Array.isArray(data)) return []
+  return data.map((v: any) => ({
+    number: v.verse,
     text: v.text,
   }))
 }
@@ -38,7 +76,7 @@ async function tryABibliaDigital(
 ): Promise<{ verses: NormalizedVerse[]; bookName?: string } | null> {
   try {
     const controller = new AbortController()
-    const timeoutId = setTimeout(() => controller.abort(), 8000) // 8s timeout
+    const timeoutId = setTimeout(() => controller.abort(), 8000)
 
     const response = await fetch(
       `${ABIBLIADIGITAL_URL}/verses/${version}/${bookAbbrev}/${chapter}`,
@@ -62,6 +100,49 @@ async function tryABibliaDigital(
     }
   } catch (error) {
     console.log(`[bible-proxy] ABibliaDigital failed:`, error)
+    return null
+  }
+}
+
+// Try bolls.life as backup API
+async function tryBollsLife(
+  version: string,
+  bookAbbrev: string,
+  chapter: number
+): Promise<{ verses: NormalizedVerse[] } | null> {
+  try {
+    const bollsVersion = BOLLS_VERSION_MAP[version] || 'NVI'
+    const bookNumber = BOOK_NUMBER_MAP[bookAbbrev.toLowerCase()]
+    
+    if (!bookNumber) {
+      console.log(`[bible-proxy] Unknown book abbrev for bolls.life: ${bookAbbrev}`)
+      return null
+    }
+
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), 8000)
+
+    // bolls.life format: /get-chapter/TRANSLATION/BOOK_NUMBER/CHAPTER
+    const response = await fetch(
+      `${BOLLS_LIFE_URL}/${bollsVersion}/${bookNumber}/${chapter}/`,
+      { signal: controller.signal }
+    )
+    clearTimeout(timeoutId)
+
+    if (!response.ok) {
+      console.log(`[bible-proxy] bolls.life returned ${response.status}`)
+      return null
+    }
+
+    const data = await response.json()
+    const verses = normalizeBollsLife(data)
+    
+    if (verses.length === 0) return null
+    
+    console.log(`[bible-proxy] bolls.life success: ${verses.length} verses`)
+    return { verses }
+  } catch (error) {
+    console.log(`[bible-proxy] bolls.life failed:`, error)
     return null
   }
 }
@@ -140,10 +221,39 @@ Deno.serve(async (req) => {
       })
     }
 
-    // 3. All providers failed
+    // 3. Try bolls.life as backup
+    console.log(`[bible-proxy] Trying bolls.life backup for ${version}/${bookAbbrev}/${chapter}`)
+    const bollsResult = await tryBollsLife(version, bookAbbrev, chapter)
+
+    if (bollsResult) {
+      // Save to cache
+      await supabase.from('bible_chapter_cache').upsert({
+        provider: 'bolls_life',
+        version,
+        book_abbrev: bookAbbrev,
+        chapter,
+        verses: bollsResult.verses,
+        fetched_at: new Date().toISOString(),
+      }, {
+        onConflict: 'version,book_abbrev,chapter',
+      })
+
+      const payload: ChapterPayload = {
+        version,
+        bookAbbrev,
+        chapter,
+        verses: bollsResult.verses,
+        source: 'backup_api',
+      }
+      return new Response(JSON.stringify(payload), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+
+    // 4. All providers failed
     return new Response(
       JSON.stringify({ 
-        error: 'Não foi possível carregar este capítulo. A API está temporariamente indisponível.',
+        error: 'Não foi possível carregar este capítulo. Todas as APIs estão temporariamente indisponíveis.',
         code: 'API_UNAVAILABLE' 
       }),
       { 
