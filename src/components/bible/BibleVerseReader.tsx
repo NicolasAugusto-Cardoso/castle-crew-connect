@@ -79,12 +79,19 @@ export const BibleVerseReader = ({
   if (error) {
     return (
       <div className="flex flex-col items-center justify-center py-12 text-center">
-        <p className="text-destructive mb-4">
-          {error.message || 'Erro ao carregar o capítulo'}
-        </p>
-        <Button onClick={() => refetch()} variant="outline">
-          Tentar novamente
-        </Button>
+        <div className="bg-destructive/10 rounded-lg p-6 max-w-md">
+          <p className="text-destructive font-medium mb-2">
+            Não foi possível carregar este capítulo
+          </p>
+          <p className="text-muted-foreground text-sm mb-4">
+            {error.message.includes('Muitas requisições') 
+              ? 'Muitas buscas em pouco tempo. Aguarde um momento.'
+              : 'A API está temporariamente indisponível. Tente novamente.'}
+          </p>
+          <Button onClick={() => refetch()} variant="outline">
+            Tentar novamente
+          </Button>
+        </div>
       </div>
     );
   }

@@ -8,6 +8,7 @@ import { BibleChapterSelector } from '@/components/bible/BibleChapterSelector';
 import { BibleVerseReader } from '@/components/bible/BibleVerseReader';
 import { BibleSearch } from '@/components/bible/BibleSearch';
 import { useBibleBooks, BibleBook, SearchResult } from '@/hooks/useBible';
+import { BIBLE_BOOKS_FALLBACK } from '@/data/bibleBooks';
 
 type NavigationState = 
   | { step: 'books' }
@@ -60,13 +61,17 @@ const Bible = () => {
   };
 
   const handleSearchResult = (result: SearchResult) => {
-    // Find the book from our list
-    const book = books?.find(b => b.abbrev.pt === result.book.abbrev.pt);
+    // Find the book from our list or fallback
+    const booksList = books || BIBLE_BOOKS_FALLBACK.map(b => ({
+      ...b,
+      testament: b.testament,
+    }));
+    const book = booksList.find(b => b.abbrev.pt === result.book.abbrev.pt);
     if (book) {
       setActiveTab('navigate');
       setNavState({ 
         step: 'reading', 
-        book, 
+        book: book as BibleBook, 
         chapter: result.chapter, 
         highlightVerse: result.number 
       });
@@ -74,95 +79,79 @@ const Bible = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary-light via-primary to-primary-dark">
-      <div className="p-4 sm:p-6 space-y-6 animate-fade-in">
-        {/* Header */}
-        <div className="flex items-center gap-3">
-          <div className="p-2 rounded-lg bg-white/20 text-white">
-            <Book className="w-6 h-6" />
+    <div className="container mx-auto px-4 py-4 space-y-6 animate-fade-in">
+      {/* Header */}
+      <Card className="bg-gradient-to-r from-[#33C2FF] to-[#2367FF] border-0">
+        <CardHeader className="pb-4">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-white/20 text-white">
+              <Book className="w-6 h-6" />
+            </div>
+            <CardTitle className="text-2xl sm:text-3xl font-bold text-white">Bíblia</CardTitle>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-white">Bíblia</h1>
-        </div>
+        </CardHeader>
+        <CardContent className="pt-0 pb-4">
+          <BibleVersionSelector value={version} onChange={setVersion} />
+        </CardContent>
+      </Card>
 
-        {/* Version Selector */}
-        <Card className="bg-white/10 backdrop-blur-sm border-white/20">
-          <CardContent className="p-4">
-            <BibleVersionSelector value={version} onChange={setVersion} />
-          </CardContent>
-        </Card>
+      {/* Main Content */}
+      <Card className="bg-card shadow-xl">
+        <CardContent className="p-4 sm:p-6">
+          <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'navigate' | 'search')}>
+            <TabsList className="grid w-full grid-cols-2 mb-6 bg-secondary">
+              <TabsTrigger 
+                value="navigate"
+                className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+              >
+                Navegar
+              </TabsTrigger>
+              <TabsTrigger 
+                value="search"
+                className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+              >
+                Pesquisar
+              </TabsTrigger>
+            </TabsList>
 
-        {/* Main Content */}
-        <Card className="bg-white/95 backdrop-blur-sm shadow-xl">
-          <CardContent className="p-4 sm:p-6">
-            <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'navigate' | 'search')}>
-              <TabsList className="grid w-full grid-cols-2 mb-6 bg-secondary">
-                <TabsTrigger 
-                  value="navigate"
-                  className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
-                >
-                  Navegar
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="search"
-                  className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
-                >
-                  Pesquisar
-                </TabsTrigger>
-              </TabsList>
-
-              <TabsContent value="navigate" className="mt-0">
-                {booksError ? (
-                  <div className="flex flex-col items-center justify-center py-12 text-center">
-                    <p className="text-destructive mb-4">Erro ao carregar os livros</p>
-                    <button
-                      onClick={() => refetchBooks()}
-                      className="text-primary underline hover:no-underline"
-                    >
-                      Tentar novamente
-                    </button>
-                  </div>
-                ) : (
-                  <>
-                    {navState.step === 'books' && (
-                      <BibleBookList
-                        books={books}
-                        isLoading={booksLoading}
-                        onSelectBook={handleSelectBook}
-                      />
-                    )}
-
-                    {navState.step === 'chapters' && (
-                      <BibleChapterSelector
-                        book={navState.book}
-                        onSelectChapter={handleSelectChapter}
-                        onBack={handleBackToBooks}
-                      />
-                    )}
-
-                    {navState.step === 'reading' && (
-                      <BibleVerseReader
-                        book={navState.book}
-                        chapter={navState.chapter}
-                        version={version}
-                        onBack={handleBackToChapters}
-                        onChangeChapter={handleChangeChapter}
-                        highlightVerse={navState.highlightVerse}
-                      />
-                    )}
-                  </>
-                )}
-              </TabsContent>
-
-              <TabsContent value="search" className="mt-0">
-                <BibleSearch
-                  version={version}
-                  onSelectResult={handleSearchResult}
+            <TabsContent value="navigate" className="mt-0">
+              {navState.step === 'books' && (
+                <BibleBookList
+                  books={books}
+                  isLoading={booksLoading}
+                  onSelectBook={handleSelectBook}
                 />
-              </TabsContent>
-            </Tabs>
-          </CardContent>
-        </Card>
-      </div>
+              )}
+
+              {navState.step === 'chapters' && (
+                <BibleChapterSelector
+                  book={navState.book}
+                  onSelectChapter={handleSelectChapter}
+                  onBack={handleBackToBooks}
+                />
+              )}
+
+              {navState.step === 'reading' && (
+                <BibleVerseReader
+                  book={navState.book}
+                  chapter={navState.chapter}
+                  version={version}
+                  onBack={handleBackToChapters}
+                  onChangeChapter={handleChangeChapter}
+                  highlightVerse={navState.highlightVerse}
+                />
+              )}
+            </TabsContent>
+
+            <TabsContent value="search" className="mt-0">
+              <BibleSearch
+                version={version}
+                onSelectResult={handleSearchResult}
+              />
+            </TabsContent>
+          </Tabs>
+        </CardContent>
+      </Card>
     </div>
   );
 };
