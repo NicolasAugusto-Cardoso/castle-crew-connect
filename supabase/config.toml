@@ -2,3 +2,6 @@ project_id = "tcvtgzubarrsppppazfo"
 
 [functions.fetch-verse-of-the-day]
 verify_jwt = false
+
+[functions.bible-proxy]
+verify_jwt = false
