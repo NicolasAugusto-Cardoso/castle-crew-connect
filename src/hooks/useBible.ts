@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { useState, useEffect } from 'react';
 import { BIBLE_BOOKS_FALLBACK, BibleBookFallback } from '@/data/bibleBooks';
+import { supabase } from '@/integrations/supabase/client';
 
 const API_BASE_URL = 'https://www.abibliadigital.com.br/api';
 
@@ -37,6 +38,7 @@ export interface BibleChapter {
     verses: number;
   };
   verses: BibleVerse[];
+  source?: 'abibliadigital' | 'backup_api' | 'cache';
 }
 
 export interface SearchResult {
@@ -83,10 +85,17 @@ function convertFallbackToApiFormat(fallback: BibleBookFallback[]): BibleBook[] 
   }));
 }
 
-// Fetch all books with fallback
+// Fetch all books with fallback - always returns data
 async function fetchBooks(): Promise<BibleBook[]> {
   try {
-    const response = await fetch(`${API_BASE_URL}/books`);
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000); // 5s timeout
+
+    const response = await fetch(`${API_BASE_URL}/books`, {
+      signal: controller.signal,
+    });
+    clearTimeout(timeoutId);
+
     if (!response.ok) {
       throw new Error(`API returned ${response.status}`);
     }
@@ -98,20 +107,148 @@ async function fetchBooks(): Promise<BibleBook[]> {
   }
 }
 
-// Fetch chapter verses
-async function fetchChapter(version: string, abbrev: string, chapter: number): Promise<BibleChapter> {
-  const response = await fetch(`${API_BASE_URL}/verses/${version}/${abbrev}/${chapter}`);
+// Fetch chapter via Edge Function proxy (with cache)
+async function fetchChapterViaProxy(
+  version: string,
+  abbrev: string,
+  chapter: number
+): Promise<BibleChapter> {
+  const { data, error } = await supabase.functions.invoke('bible-proxy', {
+    body: { version, bookAbbrev: abbrev, chapter },
+  });
+
+  if (error) {
+    console.error('[Bible] Edge function error:', error);
+    throw new Error('Erro ao conectar com o servidor');
+  }
+
+  if (data.error) {
+    throw new Error(data.error);
+  }
+
+  // Find book info from fallback for complete response
+  const bookInfo = BIBLE_BOOKS_FALLBACK.find(b => b.abbrev.pt === abbrev);
+
+  // Convert proxy response to BibleChapter format
+  return {
+    book: {
+      abbrev: bookInfo?.abbrev || { pt: abbrev, en: abbrev },
+      name: data.bookName || bookInfo?.name || abbrev,
+      author: bookInfo?.author || '',
+      group: bookInfo?.group || '',
+      version: version,
+    },
+    chapter: {
+      number: chapter,
+      verses: data.verses.length,
+    },
+    verses: data.verses,
+    source: data.source,
+  };
+}
+
+// Fallback: Try direct API call if Edge Function fails
+async function fetchChapterDirect(
+  version: string,
+  abbrev: string,
+  chapter: number
+): Promise<BibleChapter> {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 8000);
+
+  const response = await fetch(`${API_BASE_URL}/verses/${version}/${abbrev}/${chapter}`, {
+    signal: controller.signal,
+  });
+  clearTimeout(timeoutId);
+
   if (!response.ok) {
     if (response.status === 429) {
       throw new Error('Muitas requisições. Aguarde um momento...');
     }
-    throw new Error('Failed to fetch chapter');
+    throw new Error('API indisponível');
   }
-  return response.json();
+  
+  const data = await response.json();
+  return { ...data, source: 'abibliadigital' as const };
+}
+
+// Try local cache (Supabase) as last resort
+async function fetchChapterFromCache(
+  version: string,
+  abbrev: string,
+  chapter: number
+): Promise<BibleChapter | null> {
+  try {
+    const { data: cachedData, error } = await supabase
+      .from('bible_chapter_cache')
+      .select('*')
+      .eq('version', version)
+      .eq('book_abbrev', abbrev)
+      .eq('chapter', chapter)
+      .single();
+
+    if (error || !cachedData) return null;
+
+    const bookInfo = BIBLE_BOOKS_FALLBACK.find(b => b.abbrev.pt === abbrev);
+    const verses = cachedData.verses as unknown as BibleVerse[];
+
+    return {
+      book: {
+        abbrev: bookInfo?.abbrev || { pt: abbrev, en: abbrev },
+        name: bookInfo?.name || abbrev,
+        author: bookInfo?.author || '',
+        group: bookInfo?.group || '',
+        version: version,
+      },
+      chapter: {
+        number: chapter,
+        verses: verses.length,
+      },
+      verses,
+      source: 'cache',
+    };
+  } catch (error) {
+    console.warn('[Bible] Cache lookup failed:', error);
+    return null;
+  }
+}
+
+// Main fetch function with multiple fallbacks
+async function fetchChapter(
+  version: string,
+  abbrev: string,
+  chapter: number
+): Promise<BibleChapter> {
+  // 1. Try Edge Function (which has its own cache + API retry)
+  try {
+    return await fetchChapterViaProxy(version, abbrev, chapter);
+  } catch (proxyError) {
+    console.warn('[Bible] Proxy failed, trying direct API:', proxyError);
+  }
+
+  // 2. Try direct API call
+  try {
+    return await fetchChapterDirect(version, abbrev, chapter);
+  } catch (directError) {
+    console.warn('[Bible] Direct API failed, checking cache:', directError);
+  }
+
+  // 3. Try local cache as last resort
+  const cached = await fetchChapterFromCache(version, abbrev, chapter);
+  if (cached) {
+    console.log('[Bible] Loaded from local cache');
+    return cached;
+  }
+
+  // All failed
+  throw new Error('Não foi possível carregar este capítulo. Tente novamente mais tarde.');
 }
 
 // Search verses
 async function searchVerses(version: string, query: string): Promise<SearchResponse> {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 10000);
+
   const response = await fetch(`${API_BASE_URL}/verses/search`, {
     method: 'POST',
     headers: {
@@ -121,40 +258,41 @@ async function searchVerses(version: string, query: string): Promise<SearchRespo
       version,
       search: query,
     }),
+    signal: controller.signal,
   });
+  clearTimeout(timeoutId);
+
   if (!response.ok) {
     if (response.status === 429) {
       throw new Error('Muitas requisições. Aguarde um momento...');
     }
-    throw new Error('Failed to search verses');
+    throw new Error('Pesquisa indisponível no momento');
   }
   return response.json();
 }
 
-// Hook to fetch all books with caching
+// Hook to fetch all books with caching (always works via fallback)
 export function useBibleBooks() {
   return useQuery({
     queryKey: ['bible', 'books'],
     queryFn: fetchBooks,
     staleTime: 24 * 60 * 60 * 1000, // 24 hours
     gcTime: 7 * 24 * 60 * 60 * 1000, // 7 days
-    retry: 1, // Only retry once since we have fallback
+    retry: 1,
+    refetchOnWindowFocus: false,
   });
 }
 
-// Hook to fetch a specific chapter
+// Hook to fetch a specific chapter with resilient fallbacks
 export function useBibleChapter(version: string, abbrev: string | null, chapter: number | null) {
   return useQuery({
     queryKey: ['bible', 'chapter', version, abbrev, chapter],
     queryFn: () => fetchChapter(version, abbrev!, chapter!),
     enabled: !!abbrev && !!chapter && chapter > 0,
-    staleTime: 30 * 60 * 1000, // 30 minutes
-    gcTime: 2 * 60 * 60 * 1000, // 2 hours
-    retry: (failureCount, error) => {
-      // Don't retry on rate limit
-      if (error.message.includes('Muitas requisições')) return false;
-      return failureCount < 2;
-    },
+    staleTime: 12 * 60 * 60 * 1000, // 12 hours
+    gcTime: 24 * 60 * 60 * 1000, // 24 hours
+    retry: 1,
+    refetchOnWindowFocus: false,
   });
 }
 
@@ -165,7 +303,7 @@ export function useBibleSearch(version: string, query: string) {
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedQuery(query);
-    }, 500); // 500ms debounce
+    }, 500);
 
     return () => clearTimeout(timer);
   }, [query]);
@@ -177,10 +315,7 @@ export function useBibleSearch(version: string, query: string) {
     staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 30 * 60 * 1000, // 30 minutes
     refetchOnWindowFocus: false,
-    retry: (failureCount, error) => {
-      if (error.message.includes('Muitas requisições')) return false;
-      return failureCount < 1;
-    },
+    retry: 1,
   });
 }
 

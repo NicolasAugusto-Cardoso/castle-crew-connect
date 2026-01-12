@@ -50,6 +50,36 @@ export type Database = {
         }
         Relationships: []
       }
+      bible_chapter_cache: {
+        Row: {
+          book_abbrev: string
+          chapter: number
+          fetched_at: string
+          id: string
+          provider: string
+          verses: Json
+          version: string
+        }
+        Insert: {
+          book_abbrev: string
+          chapter: number
+          fetched_at?: string
+          id?: string
+          provider: string
+          verses: Json
+          version: string
+        }
+        Update: {
+          book_abbrev?: string
+          chapter?: number
+          fetched_at?: string
+          id?: string
+          provider?: string
+          verses?: Json
+          version?: string
+        }
+        Relationships: []
+      }
       collaborator_profiles: {
         Row: {
           accepting_new: boolean | null

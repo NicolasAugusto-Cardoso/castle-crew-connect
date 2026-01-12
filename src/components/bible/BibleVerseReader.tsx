@@ -109,9 +109,16 @@ export const BibleVerseReader = ({
           >
             <ArrowLeft className="w-5 h-5" />
           </Button>
-          <h3 className="font-semibold text-lg">
-            {book.name} {chapter}
-          </h3>
+          <div className="flex items-center gap-2">
+            <h3 className="font-semibold text-lg">
+              {book.name} {chapter}
+            </h3>
+            {data?.source === 'cache' && (
+              <span className="text-xs bg-muted px-2 py-0.5 rounded-full text-muted-foreground">
+                💾 cache
+              </span>
+            )}
+          </div>
         </div>
         
         {/* Chapter Navigation */}
