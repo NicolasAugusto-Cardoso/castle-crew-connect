@@ -1,4 +1,4 @@
-// Bible Proxy v2 - with bolls.life backup
+// Bible Proxy v3 - PT-BR only with correct bolls.life mappings
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 const corsHeaders = {
@@ -21,20 +21,25 @@ interface ChapterPayload {
   verses: NormalizedVerse[]
   source: 'abibliadigital' | 'backup_api' | 'cache'
   bookName?: string
+  language: string
 }
 
-// Map ABíbliaDigital version codes to bolls.life translation IDs
-// bolls.life uses Portuguese versions with different codes
+// CORRECT Map for PT-BR translations on bolls.life
+// Found by checking https://bolls.life/static/bolls/app/views/languages.json
 const BOLLS_VERSION_MAP: Record<string, string> = {
-  'nvi': 'NTLH', // Use NTLH (Nova Tradução na Linguagem de Hoje) as fallback for NVI
-  'ara': 'ARA',  // Almeida Revista e Atualizada
-  'acf': 'ACF',  // Almeida Corrigida Fiel
-  'kjv': 'KJV',  // King James Version
-  'bbe': 'BBE',  // Bible in Basic English
-  'rvr': 'RVR', // Reina Valera (Spanish)
+  'nvi': 'NVIPT',  // Nova Versão Internacional PT-BR (NOT "NVI" which is Spanish!)
+  'ara': 'ARA',    // Almeida Revista e Atualizada
+  'acf': 'ACF11',  // Almeida Corrigida Fiel 2011
+  'ntlh': 'NTLH',  // Nova Tradução na Linguagem de Hoje
+  'naa': 'NAA',    // Nova Almeida Atualizada
 }
+
+// PT-BR versions supported - reject any other
+const SUPPORTED_PT_VERSIONS = ['nvi', 'ara', 'acf', 'ntlh', 'naa']
 
 // Map book abbreviations to bolls.life book numbers (1-66)
+// Note: 'jo' could be Jó (18) or João (43) - context determines
+// We use ABíbliaDigital abbreviations which use 'jó' for Job and 'jo' for John
 const BOOK_NUMBER_MAP: Record<string, number> = {
   'gn': 1, 'ex': 2, 'lv': 3, 'nm': 4, 'dt': 5,
   'js': 6, 'jz': 7, 'rt': 8, '1sm': 9, '2sm': 10,
@@ -50,6 +55,17 @@ const BOOK_NUMBER_MAP: Record<string, number> = {
   '2tm': 55, 'tt': 56, 'fm': 57, 'hb': 58, 'tg': 59,
   '1pe': 60, '2pe': 61, '1jo': 62, '2jo': 63, '3jo': 64,
   'jd': 65, 'ap': 66,
+}
+
+// Detect if text is in Spanish (common Spanish words)
+function isSpanishText(verses: NormalizedVerse[]): boolean {
+  const spanishIndicators = [
+    'Santiago', 'Señor', 'Espíritu', 'también', 'ningún', 'algún',
+    'ustedes', 'había', 'después', 'según', 'aquí'
+  ]
+  
+  const sampleText = verses.slice(0, 5).map(v => v.text).join(' ')
+  return spanishIndicators.some(word => sampleText.includes(word))
 }
 
 // Normalize verses from ABibliaDigital format
@@ -70,7 +86,7 @@ function normalizeBollsLife(data: any[]): NormalizedVerse[] {
   }))
 }
 
-// Try ABibliaDigital API
+// Try ABibliaDigital API (always returns PT-BR)
 async function tryABibliaDigital(
   version: string,
   bookAbbrev: string,
@@ -106,14 +122,21 @@ async function tryABibliaDigital(
   }
 }
 
-// Try bolls.life as backup API
+// Try bolls.life as backup API (with PT-BR validation)
 async function tryBollsLife(
   version: string,
   bookAbbrev: string,
   chapter: number
 ): Promise<{ verses: NormalizedVerse[] } | null> {
   try {
-    const bollsVersion = BOLLS_VERSION_MAP[version] || 'NVI'
+    // Only use bolls.life for supported PT-BR versions
+    const bollsVersion = BOLLS_VERSION_MAP[version.toLowerCase()]
+    
+    if (!bollsVersion) {
+      console.log(`[bible-proxy] Version ${version} not supported on bolls.life for PT-BR`)
+      return null
+    }
+
     const bookNumber = BOOK_NUMBER_MAP[bookAbbrev.toLowerCase()]
     
     if (!bookNumber) {
@@ -125,10 +148,10 @@ async function tryBollsLife(
     const timeoutId = setTimeout(() => controller.abort(), 8000)
 
     // bolls.life format: /get-chapter/TRANSLATION/BOOK_NUMBER/CHAPTER
-    const response = await fetch(
-      `${BOLLS_LIFE_URL}/${bollsVersion}/${bookNumber}/${chapter}/`,
-      { signal: controller.signal }
-    )
+    const url = `${BOLLS_LIFE_URL}/${bollsVersion}/${bookNumber}/${chapter}/`
+    console.log(`[bible-proxy] Trying bolls.life: ${url}`)
+    
+    const response = await fetch(url, { signal: controller.signal })
     clearTimeout(timeoutId)
 
     if (!response.ok) {
@@ -141,7 +164,13 @@ async function tryBollsLife(
     
     if (verses.length === 0) return null
     
-    console.log(`[bible-proxy] bolls.life success: ${verses.length} verses`)
+    // CRITICAL: Validate that text is actually Portuguese
+    if (isSpanishText(verses)) {
+      console.log(`[bible-proxy] bolls.life returned Spanish text - rejecting`)
+      return null
+    }
+    
+    console.log(`[bible-proxy] bolls.life success (PT-BR verified): ${verses.length} verses`)
     return { verses }
   } catch (error) {
     console.log(`[bible-proxy] bolls.life failed:`, error)
@@ -170,41 +199,55 @@ Deno.serve(async (req) => {
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
-    // 1. Check cache first
+    // 1. Check cache first (only PT-BR entries)
     const { data: cachedChapter } = await supabase
       .from('bible_chapter_cache')
       .select('*')
       .eq('version', version)
       .eq('book_abbrev', bookAbbrev)
       .eq('chapter', chapter)
+      .eq('language', 'pt-BR')
       .single()
 
     if (cachedChapter) {
-      console.log(`[bible-proxy] Cache hit for ${version}/${bookAbbrev}/${chapter}`)
-      const payload: ChapterPayload = {
-        version,
-        bookAbbrev,
-        chapter,
-        verses: cachedChapter.verses as NormalizedVerse[],
-        source: 'cache',
+      const cachedVerses = cachedChapter.verses as NormalizedVerse[]
+      
+      // Double-check cached text is not Spanish (cleanup old bad cache)
+      if (isSpanishText(cachedVerses)) {
+        console.log(`[bible-proxy] Cache has Spanish text - deleting and refetching`)
+        await supabase
+          .from('bible_chapter_cache')
+          .delete()
+          .eq('id', cachedChapter.id)
+      } else {
+        console.log(`[bible-proxy] Cache hit (PT-BR) for ${version}/${bookAbbrev}/${chapter}`)
+        const payload: ChapterPayload = {
+          version,
+          bookAbbrev,
+          chapter,
+          verses: cachedVerses,
+          source: 'cache',
+          language: 'pt-BR',
+        }
+        return new Response(JSON.stringify(payload), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        })
       }
-      return new Response(JSON.stringify(payload), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      })
     }
 
-    // 2. Try ABibliaDigital
+    // 2. Try ABibliaDigital (primary - always PT-BR)
     console.log(`[bible-proxy] Trying ABibliaDigital for ${version}/${bookAbbrev}/${chapter}`)
     const abibliaResult = await tryABibliaDigital(version, bookAbbrev, chapter)
 
     if (abibliaResult) {
-      // Save to cache
+      // Save to cache with language
       await supabase.from('bible_chapter_cache').upsert({
         provider: 'abibliadigital',
         version,
         book_abbrev: bookAbbrev,
         chapter,
         verses: abibliaResult.verses,
+        language: 'pt-BR',
         fetched_at: new Date().toISOString(),
       }, {
         onConflict: 'version,book_abbrev,chapter',
@@ -217,24 +260,26 @@ Deno.serve(async (req) => {
         verses: abibliaResult.verses,
         source: 'abibliadigital',
         bookName: abibliaResult.bookName,
+        language: 'pt-BR',
       }
       return new Response(JSON.stringify(payload), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       })
     }
 
-    // 3. Try bolls.life as backup
+    // 3. Try bolls.life as backup (with PT-BR validation)
     console.log(`[bible-proxy] Trying bolls.life backup for ${version}/${bookAbbrev}/${chapter}`)
     const bollsResult = await tryBollsLife(version, bookAbbrev, chapter)
 
     if (bollsResult) {
-      // Save to cache
+      // Save to cache with language
       await supabase.from('bible_chapter_cache').upsert({
         provider: 'bolls_life',
         version,
         book_abbrev: bookAbbrev,
         chapter,
         verses: bollsResult.verses,
+        language: 'pt-BR',
         fetched_at: new Date().toISOString(),
       }, {
         onConflict: 'version,book_abbrev,chapter',
@@ -246,6 +291,7 @@ Deno.serve(async (req) => {
         chapter,
         verses: bollsResult.verses,
         source: 'backup_api',
+        language: 'pt-BR',
       }
       return new Response(JSON.stringify(payload), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
