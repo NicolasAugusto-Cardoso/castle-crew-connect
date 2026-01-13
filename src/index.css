@@ -6,6 +6,26 @@
 All colors MUST be HSL.
 */
 
+/* Safe Area utilities for mobile devices with notches */
+:root {
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* Safe area padding classes */
+.pt-safe {
+  padding-top: var(--safe-top);
+}
+
+.pb-safe {
+  padding-bottom: max(12px, var(--safe-bottom));
+}
+
+/* Optimized for bottom navigation - tight spacing without excessive gaps */
+.pb-safe-nav {
+  padding-bottom: calc(8px + var(--safe-bottom));
+}
+
 @layer base {
   :root {
     --background: 0 0% 100%;
@@ -194,15 +214,6 @@ All colors MUST be HSL.
     font-size: 16px;
   }
   
-  /* Safe area for mobile devices with notches */
-  @supports (padding: env(safe-area-inset-bottom)) {
-    .safe-area-bottom {
-      padding-bottom: env(safe-area-inset-bottom);
-    }
-    .safe-area-top {
-      padding-top: env(safe-area-inset-top);
-    }
-  }
 }
 
 @layer components {
