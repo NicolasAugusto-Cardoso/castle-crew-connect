@@ -64,9 +64,9 @@ export const Layout = () => {
       {/* Install PWA Banner */}
       <InstallPWABanner />
       
-      {/* Header */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-white shadow-[0_1px_3px_rgba(0,0,0,0.1)] h-[60px] backdrop-blur-sm">
-        <div className="w-full h-full px-2 xs:px-3 sm:px-4 flex items-center justify-between md:px-8 relative">
+      {/* Header - with safe area padding for notch */}
+      <header className="fixed top-0 left-0 right-0 z-50 bg-white shadow-[0_1px_3px_rgba(0,0,0,0.1)] backdrop-blur-sm pt-safe">
+        <div className="w-full h-[60px] px-2 xs:px-3 sm:px-4 flex items-center justify-between md:px-8 relative">
           {/* Logo centralizada com position absolute */}
           <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
             <img src={castleLogo} alt="Castle App" className="h-10 xs:h-11 sm:h-12 md:h-14 w-auto" />
@@ -137,7 +137,7 @@ export const Layout = () => {
       </header>
 
       {/* Sidebar Navigation (Desktop) */}
-      <aside className="hidden md:block fixed left-0 top-[60px] bottom-0 w-64 bg-card border-r border-border z-30">
+      <aside className="hidden md:block fixed left-0 top-[calc(60px+var(--safe-top,0px))] bottom-0 w-64 bg-card border-r border-border z-30">
         <nav className="p-4 space-y-2">
           {visibleNavItems.map((item) => {
             const isActive = location.pathname === item.path;
@@ -179,9 +179,10 @@ export const Layout = () => {
 
       {/* Main Content */}
       <main 
-        className="flex-1 pt-[60px] md:pb-4 md:ml-64 overflow-x-hidden overflow-y-auto relative z-0"
+        className="flex-1 md:pb-4 md:ml-64 overflow-x-hidden overflow-y-auto relative z-0"
         style={{
-          paddingBottom: 'calc(80px + env(safe-area-inset-bottom))'
+          paddingTop: 'calc(60px + var(--safe-top, 0px))',
+          paddingBottom: 'calc(72px + var(--safe-bottom, 0px))'
         }}
       >
         <div className="flex justify-center w-full">
@@ -191,9 +192,9 @@ export const Layout = () => {
         </div>
       </main>
 
-      {/* Bottom Navigation (Mobile) */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-gradient-to-r from-[#33C2FF] to-[#2367FF] md:hidden z-40" style={{ paddingBottom: 'calc(1.5rem + env(safe-area-inset-bottom, 16px))' }}>
-        <div className="flex justify-around items-center pt-3 pb-4">
+      {/* Bottom Navigation (Mobile) - using pb-safe-nav for controlled spacing */}
+      <nav className="fixed bottom-0 left-0 right-0 bg-gradient-to-r from-[#33C2FF] to-[#2367FF] md:hidden z-40 pb-safe-nav">
+        <div className="flex justify-around items-center py-2">
           {visibleNavItems.map((item) => {
             const isActive = location.pathname === item.path;
             return (
