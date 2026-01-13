@@ -83,6 +83,120 @@ export type Database = {
         }
         Relationships: []
       }
+      bible_focus_marks: {
+        Row: {
+          book_abbrev: string
+          chapter: number
+          created_at: string | null
+          id: string
+          user_id: string
+          verse: number
+          version: string
+        }
+        Insert: {
+          book_abbrev: string
+          chapter: number
+          created_at?: string | null
+          id?: string
+          user_id: string
+          verse: number
+          version: string
+        }
+        Update: {
+          book_abbrev?: string
+          chapter?: number
+          created_at?: string | null
+          id?: string
+          user_id?: string
+          verse?: number
+          version?: string
+        }
+        Relationships: []
+      }
+      bible_highlights: {
+        Row: {
+          book_abbrev: string
+          chapter: number
+          color: string
+          created_at: string | null
+          end_offset: number
+          highlighted_text: string | null
+          id: string
+          start_offset: number
+          user_id: string
+          verse: number
+          version: string
+        }
+        Insert: {
+          book_abbrev: string
+          chapter: number
+          color: string
+          created_at?: string | null
+          end_offset: number
+          highlighted_text?: string | null
+          id?: string
+          start_offset: number
+          user_id: string
+          verse: number
+          version: string
+        }
+        Update: {
+          book_abbrev?: string
+          chapter?: number
+          color?: string
+          created_at?: string | null
+          end_offset?: number
+          highlighted_text?: string | null
+          id?: string
+          start_offset?: number
+          user_id?: string
+          verse?: number
+          version?: string
+        }
+        Relationships: []
+      }
+      bible_notes: {
+        Row: {
+          background_color: string | null
+          book_abbrev: string
+          chapter: number
+          content_json: Json
+          created_at: string | null
+          id: string
+          text_color: string | null
+          updated_at: string | null
+          user_id: string
+          verse: number
+          version: string
+        }
+        Insert: {
+          background_color?: string | null
+          book_abbrev: string
+          chapter: number
+          content_json: Json
+          created_at?: string | null
+          id?: string
+          text_color?: string | null
+          updated_at?: string | null
+          user_id: string
+          verse: number
+          version: string
+        }
+        Update: {
+          background_color?: string | null
+          book_abbrev?: string
+          chapter?: number
+          content_json?: Json
+          created_at?: string | null
+          id?: string
+          text_color?: string | null
+          updated_at?: string | null
+          user_id?: string
+          verse?: number
+          version?: string
+        }
+        Relationships: []
+      }
       collaborator_profiles: {
         Row: {
           accepting_new: boolean | null

@@ -1,7 +1,10 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, ChevronLeft, ChevronRight, Copy, Check, Share2, Search, Loader2 } from 'lucide-react';
+import { ArrowLeft, ChevronLeft, ChevronRight, Search, Loader2 } from 'lucide-react';
 import { BibleBook, useBibleChapter, usePrefetchChapter } from '@/hooks/useBible';
+import { useBibleNotes, useBibleHighlights, useBibleFocusMarks } from '@/hooks/useBibleAnnotations';
+import { BibleVerseCard } from './BibleVerseCard';
+import { BibleNoteDialog } from './BibleNoteDialog';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 
@@ -30,6 +33,15 @@ export const BibleVerseReader = ({
   const [copiedVerse, setCopiedVerse] = useState<number | null>(null);
   const highlightRef = useRef<HTMLDivElement>(null);
   const { prefetchChapter } = usePrefetchChapter();
+
+  // Annotations hooks
+  const { notes, getNote, upsertNote, deleteNote, isUpserting, isDeleting } = useBibleNotes(version, book.abbrev.pt, chapter);
+  const { highlights, getHighlights, addHighlight, removeHighlight, removeHighlightsForVerse, isAdding } = useBibleHighlights(version, book.abbrev.pt, chapter);
+  const { focusMarks, hasFocusMark, toggleFocusMark, isToggling } = useBibleFocusMarks(version, book.abbrev.pt, chapter);
+
+  // Note dialog state
+  const [noteDialogOpen, setNoteDialogOpen] = useState(false);
+  const [selectedVerseForNote, setSelectedVerseForNote] = useState<number | null>(null);
 
   // Prefetch adjacent chapters
   useEffect(() => {
@@ -82,6 +94,78 @@ export const BibleVerseReader = ({
     }
   };
 
+  const handleOpenNote = (verseNumber: number) => {
+    setSelectedVerseForNote(verseNumber);
+    setNoteDialogOpen(true);
+  };
+
+  const handleSaveNote = async (
+    contentJson: { text: string; formatting?: { bold?: boolean; underline?: boolean } },
+    textColor?: string,
+    bgColor?: string
+  ) => {
+    if (selectedVerseForNote === null) return;
+
+    await upsertNote({
+      version,
+      bookAbbrev: book.abbrev.pt,
+      chapter,
+      verse: selectedVerseForNote,
+      content_json: contentJson,
+      text_color: textColor,
+      background_color: bgColor,
+    });
+  };
+
+  const handleDeleteNote = async () => {
+    if (selectedVerseForNote === null) return;
+    const note = getNote(selectedVerseForNote);
+    if (note) {
+      await deleteNote(note.id);
+    }
+  };
+
+  const handleToggleFocus = async (verseNumber: number) => {
+    try {
+      const result = await toggleFocusMark({
+        version,
+        bookAbbrev: book.abbrev.pt,
+        chapter,
+        verse: verseNumber,
+      });
+      toast.success(result.action === 'added' ? 'Destaque ativado' : 'Destaque removido');
+    } catch {
+      toast.error('Erro ao alternar destaque');
+    }
+  };
+
+  const handleAddHighlight = async (verseNumber: number, color: string, startOffset: number, endOffset: number, selectedText: string) => {
+    await addHighlight({
+      version,
+      bookAbbrev: book.abbrev.pt,
+      chapter,
+      verse: verseNumber,
+      color,
+      start_offset: startOffset,
+      end_offset: endOffset,
+      highlighted_text: selectedText,
+    });
+  };
+
+  const handleRemoveHighlightsForVerse = async (verseNumber: number) => {
+    try {
+      await removeHighlightsForVerse({
+        version,
+        bookAbbrev: book.abbrev.pt,
+        chapter,
+        verse: verseNumber,
+      });
+      toast.success('Grifos removidos');
+    } catch {
+      toast.error('Erro ao remover grifos');
+    }
+  };
+
   const hasPrevChapter = chapter > 1;
   const hasNextChapter = chapter < book.chapters;
 
@@ -110,6 +194,8 @@ export const BibleVerseReader = ({
       </div>
     );
   }
+
+  const selectedNote = selectedVerseForNote !== null ? getNote(selectedVerseForNote) : undefined;
 
   return (
     <div className="flex flex-col h-full min-h-0">
@@ -182,57 +268,50 @@ export const BibleVerseReader = ({
           <div className="space-y-3 pb-8">
             {data?.verses.map((verse) => {
               const isHighlighted = highlightVerse === verse.number;
+              const isFocused = hasFocusMark(verse.number);
+              const verseNote = getNote(verse.number);
+              const verseHighlights = getHighlights(verse.number);
               
               return (
-                <div
+                <BibleVerseCard
                   key={verse.number}
-                  ref={isHighlighted ? highlightRef : undefined}
-                  id={`verse-${verse.number}`}
-                  className={cn(
-                    "group p-4 rounded-xl transition-all duration-300",
-                    isHighlighted
-                      ? "bg-primary/10 ring-2 ring-primary/50"
-                      : "hover:bg-secondary/50"
-                  )}
-                >
-                  <div className="flex gap-3">
-                    <span className="text-primary font-bold text-base flex-shrink-0 w-8 text-right">
-                      {verse.number}
-                    </span>
-                    <p className="text-foreground leading-relaxed text-base sm:text-lg flex-1">
-                      {verse.text}
-                    </p>
-                  </div>
-                  
-                  {/* Actions on hover/tap */}
-                  <div className="flex justify-end gap-1 mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-8 px-2 text-muted-foreground hover:text-foreground rounded-lg"
-                      onClick={() => handleCopyVerse(verse.number, verse.text)}
-                    >
-                      {copiedVerse === verse.number ? (
-                        <Check className="w-4 h-4" />
-                      ) : (
-                        <Copy className="w-4 h-4" />
-                      )}
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-8 px-2 text-muted-foreground hover:text-foreground rounded-lg"
-                      onClick={() => handleShareVerse(verse.number, verse.text)}
-                    >
-                      <Share2 className="w-4 h-4" />
-                    </Button>
-                  </div>
-                </div>
+                  verseNumber={verse.number}
+                  text={verse.text}
+                  bookName={book.name}
+                  chapter={chapter}
+                  isHighlighted={isHighlighted}
+                  isFocused={isFocused}
+                  hasNote={!!verseNote}
+                  highlights={verseHighlights}
+                  onCopy={() => handleCopyVerse(verse.number, verse.text)}
+                  onShare={() => handleShareVerse(verse.number, verse.text)}
+                  onOpenNote={() => handleOpenNote(verse.number)}
+                  onToggleFocus={() => handleToggleFocus(verse.number)}
+                  onAddHighlight={(color, start, end, text) => handleAddHighlight(verse.number, color, start, end, text)}
+                  onRemoveHighlight={removeHighlight}
+                  onRemoveAllHighlights={() => handleRemoveHighlightsForVerse(verse.number)}
+                  copiedVerse={copiedVerse}
+                  highlightRef={isHighlighted ? highlightRef : undefined}
+                />
               );
             })}
           </div>
         )}
       </div>
+
+      {/* Note Dialog */}
+      <BibleNoteDialog
+        open={noteDialogOpen}
+        onOpenChange={setNoteDialogOpen}
+        bookName={book.name}
+        chapter={chapter}
+        verse={selectedVerseForNote || 1}
+        existingNote={selectedNote}
+        onSave={handleSaveNote}
+        onDelete={selectedNote ? handleDeleteNote : undefined}
+        isSaving={isUpserting}
+        isDeleting={isDeleting}
+      />
     </div>
   );
 };

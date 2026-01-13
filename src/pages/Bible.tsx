@@ -4,9 +4,11 @@ import { BibleVersionSelector } from '@/components/bible/BibleVersionSelector';
 import { BibleBookList } from '@/components/bible/BibleBookList';
 import { BibleChapterSelector } from '@/components/bible/BibleChapterSelector';
 import { BibleVerseReader } from '@/components/bible/BibleVerseReader';
+import { BibleSavedSection } from '@/components/bible/BibleSavedSection';
 import { useBibleBooks, BibleBook, usePrefetchChapter } from '@/hooks/useBible';
 import { BIBLE_BOOKS_FALLBACK } from '@/data/bibleBooks';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useAuth } from '@/hooks/useAuth';
 
 // Simplified navigation: books -> chapters -> reading (no intermediate verse selector)
 type NavigationState = 
@@ -28,6 +30,7 @@ const pageTransition = {
 const Bible = () => {
   const [version, setVersion] = useState('nvi');
   const [navState, setNavState] = useState<NavigationState>({ step: 'books' });
+  const { user } = useAuth();
   
   const { data: books, isLoading: booksLoading } = useBibleBooks();
   const { prefetchFirstChapters } = usePrefetchChapter();
@@ -88,6 +91,30 @@ const Bible = () => {
     setNavState({ step: 'books' });
   };
 
+  // Navigate to a verse from saved section
+  const handleNavigateToVerse = (bookAbbrev: string, chapter: number, verse: number) => {
+    // Find book from fallback data
+    const book = BIBLE_BOOKS_FALLBACK.find(b => b.abbrev.pt === bookAbbrev);
+    if (!book) return;
+
+    // Convert to BibleBook format
+    const bibleBook: BibleBook = {
+      abbrev: book.abbrev,
+      author: book.author,
+      chapters: book.chapters,
+      group: book.group,
+      name: book.name,
+      testament: book.testament,
+    };
+
+    setNavState({
+      step: 'reading',
+      book: bibleBook,
+      chapter,
+      highlightVerse: verse,
+    });
+  };
+
   // Check if we're in fullscreen reading mode
   const isReading = navState.step === 'reading';
 
@@ -131,7 +158,7 @@ const Bible = () => {
           </div>
         ) : (
           // Navigation view - no tabs, direct book list
-          <div className="flex-1 flex flex-col min-h-0 px-4 py-4 sm:px-6">
+          <div className="flex-1 flex flex-col min-h-0 px-4 py-4 sm:px-6 overflow-y-auto">
             <AnimatePresence mode="wait">
               {navState.step === 'books' && (
                 <motion.div
@@ -143,6 +170,15 @@ const Bible = () => {
                   transition={pageTransition}
                   className="flex-1"
                 >
+                  {/* Saved Section - only show if user is logged in */}
+                  {user && (
+                    <div className="mb-6">
+                      <h2 className="text-lg font-semibold mb-3 text-foreground">Salvos</h2>
+                      <BibleSavedSection onNavigateToVerse={handleNavigateToVerse} />
+                    </div>
+                  )}
+
+                  <h2 className="text-lg font-semibold mb-3 text-foreground">Navegar</h2>
                   <BibleBookList
                     books={books}
                     isLoading={booksLoading}
