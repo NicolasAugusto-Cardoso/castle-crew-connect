@@ -4,6 +4,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { useServiceWorker } from "@/hooks/useServiceWorker";
 import { useAuth } from "@/hooks/useAuth";
 import { Splash } from "@/components/Splash";
 import { Layout } from "@/components/Layout";
@@ -56,6 +57,9 @@ const ProtectedLayout = () => {
 const App = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [showSplash, setShowSplash] = useState(false);
+  
+  // Registra o service worker para atualizações automáticas do PWA
+  useServiceWorker();
 
   // Show pre-splash for a brief moment, then transition to animated splash
   useEffect(() => {
