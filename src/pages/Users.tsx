@@ -1,11 +1,14 @@
 import { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useUsers, UserWithRoles } from '@/hooks/useUsers';
+import { useDonationsEnabled, useUpdateAppSetting } from '@/hooks/useAppSettings';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { Plus, UserCircle, Mail, Shield, Loader2, Trash2, Search } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
+import { Plus, UserCircle, Mail, Shield, Loader2, Trash2, Search, Settings, Heart } from 'lucide-react';
 import { CreateUserDialog } from '@/components/users/CreateUserDialog';
 import { EditUserDialog } from '@/components/users/EditUserDialog';
 import {
@@ -45,6 +48,8 @@ const roleColors: Record<string, string> = {
 export default function Users() {
   const { hasRole, loading: authLoading, user: currentUser } = useAuth();
   const { users, isLoading, createUser, updateUserRoles, deleteUser, isCreating, isUpdating, isDeleting } = useUsers();
+  const { isDonationsEnabled, isLoading: isLoadingSettings } = useDonationsEnabled();
+  const updateSetting = useUpdateAppSetting();
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -52,6 +57,10 @@ export default function Users() {
   const [userToDelete, setUserToDelete] = useState<UserWithRoles | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [roleFilter, setRoleFilter] = useState<string>('all');
+
+  const handleToggleDonations = () => {
+    updateSetting.mutate({ key: 'donations_enabled', value: !isDonationsEnabled });
+  };
 
   const isAdmin = hasRole(['admin']);
 
@@ -145,6 +154,40 @@ export default function Users() {
           Crie e gerencie usuários do sistema
         </p>
       </div>
+
+      {/* Configurações do App */}
+      <Card className="card-elevated mb-6">
+        <CardHeader className="pb-3">
+          <div className="flex items-center gap-2">
+            <Settings className="w-5 h-5 text-primary" />
+            <CardTitle className="text-lg">Configurações do App</CardTitle>
+          </div>
+          <CardDescription>
+            Gerencie as funcionalidades disponíveis no aplicativo
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Heart className="w-5 h-5 text-muted-foreground" />
+              <div>
+                <Label htmlFor="donations-toggle" className="font-medium cursor-pointer">
+                  Aba Doações
+                </Label>
+                <p className="text-sm text-muted-foreground">
+                  Quando ligada, aparece para admins e usuários
+                </p>
+              </div>
+            </div>
+            <Switch
+              id="donations-toggle"
+              checked={isDonationsEnabled}
+              onCheckedChange={handleToggleDonations}
+              disabled={isLoadingSettings || updateSetting.isPending}
+            />
+          </div>
+        </CardContent>
+      </Card>
 
       <Button
         className="w-full mb-6 h-14 btn-gradient text-base"

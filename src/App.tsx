@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useServiceWorker } from "@/hooks/useServiceWorker";
 import { useAuth } from "@/hooks/useAuth";
+import { useDonationsEnabled } from "@/hooks/useAppSettings";
 import { Splash } from "@/components/Splash";
 import { Layout } from "@/components/Layout";
 import Home from "./pages/Home";
@@ -29,6 +30,21 @@ import EventDetails from "./pages/EventDetails";
 import Donations from "./pages/Donations";
 import Bible from "./pages/Bible";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
+
+// Guard para rota de doações - redireciona se desabilitado
+const DonationsGuard: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { isDonationsEnabled, isLoading } = useDonationsEnabled();
+  
+  if (isLoading) {
+    return <div className="min-h-screen bg-gradient-to-br from-primary-light via-primary to-primary-dark" />;
+  }
+  
+  if (!isDonationsEnabled) {
+    return <Navigate to="/" replace />;
+  }
+  
+  return <>{children}</>;
+};
 
 const queryClient = new QueryClient();
 
@@ -100,7 +116,9 @@ const App = () => {
               <Route path="/events/:eventId" element={<EventDetails />} />
               <Route path="/donations" element={
                 <ProtectedRoute allowedRoles={['admin', 'user']}>
-                  <Donations />
+                  <DonationsGuard>
+                    <Donations />
+                  </DonationsGuard>
                 </ProtectedRoute>
               } />
               <Route path="/testimonials" element={<Testimonials />} />
