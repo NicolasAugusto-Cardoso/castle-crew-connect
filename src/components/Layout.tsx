@@ -5,6 +5,7 @@ import { useUnreadReplies } from '@/hooks/useUnreadReplies';
 import { useUnreadDiscipleship } from '@/hooks/useUnreadDiscipleship';
 import { usePushNotifications } from '@/hooks/usePushNotifications';
 import { useShowCollaboratorsTab } from '@/hooks/useCollaborators';
+import { useDonationsEnabled } from '@/hooks/useAppSettings';
 import castleLogo from '@/assets/castle-app-home.png';
 import { Badge } from '@/components/ui/badge';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
@@ -17,6 +18,7 @@ export const Layout = () => {
   const { unreadCount } = useUnreadReplies(user?.id, userRoles);
   const { unreadDiscipleshipCount } = useUnreadDiscipleship(user?.id, userRoles);
   const { data: showCollaboratorsTab } = useShowCollaboratorsTab();
+  const { isDonationsEnabled } = useDonationsEnabled();
   
   // Registrar push notifications
   usePushNotifications(user?.id);
@@ -31,7 +33,7 @@ export const Layout = () => {
     { icon: BookOpen, label: 'Testemunhos', path: '/testimonials', roles: ['admin', 'social_media', 'collaborator', 'user', 'volunteer'] },
     { icon: Book, label: 'Bíblia', path: '/bible', roles: ['admin', 'social_media', 'collaborator', 'user', 'volunteer'] },
     { icon: Calendar, label: 'Agenda', path: '/events', roles: ['admin', 'social_media', 'volunteer'] },
-    { icon: Heart, label: 'Doações', path: '/donations', roles: ['admin', 'user'] },
+    { icon: Heart, label: 'Doações', path: '/donations', roles: ['admin', 'user'], showWhen: isDonationsEnabled },
     { icon: MessageSquare, label: 'Contato', path: '/contact', roles: ['admin', 'social_media', 'collaborator', 'user'] },
     { icon: FolderOpen, label: 'Galeria', path: '/gallery', roles: ['admin', 'social_media', 'user', 'volunteer'] },
     { icon: Users, label: 'Colaboradores', path: '/colaboradores', roles: ['user', 'admin', 'volunteer'], showWhen: showCollaboratorsTab },
