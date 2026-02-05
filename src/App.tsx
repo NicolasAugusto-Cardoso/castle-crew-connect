@@ -24,7 +24,7 @@ import CollaboratorChat from "./pages/CollaboratorChat";
 import DeleteAccount from "./pages/DeleteAccount";
 import Users from "./pages/Users";
 import NotFound from "./pages/NotFound";
-import Install from "./pages/Install";
+
 import Events from "./pages/Events";
 import EventDetails from "./pages/EventDetails";
 import Donations from "./pages/Donations";
@@ -109,7 +109,7 @@ const App = () => {
           <Sonner />
           <Routes>
             <Route path="/login" element={<Login />} />
-            <Route path="/install" element={<Install />} />
+            
             <Route element={<ProtectedLayout />}>
               <Route path="/" element={<Home />} />
               <Route path="/events" element={<Events />} />

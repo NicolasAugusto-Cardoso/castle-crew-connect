@@ -9,7 +9,7 @@ import { useDonationsEnabled } from '@/hooks/useAppSettings';
 import castleLogo from '@/assets/castle-app-home.png';
 import { Badge } from '@/components/ui/badge';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { InstallPWABanner } from '@/components/InstallPWABanner';
+
 
 export const Layout = () => {
   const { user, signOut, hasRole, userRoles } = useAuth();
@@ -63,8 +63,6 @@ export const Layout = () => {
 
   return (
     <div className="min-h-[100dvh] bg-background flex flex-col overflow-x-hidden">
-      {/* Install PWA Banner */}
-      <InstallPWABanner />
       
       {/* Header - with safe area padding for notch */}
       <header className="fixed top-0 left-0 right-0 z-50 bg-white shadow-[0_1px_3px_rgba(0,0,0,0.1)] backdrop-blur-sm pt-safe">
