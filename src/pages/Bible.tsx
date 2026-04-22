@@ -86,8 +86,9 @@ const Bible = () => {
 
   const handleSelectBook = (book: BibleBook) => {
     setNavState({ step: 'chapters', book });
-    // Prefetch first chapters when book is selected
-    prefetchFirstChapters(version, book.abbrev.pt, Math.min(book.chapters, 3));
+    // Prefetch first chapters for instant reading
+    const max = Math.min(book.chapters, 3);
+    for (let i = 1; i <= max; i++) prefetchChapter(version, book.abbrev.pt, i);
   };
 
   const handleSelectChapter = (chapter: number) => {
