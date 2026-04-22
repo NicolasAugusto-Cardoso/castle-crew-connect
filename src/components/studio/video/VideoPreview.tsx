@@ -10,6 +10,9 @@ interface VideoPreviewProps {
   onTimeUpdate: (t: number) => void;
   onLoadedMetadata: (duration: number) => void;
   onPlayPauseChange: (playing: boolean) => void;
+  filterCss?: string;
+  scale?: number;
+  opacity?: number;
 }
 
 /**
@@ -17,7 +20,7 @@ interface VideoPreviewProps {
  * Pula automaticamente os intervalos fora dos clips ativos (ex: silêncio cortado).
  */
 export const VideoPreview = forwardRef<HTMLVideoElement, VideoPreviewProps>(
-  ({ src, clips, captions, currentTime, onTimeUpdate, onLoadedMetadata, onPlayPauseChange }, ref) => {
+  ({ src, clips, captions, currentTime, onTimeUpdate, onLoadedMetadata, onPlayPauseChange, filterCss, scale = 1, opacity = 1 }, ref) => {
     const internalRef = useRef<HTMLVideoElement | null>(null);
 
     const setRefs = (el: HTMLVideoElement | null) => {
@@ -45,7 +48,8 @@ export const VideoPreview = forwardRef<HTMLVideoElement, VideoPreviewProps>(
         <video
           ref={setRefs}
           src={src}
-          className="max-w-full max-h-full"
+          className="max-w-full max-h-full transition-transform"
+          style={{ filter: filterCss, transform: `scale(${scale})`, opacity }}
           onTimeUpdate={(e) => onTimeUpdate(e.currentTarget.currentTime)}
           onLoadedMetadata={(e) => onLoadedMetadata(e.currentTarget.duration)}
           onPlay={() => onPlayPauseChange(true)}
