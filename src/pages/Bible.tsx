@@ -5,13 +5,17 @@ import { BibleBookList } from '@/components/bible/BibleBookList';
 import { BibleChapterSelector } from '@/components/bible/BibleChapterSelector';
 import { BibleVerseReader } from '@/components/bible/BibleVerseReader';
 import { BibleSavedSection } from '@/components/bible/BibleSavedSection';
-import { useBibleBooks, BibleBook, usePrefetchChapter } from '@/hooks/useBible';
+import { BibleBook } from '@/hooks/useBible';
+import {
+  useBibleBooksLocal,
+  usePrefetchChapterLocal,
+  useBibleReadingPosition,
+} from '@/hooks/useBibleData';
 import { BIBLE_BOOKS_FALLBACK } from '@/data/bibleBooks';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/hooks/useAuth';
 
-// Simplified navigation: books -> chapters -> reading (no intermediate verse selector)
-type NavigationState = 
+type NavigationState =
   | { step: 'books' }
   | { step: 'chapters'; book: BibleBook }
   | { step: 'reading'; book: BibleBook; chapter: number; highlightVerse?: number };
@@ -28,12 +32,45 @@ const pageTransition = {
 };
 
 const Bible = () => {
-  const [version, setVersion] = useState('nvi');
-  const [navState, setNavState] = useState<NavigationState>({ step: 'books' });
+  const { position, update } = useBibleReadingPosition();
+  const [version, setVersion] = useState(position.version);
   const { user } = useAuth();
-  
-  const { data: books, isLoading: booksLoading } = useBibleBooks();
-  const { prefetchFirstChapters } = usePrefetchChapter();
+
+  const { data: books, isLoading: booksLoading } = useBibleBooksLocal();
+  const { prefetchChapter } = usePrefetchChapterLocal();
+
+  // Restore last reading position from localStorage on mount
+  const [navState, setNavState] = useState<NavigationState>(() => {
+    if (position.bookAbbrev && position.chapter) {
+      const book = BIBLE_BOOKS_FALLBACK.find(b => b.abbrev.pt === position.bookAbbrev);
+      if (book) {
+        return {
+          step: 'reading',
+          book: {
+            abbrev: book.abbrev,
+            author: book.author,
+            chapters: book.chapters,
+            group: book.group,
+            name: book.name,
+            testament: book.testament,
+          },
+          chapter: position.chapter,
+        };
+      }
+    }
+    return { step: 'books' };
+  });
+
+  // Persist version + current reading position
+  useEffect(() => {
+    update({ version });
+  }, [version, update]);
+
+  useEffect(() => {
+    if (navState.step === 'reading') {
+      update({ bookAbbrev: navState.book.abbrev.pt, chapter: navState.chapter });
+    }
+  }, [navState, update]);
 
   // Scroll to highlighted verse when in reading mode
   useEffect(() => {
