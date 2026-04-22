@@ -126,7 +126,16 @@ All colors MUST be HSL.
     --shadow-card: 0 4px 20px -2px hsl(218 65% 15% / 0.5);
     --shadow-glow: 0 0 30px hsl(195 85% 58% / 0.2);
     --shadow-accent: 0 4px 15px hsl(45 85% 55% / 0.3);
+
+    /* Studio (CapCut-like dark) */
+    --studio-bg: 0 0% 6%;
+    --studio-panel: 220 18% 10%;
   }
+
+  :root {
+    /* Studio tokens default (light fallback) */
+    --studio-bg: 0 0% 6%;
+    --studio-panel: 220 18% 10%;
   
   /* Respect user motion preferences */
   @media (prefers-reduced-motion: reduce) {
