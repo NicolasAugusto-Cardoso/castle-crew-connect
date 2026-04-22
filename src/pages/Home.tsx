@@ -35,7 +35,7 @@ export default function Home() {
   const { posts, isLoading: loadingPosts, toggleLike, setReaction } = usePosts();
   const { verse, isLoading: loadingVerse } = useVerseOfTheDay();
   const [selectedImage, setSelectedImage] = useState<{ url: string; alt: string } | null>(null);
-  const [pressTimer, setPressTimer] = useState<NodeJS.Timeout | null>(null);
+  const [pressTimer, setPressTimer] = useState<ReturnType<typeof setTimeout> | null>(null);
   const [reactionMenu, setReactionMenu] = useState<{
     isOpen: boolean;
     postId: string | null;
