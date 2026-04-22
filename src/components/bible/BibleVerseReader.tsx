@@ -1,12 +1,12 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, ChevronLeft, ChevronRight, Search, Loader2 } from 'lucide-react';
-import { BibleBook, useBibleChapter, usePrefetchChapter } from '@/hooks/useBible';
+import { BibleBook } from '@/hooks/useBible';
+import { useBibleChapterLocal, usePrefetchChapterLocal } from '@/hooks/useBibleData';
 import { useBibleNotes, useBibleHighlights, useBibleFocusMarks } from '@/hooks/useBibleAnnotations';
 import { BibleVerseCard } from './BibleVerseCard';
 import { BibleNoteDialog } from './BibleNoteDialog';
 import { toast } from 'sonner';
-import { cn } from '@/lib/utils';
 
 interface BibleVerseReaderProps {
   book: BibleBook;
@@ -29,10 +29,10 @@ export const BibleVerseReader = ({
   highlightVerse,
   onGoToSearch,
 }: BibleVerseReaderProps) => {
-  const { data, isLoading, isFetching, error, refetch } = useBibleChapter(version, book.abbrev.pt, chapter);
+  const { data, isLoading, isFetching, error, refetch } = useBibleChapterLocal(version, book.abbrev.pt, chapter);
   const [copiedVerse, setCopiedVerse] = useState<number | null>(null);
   const highlightRef = useRef<HTMLDivElement>(null);
-  const { prefetchChapter } = usePrefetchChapter();
+  const { prefetchChapter } = usePrefetchChapterLocal();
 
   // Annotations hooks
   const { notes, getNote, upsertNote, deleteNote, isUpserting, isDeleting } = useBibleNotes(version, book.abbrev.pt, chapter);
