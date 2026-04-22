@@ -87,7 +87,7 @@ export function AIChatSidebar({ messages, onSend, onQuickAction, isLoading }: Pr
       </div>
 
       {/* Mensagens */}
-      <ScrollArea className="flex-1" viewportRef={scrollRef as never}>
+      <div ref={scrollRef} className="flex-1 overflow-y-auto">
         <div className="p-3 space-y-3">
           {messages.length === 0 && (
             <div className="text-center text-xs text-muted-foreground p-6">
