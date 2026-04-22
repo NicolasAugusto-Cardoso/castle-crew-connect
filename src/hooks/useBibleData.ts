@@ -1,7 +1,6 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCallback, useEffect, useState } from 'react';
 import { BIBLE_BOOKS_FALLBACK } from '@/data/bibleBooks';
-import { supabase } from '@/integrations/supabase/client';
 import type { BibleBook, BibleChapter, BibleVerse } from './useBible';
 
 /**
@@ -10,10 +9,8 @@ import type { BibleBook, BibleChapter, BibleVerse } from './useBible';
  * Hook responsável pela leitura da Bíblia diretamente dos arquivos estáticos
  * locais em `/public/bible/{version}/{book}/{chapter}.json`.
  *
- * - Carregamento instantâneo via fetch local (servido pelo Vite/CDN).
- * - Cache via React Query (em memória) — navegação entre capítulos sem delay.
- * - Fallback transparente para a Edge Function (`bible-proxy`) caso o arquivo
- *   local ainda não exista (útil enquanto baixamos todas as traduções).
+ * - Carregamento 100% local: NVI, ARA e ACF completas (3.567 capítulos).
+ * - Cache via React Query (em memória) — navegação entre capítulos instantânea.
  * - Persistência da versão/livro/capítulo no `localStorage` para manter o
  *   contexto de leitura entre abas/sessões.
  */
@@ -32,31 +29,18 @@ async function fetchLocalChapter(
   version: string,
   abbrev: string,
   chapter: number
-): Promise<BibleVerse[] | null> {
-  try {
-    const res = await fetch(`${LOCAL_BIBLE_BASE}/${version}/${abbrev}/${chapter}.json`, {
-      cache: 'force-cache',
-    });
-    if (!res.ok) return null;
-    const data = (await res.json()) as LocalChapterFile;
-    if (!data?.v || !Array.isArray(data.v)) return null;
-    return data.v;
-  } catch {
-    return null;
-  }
-}
-
-async function fetchChapterViaProxyFallback(
-  version: string,
-  abbrev: string,
-  chapter: number
 ): Promise<BibleVerse[]> {
-  const { data, error } = await supabase.functions.invoke('bible-proxy', {
-    body: { version, bookAbbrev: abbrev, chapter },
+  const res = await fetch(`${LOCAL_BIBLE_BASE}/${version}/${abbrev}/${chapter}.json`, {
+    cache: 'force-cache',
   });
-  if (error) throw new Error(error.message || 'Erro ao carregar capítulo');
-  if (data?.error) throw new Error(data.error);
-  return (data?.verses || []) as BibleVerse[];
+  if (!res.ok) {
+    throw new Error(`Capítulo não encontrado (${version}/${abbrev}/${chapter})`);
+  }
+  const data = (await res.json()) as LocalChapterFile;
+  if (!data?.v || !Array.isArray(data.v)) {
+    throw new Error('Arquivo de capítulo inválido');
+  }
+  return data.v;
 }
 
 async function loadChapter(
@@ -65,14 +49,7 @@ async function loadChapter(
   chapter: number
 ): Promise<BibleChapter> {
   const bookInfo = BIBLE_BOOKS_FALLBACK.find(b => b.abbrev.pt === abbrev);
-
-  // 1. Try local JSON first (instantaneous)
-  let verses = await fetchLocalChapter(version, abbrev, chapter);
-
-  // 2. Fallback to edge proxy if local file is missing
-  if (!verses) {
-    verses = await fetchChapterViaProxyFallback(version, abbrev, chapter);
-  }
+  const verses = await fetchLocalChapter(version, abbrev, chapter);
 
   return {
     book: {
