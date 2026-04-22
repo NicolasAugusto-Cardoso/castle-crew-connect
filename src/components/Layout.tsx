@@ -1,5 +1,5 @@
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
-import { Home, MessageSquare, Users, FolderOpen, BookOpen, LogOut, UserCircle, Settings, UserCog, UserPlus, Trash2, Calendar, Heart, Book } from 'lucide-react';
+import { Home, MessageSquare, Users, FolderOpen, BookOpen, LogOut, UserCircle, Settings, UserCog, UserPlus, Trash2, Calendar, Heart, Book, ClipboardList } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useUnreadReplies } from '@/hooks/useUnreadReplies';
 import { useUnreadDiscipleship } from '@/hooks/useUnreadDiscipleship';
@@ -38,6 +38,7 @@ export const Layout = () => {
     { icon: FolderOpen, label: 'Galeria', path: '/gallery', roles: ['admin', 'social_media', 'user', 'volunteer'] },
     { icon: Users, label: 'Colaboradores', path: '/colaboradores', roles: ['user', 'admin', 'volunteer'], showWhen: showCollaboratorsTab },
     { icon: UserPlus, label: 'Discipulado', path: '/discipleship', roles: ['admin', 'collaborator', 'volunteer'] },
+    { icon: ClipboardList, label: 'Tarefas SM', path: '/social-media-tasks', roles: ['admin', 'volunteer', 'social_media'] },
     { icon: UserCircle, label: 'Meu Perfil', path: '/collaborator/profile', roles: ['collaborator'] },
   ];
 
