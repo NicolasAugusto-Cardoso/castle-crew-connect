@@ -799,6 +799,56 @@ export type Database = {
           },
         ]
       }
+      media_projects: {
+        Row: {
+          created_at: string
+          id: string
+          output_url: string | null
+          project_data: Json
+          source_url: string | null
+          task_id: string | null
+          thumbnail_url: string | null
+          title: string
+          type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          output_url?: string | null
+          project_data?: Json
+          source_url?: string | null
+          task_id?: string | null
+          thumbnail_url?: string | null
+          title?: string
+          type: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          output_url?: string | null
+          project_data?: Json
+          source_url?: string | null
+          task_id?: string | null
+          thumbnail_url?: string | null
+          title?: string
+          type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "media_projects_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "social_media_tasks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       post_comments: {
         Row: {
           content: string
