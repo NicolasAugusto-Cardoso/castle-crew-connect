@@ -46,7 +46,7 @@ export function ProjectCard({ project }: { project: MediaProject }) {
           {project.type === 'video' ? 'Vídeo' : 'Foto'}
         </Badge>
         {project.output_url && (
-          <Badge className="absolute top-2 right-2 bg-emerald-500 text-white">Exportado</Badge>
+          <Badge className="absolute top-2 right-2 bg-primary text-primary-foreground">Exportado</Badge>
         )}
       </button>
 
