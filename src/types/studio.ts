@@ -1,20 +1,35 @@
 export type MediaProjectType = 'photo' | 'video';
 
 export interface PhotoAdjustments {
-  brightness: number;   // 0-200, default 100
-  contrast: number;     // 0-200, default 100
-  saturate: number;     // 0-200, default 100
-  exposure: number;     // -100 a 100, default 0
-  temperature: number;  // -100 a 100, default 0 (warm/cool)
-  vignette: number;     // 0-100, default 0
+  // Light
+  exposure: number;     // -100..100
+  brightness: number;   // -100..100
+  contrast: number;     // -100..100
+  highlights: number;   // -100..100
+  shadows: number;      // -100..100
+  whites: number;       // -100..100
+  blacks: number;       // -100..100
+  clarity: number;      // -100..100
+  // Color
+  saturation: number;   // -100..100
+  vibrance: number;     // -100..100
+  temperature: number;  // -100..100 (warm/cool)
+  // Effects
+  vignette: number;     // 0..100
   preset?: string;
 }
 
 export const DEFAULT_ADJUSTMENTS: PhotoAdjustments = {
-  brightness: 100,
-  contrast: 100,
-  saturate: 100,
   exposure: 0,
+  brightness: 0,
+  contrast: 0,
+  highlights: 0,
+  shadows: 0,
+  whites: 0,
+  blacks: 0,
+  clarity: 0,
+  saturation: 0,
+  vibrance: 0,
   temperature: 0,
   vignette: 0,
 };
