@@ -1000,6 +1000,48 @@ export type Database = {
         }
         Relationships: []
       }
+      social_media_tasks: {
+        Row: {
+          assigned_to: string | null
+          completed_at: string | null
+          created_at: string
+          created_by: string
+          due_date: string | null
+          id: string
+          instructions: string | null
+          reference_urls: Json
+          status: Database["public"]["Enums"]["task_status"]
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          assigned_to?: string | null
+          completed_at?: string | null
+          created_at?: string
+          created_by: string
+          due_date?: string | null
+          id?: string
+          instructions?: string | null
+          reference_urls?: Json
+          status?: Database["public"]["Enums"]["task_status"]
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          assigned_to?: string | null
+          completed_at?: string | null
+          created_at?: string
+          created_by?: string
+          due_date?: string | null
+          id?: string
+          instructions?: string | null
+          reference_urls?: Json
+          status?: Database["public"]["Enums"]["task_status"]
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       testimonials: {
         Row: {
           author_name: string | null
@@ -1118,6 +1160,7 @@ export type Database = {
       app_role: "admin" | "social_media" | "collaborator" | "user" | "volunteer"
       basket_type: "P" | "M" | "G"
       donation_status: "pending" | "reviewing" | "confirmed" | "rejected"
+      task_status: "pending" | "in_production" | "completed"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1248,6 +1291,7 @@ export const Constants = {
       app_role: ["admin", "social_media", "collaborator", "user", "volunteer"],
       basket_type: ["P", "M", "G"],
       donation_status: ["pending", "reviewing", "confirmed", "rejected"],
+      task_status: ["pending", "in_production", "completed"],
     },
   },
 } as const
