@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from 'react';
 import { Send, Loader2, Sparkles, Scissors, Captions, Gauge, Mic2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
 import ReactMarkdown from 'react-markdown';
 
@@ -124,7 +123,7 @@ export function AIChatSidebar({ messages, onSend, onQuickAction, isLoading }: Pr
             </div>
           )}
         </div>
-      </ScrollArea>
+      </div>
 
       {/* Input */}
       <div className="p-3 border-t border-border">
