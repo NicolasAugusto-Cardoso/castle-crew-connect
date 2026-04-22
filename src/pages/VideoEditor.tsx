@@ -4,26 +4,31 @@ import {
   ArrowLeft,
   Play,
   Pause,
-  Scissors,
-  Captions as CaptionsIcon,
+  SkipBack,
+  SkipForward,
   Download,
   Save,
   Loader2,
   Plus,
-  Trash2,
+  Volume2,
+  VolumeX,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Slider } from '@/components/ui/slider';
 import { Progress } from '@/components/ui/progress';
 import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useMediaProject, useUpdateMediaProject, uploadMediaFile } from '@/hooks/useMediaProjects';
 import { useVideoExport } from '@/hooks/useVideoExport';
+import { useSilenceDetection } from '@/hooks/useSilenceDetection';
+import { useAudioWaveform } from '@/hooks/useAudioWaveform';
+import { useStickyState } from '@/hooks/useStickyState';
 import { VideoPreview } from '@/components/studio/video/VideoPreview';
-import { Timeline } from '@/components/studio/video/Timeline';
-import { CaptionPropertiesPanel } from '@/components/studio/video/CaptionPropertiesPanel';
+import { WaveformTimeline } from '@/components/studio/video/WaveformTimeline';
+import { AIChatSidebar, type ChatMessage } from '@/components/studio/video/AIChatSidebar';
+import { PropertiesPanel, DEFAULT_VISUAL, type VideoVisualSettings } from '@/components/studio/video/PropertiesPanel';
 import type {
   VideoCaption,
   VideoClip,
@@ -34,6 +39,16 @@ function isVideoData(d: unknown): d is VideoProjectData {
   return !!d && typeof d === 'object' && 'clips' in (d as Record<string, unknown>);
 }
 
+interface AssistantAction {
+  type: string;
+  threshold_db?: number;
+  min_duration_s?: number;
+  factor?: number;
+  start?: number;
+  end?: number;
+  text?: string;
+}
+
 export default function VideoEditor() {
   const { projectId } = useParams();
   const navigate = useNavigate();
@@ -41,9 +56,12 @@ export default function VideoEditor() {
   const { data: project, isLoading } = useMediaProject(projectId);
   const updateProject = useUpdateMediaProject();
   const { exportVideo, isExporting, progress } = useVideoExport();
+  const { analyze: analyzeSilence, analyzing: analyzingSilence } = useSilenceDetection();
+  const { peaks } = useAudioWaveform(project?.source_url ?? undefined);
 
   const videoRef = useRef<HTMLVideoElement | null>(null);
 
+  // Estado do projeto
   const [duration, setDuration] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -51,8 +69,38 @@ export default function VideoEditor() {
   const [captions, setCaptions] = useState<VideoCaption[]>([]);
   const [selectedCaptionId, setSelectedCaptionId] = useState<string | null>(null);
   const [title, setTitle] = useState('');
+  const [zoom, setZoom] = useState(60);
+  const [volume, setVolume] = useState(1);
+  const [muted, setMuted] = useState(false);
 
-  // Carrega estado do projeto
+  // Estado sticky (persiste em localStorage)
+  const stickyKey = projectId ? `studio:video:${projectId}` : null;
+  const [sticky, setSticky] = useStickyState(stickyKey, {
+    visual: DEFAULT_VISUAL,
+    chat: [] as ChatMessage[],
+  });
+  const visual = sticky.visual;
+  const chatMessages = sticky.chat;
+
+  const setVisual = useCallback(
+    (patch: Partial<VideoVisualSettings>) => {
+      setSticky((prev) => ({ ...prev, visual: { ...prev.visual, ...patch } }));
+    },
+    [setSticky],
+  );
+  const resetVisual = useCallback(() => {
+    setSticky((prev) => ({ ...prev, visual: DEFAULT_VISUAL }));
+  }, [setSticky]);
+  const pushChat = useCallback(
+    (msg: ChatMessage) => {
+      setSticky((prev) => ({ ...prev, chat: [...prev.chat, msg] }));
+    },
+    [setSticky],
+  );
+
+  const [chatLoading, setChatLoading] = useState(false);
+
+  // Carrega estado inicial do projeto
   useEffect(() => {
     if (!project) return;
     setTitle(project.title);
@@ -66,7 +114,6 @@ export default function VideoEditor() {
   const onLoadedMetadata = useCallback(
     (d: number) => {
       setDuration(d);
-      // Se ainda não há clips, criar um único cobrindo o vídeo todo
       if (clips.length === 0) {
         setClips([{ id: crypto.randomUUID(), start: 0, end: d }]);
       }
@@ -87,20 +134,31 @@ export default function VideoEditor() {
     setCurrentTime(t);
   };
 
-  const splitAtPlayhead = () => {
+  const skip = (delta: number) => seek(currentTime + delta);
+
+  // Sincroniza volume/mute com o elemento video
+  useEffect(() => {
+    if (videoRef.current) {
+      videoRef.current.volume = volume;
+      videoRef.current.muted = muted;
+    }
+  }, [volume, muted]);
+
+  const splitAtPlayhead = useCallback(() => {
     const t = currentTime;
     const idx = clips.findIndex((c) => t > c.start + 0.05 && t < c.end - 0.05);
     if (idx === -1) {
-      toast.info('Posicione o playhead dentro de um clipe para dividir.');
+      toast.info('Posicione o playhead dentro de um clipe.');
       return;
     }
     const c = clips[idx];
     const next = [...clips];
     next.splice(idx, 1, { ...c, end: t }, { id: crypto.randomUUID(), start: t, end: c.end });
     setClips(next);
-  };
+    toast.success('Clipe dividido');
+  }, [clips, currentTime]);
 
-  const addCaptionAtPlayhead = () => {
+  const addCaptionAtPlayhead = useCallback(() => {
     const start = currentTime;
     const end = Math.min(duration, currentTime + 2);
     const newCap: VideoCaption = {
@@ -112,28 +170,23 @@ export default function VideoEditor() {
     };
     setCaptions((prev) => [...prev, newCap].sort((a, b) => a.start - b.start));
     setSelectedCaptionId(newCap.id);
-  };
+  }, [currentTime, duration]);
 
   const updateCaption = (id: string, patch: Partial<VideoCaption>) => {
     setCaptions((prev) =>
       prev.map((c) => (c.id === id ? { ...c, ...patch } : c)).sort((a, b) => a.start - b.start),
     );
   };
-
   const deleteCaption = (id: string) => {
     setCaptions((prev) => prev.filter((c) => c.id !== id));
     if (selectedCaptionId === id) setSelectedCaptionId(null);
   };
-
-  const updateClip = (id: string, patch: Partial<VideoClip>) => {
+  const updateClip = (id: string, patch: Partial<VideoClip>) =>
     setClips((prev) => prev.map((c) => (c.id === id ? { ...c, ...patch } : c)));
-  };
-
-  const deleteClip = (id: string) => {
+  const deleteClip = (id: string) =>
     setClips((prev) => (prev.length > 1 ? prev.filter((c) => c.id !== id) : prev));
-  };
 
-  // Auto-save (debounced)
+  // Auto-save (debounced) — não inclui visual/chat (esses ficam só no sticky)
   useEffect(() => {
     if (!project) return;
     const handle = setTimeout(() => {
@@ -146,6 +199,174 @@ export default function VideoEditor() {
     return () => clearTimeout(handle);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [clips, captions, title, duration]);
+
+  // ============ Ações ============
+
+  const handleRemoveSilence = useCallback(async () => {
+    if (!project?.source_url) return;
+    toast.info('Analisando áudio…');
+    try {
+      const newClips = await analyzeSilence(project.source_url, { thresholdDb: -40, minSilenceS: 0.8 });
+      setClips(newClips);
+      toast.success(`Silêncios removidos: ${newClips.length} clipes ativos.`);
+      return `Removi os silêncios automaticamente. Ficaram **${newClips.length} clipes** ativos.`;
+    } catch (e) {
+      console.error(e);
+      toast.error('Falha ao analisar áudio');
+      return 'Não consegui analisar o áudio agora. Tente novamente.';
+    }
+  }, [project?.source_url, analyzeSilence]);
+
+  const handleGenerateCaptions = useCallback(async () => {
+    if (!project?.source_url) return 'Sem vídeo de origem.';
+    toast.info('Gerando legendas com IA…');
+    try {
+      // Baixa o arquivo e converte em base64
+      const resp = await fetch(project.source_url);
+      const blob = await resp.blob();
+      const base64 = await blobToBase64(blob);
+      const { data, error } = await supabase.functions.invoke('studio-transcribe', {
+        body: {
+          audioBase64: base64,
+          mimeType: blob.type || 'audio/webm',
+          durationSeconds: duration,
+          language: 'pt-BR',
+        },
+      });
+      if (error) throw error;
+      const items = (data?.captions || []) as Array<{ start: number; end: number; text: string }>;
+      if (!items.length) {
+        toast.warning('Nenhuma fala detectada.');
+        return 'Não detectei falas claras no vídeo.';
+      }
+      const newCaps: VideoCaption[] = items.map((c) => ({
+        id: crypto.randomUUID(),
+        start: c.start,
+        end: c.end,
+        text: c.text,
+        style: { fontSize: 22, color: '#ffffff', background: 'rgba(0,0,0,0.55)', y: 0.12 },
+      }));
+      setCaptions(newCaps);
+      toast.success(`${newCaps.length} legendas geradas`);
+      return `Gerei **${newCaps.length} legendas** sincronizadas para o seu vídeo.`;
+    } catch (e) {
+      console.error(e);
+      toast.error('Falha ao gerar legendas');
+      return 'Tive problemas para gerar legendas. Verifique sua conexão e tente novamente.';
+    }
+  }, [project?.source_url, duration]);
+
+  const applyAssistantActions = useCallback(
+    async (actions: AssistantAction[]): Promise<string[]> => {
+      const notes: string[] = [];
+      for (const a of actions) {
+        switch (a.type) {
+          case 'remove_silence': {
+            const note = await handleRemoveSilence();
+            if (note) notes.push(note);
+            break;
+          }
+          case 'generate_captions': {
+            const note = await handleGenerateCaptions();
+            if (note) notes.push(note);
+            break;
+          }
+          case 'set_speed': {
+            const f = a.factor ?? 1;
+            if (videoRef.current) videoRef.current.playbackRate = f;
+            notes.push(`Velocidade alterada para **${f.toFixed(2)}x**.`);
+            break;
+          }
+          case 'trim': {
+            if (a.start != null && a.end != null) {
+              setClips([{ id: crypto.randomUUID(), start: a.start, end: a.end }]);
+              notes.push(`Recortei do **${a.start.toFixed(1)}s** ao **${a.end.toFixed(1)}s**.`);
+            }
+            break;
+          }
+          case 'add_caption': {
+            if (a.text) {
+              const start = a.start ?? currentTime;
+              const end = a.end ?? Math.min(duration, start + 2);
+              const cap: VideoCaption = {
+                id: crypto.randomUUID(),
+                start,
+                end,
+                text: a.text,
+                style: { fontSize: 22, color: '#ffffff', background: 'rgba(0,0,0,0.55)', y: 0.12 },
+              };
+              setCaptions((prev) => [...prev, cap].sort((x, y) => x.start - y.start));
+            }
+            break;
+          }
+          case 'darker':
+            setVisual({ brightness: Math.max(0, visual.brightness - 20) });
+            break;
+          case 'brighter':
+            setVisual({ brightness: Math.min(200, visual.brightness + 20) });
+            break;
+          case 'cooler':
+            setVisual({ hue: Math.max(-180, visual.hue - 20) });
+            break;
+          case 'warmer':
+            setVisual({ hue: Math.min(180, visual.hue + 20) });
+            break;
+        }
+      }
+      return notes;
+    },
+    [handleRemoveSilence, handleGenerateCaptions, currentTime, duration, setVisual, visual],
+  );
+
+  const sendChatMessage = useCallback(
+    async (text: string) => {
+      const userMsg: ChatMessage = {
+        id: crypto.randomUUID(),
+        role: 'user',
+        content: text,
+        timestamp: Date.now(),
+      };
+      pushChat(userMsg);
+      setChatLoading(true);
+      try {
+        const { data, error } = await supabase.functions.invoke('studio-ai-assistant', {
+          body: {
+            messages: [...chatMessages, userMsg].map((m) => ({ role: m.role, content: m.content })),
+            projectSnapshot: {
+              duration,
+              clipsCount: clips.length,
+              captionsCount: captions.length,
+              currentTime,
+            },
+          },
+        });
+        if (error) throw error;
+        const reply: string = data?.reply || 'Pronto.';
+        const actions: AssistantAction[] = data?.actions || [];
+        const notes = await applyAssistantActions(actions);
+        const finalReply = [reply, ...notes].filter(Boolean).join('\n\n');
+        pushChat({
+          id: crypto.randomUUID(),
+          role: 'assistant',
+          content: finalReply,
+          timestamp: Date.now(),
+        });
+      } catch (e) {
+        console.error(e);
+        const errMsg = e instanceof Error ? e.message : 'Erro desconhecido';
+        toast.error('Falha ao falar com a IA');
+        pushChat({
+          id: crypto.randomUUID(),
+          role: 'assistant',
+          content: `Não consegui processar agora. (${errMsg})`,
+          timestamp: Date.now(),
+        });
+      } finally {
+        setChatLoading(false);
+      }
+    },
+    [chatMessages, duration, clips.length, captions.length, currentTime, applyAssistantActions, pushChat],
+  );
 
   const handleSaveNow = async () => {
     if (!project) return;
@@ -184,6 +405,12 @@ export default function VideoEditor() {
     [captions, selectedCaptionId],
   );
 
+  const filterCss = useMemo(
+    () =>
+      `brightness(${visual.brightness}%) contrast(${visual.contrast}%) saturate(${visual.saturate}%) hue-rotate(${visual.hue}deg)`,
+    [visual],
+  );
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-[60vh]">
@@ -206,9 +433,9 @@ export default function VideoEditor() {
   }
 
   return (
-    <div className="flex flex-col h-[calc(100vh-var(--header-h,4rem))] bg-background">
+    <div className="dark flex flex-col h-[100dvh] bg-background text-foreground">
       {/* Header */}
-      <div className="flex items-center justify-between gap-2 px-3 sm:px-4 py-2 border-b border-border">
+      <div className="flex items-center justify-between gap-2 px-3 sm:px-4 py-2 border-b border-border bg-card">
         <div className="flex items-center gap-2 min-w-0">
           <Button variant="ghost" size="icon" onClick={() => navigate('/studio')}>
             <ArrowLeft className="w-4 h-4" />
@@ -218,6 +445,9 @@ export default function VideoEditor() {
             onChange={(e) => setTitle(e.target.value)}
             className="h-9 max-w-[280px] bg-transparent"
           />
+          {(analyzingSilence || updateProject.isPending) && (
+            <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
+          )}
         </div>
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" onClick={handleSaveNow} className="gap-2">
@@ -225,7 +455,7 @@ export default function VideoEditor() {
           </Button>
           <Button size="sm" onClick={handleExport} disabled={isExporting} className="gap-2">
             {isExporting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
-            Exportar
+            Exportar Vídeo
           </Button>
         </div>
       </div>
@@ -237,11 +467,21 @@ export default function VideoEditor() {
         </div>
       )}
 
-      {/* Conteúdo principal */}
-      <div className="flex-1 grid grid-cols-1 lg:grid-cols-[1fr_320px] min-h-0">
-        {/* Preview + transporte */}
-        <div className="flex flex-col min-h-0 border-r border-border">
-          <div className="flex-1 min-h-0 bg-black">
+      {/* Conteúdo principal: 4 quadrantes (chat | preview | props), timeline embaixo */}
+      <div className="flex-1 grid grid-cols-1 lg:grid-cols-[280px_1fr_300px] min-h-0">
+        {/* Sidebar IA */}
+        <div className="hidden lg:flex min-h-0">
+          <AIChatSidebar
+            messages={chatMessages}
+            onSend={sendChatMessage}
+            onQuickAction={sendChatMessage}
+            isLoading={chatLoading}
+          />
+        </div>
+
+        {/* Preview central */}
+        <div className="flex flex-col min-h-0 bg-[hsl(var(--studio-bg))]">
+          <div className="flex-1 min-h-0">
             <VideoPreview
               ref={videoRef}
               src={project.source_url}
@@ -252,91 +492,74 @@ export default function VideoEditor() {
               onTimeUpdate={setCurrentTime}
               onLoadedMetadata={onLoadedMetadata}
               onPlayPauseChange={setIsPlaying}
+              filterCss={filterCss}
+              scale={visual.scale}
+              opacity={visual.opacity}
             />
           </div>
-          <div className="flex items-center gap-2 px-3 py-2 border-t border-border bg-muted/30">
-            <Button variant="ghost" size="icon" onClick={togglePlay}>
+          {/* Transport controls */}
+          <div className="flex items-center gap-3 px-3 py-2 border-t border-border bg-card">
+            <Button variant="ghost" size="icon" onClick={() => skip(-5)} title="Voltar 5s">
+              <SkipBack className="w-4 h-4" />
+            </Button>
+            <Button variant="default" size="icon" onClick={togglePlay} className="rounded-full">
               {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+            </Button>
+            <Button variant="ghost" size="icon" onClick={() => skip(5)} title="Avançar 5s">
+              <SkipForward className="w-4 h-4" />
             </Button>
             <div className="text-xs tabular-nums text-muted-foreground min-w-[110px]">
               {formatTime(currentTime)} / {formatTime(duration)}
             </div>
             <div className="flex-1" />
-            <Button variant="outline" size="sm" onClick={splitAtPlayhead} className="gap-2">
-              <Scissors className="w-4 h-4" /> Dividir
+            <Button variant="ghost" size="icon" onClick={addCaptionAtPlayhead} title="Adicionar legenda">
+              <Plus className="w-4 h-4" />
             </Button>
-            <Button variant="outline" size="sm" onClick={addCaptionAtPlayhead} className="gap-2">
-              <Plus className="w-4 h-4" /> Legenda
+            <Button variant="ghost" size="icon" onClick={() => setMuted((m) => !m)}>
+              {muted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
             </Button>
+            <Slider
+              className="w-24"
+              min={0}
+              max={1}
+              step={0.05}
+              value={[muted ? 0 : volume]}
+              onValueChange={([v]) => {
+                setVolume(v);
+                if (v > 0) setMuted(false);
+              }}
+            />
           </div>
         </div>
 
-        {/* Painel direito */}
-        <div className="hidden lg:flex flex-col min-h-0">
-          <Tabs defaultValue="caption" className="flex flex-col h-full">
-            <TabsList className="m-2">
-              <TabsTrigger value="caption" className="gap-1">
-                <CaptionsIcon className="w-4 h-4" /> Legenda
-              </TabsTrigger>
-              <TabsTrigger value="clips" className="gap-1">
-                <Scissors className="w-4 h-4" /> Clipes
-              </TabsTrigger>
-            </TabsList>
-            <TabsContent value="caption" className="flex-1 min-h-0">
-              <ScrollArea className="h-full">
-                <CaptionPropertiesPanel
-                  caption={selectedCaption}
-                  onChange={(patch) => selectedCaption && updateCaption(selectedCaption.id, patch)}
-                  onDelete={() => selectedCaption && deleteCaption(selectedCaption.id)}
-                />
-              </ScrollArea>
-            </TabsContent>
-            <TabsContent value="clips" className="flex-1 min-h-0">
-              <ScrollArea className="h-full">
-                <div className="p-3 space-y-2 text-sm">
-                  {clips.map((c, i) => (
-                    <div
-                      key={c.id}
-                      className="flex items-center gap-2 p-2 rounded border border-border"
-                    >
-                      <span className="text-muted-foreground">#{i + 1}</span>
-                      <span className="tabular-nums">
-                        {formatTime(c.start)} → {formatTime(c.end)}
-                      </span>
-                      <span className="text-muted-foreground ml-auto">
-                        {(c.end - c.start).toFixed(1)}s
-                      </span>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => deleteClip(c.id)}
-                        disabled={clips.length <= 1}
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  ))}
-                  {clips.length === 0 && (
-                    <p className="text-muted-foreground">Nenhum clipe ainda.</p>
-                  )}
-                </div>
-              </ScrollArea>
-            </TabsContent>
-          </Tabs>
+        {/* Sidebar propriedades */}
+        <div className="hidden lg:flex min-h-0">
+          <PropertiesPanel
+            caption={selectedCaption}
+            onCaptionChange={(patch) => selectedCaption && updateCaption(selectedCaption.id, patch)}
+            onCaptionDelete={() => selectedCaption && deleteCaption(selectedCaption.id)}
+            visual={visual}
+            onVisualChange={setVisual}
+            onResetVisual={resetVisual}
+          />
         </div>
       </div>
 
-      {/* Timeline */}
-      <Timeline
+      {/* Timeline com waveform */}
+      <WaveformTimeline
         duration={duration}
         currentTime={currentTime}
         clips={clips}
         captions={captions}
+        peaks={peaks}
         selectedCaptionId={selectedCaptionId}
+        zoom={zoom}
+        onZoomChange={setZoom}
         onSeek={seek}
         onSelectCaption={setSelectedCaptionId}
         onUpdateClip={updateClip}
         onDeleteClip={deleteClip}
+        onSplit={splitAtPlayhead}
       />
     </div>
   );
@@ -347,4 +570,17 @@ function formatTime(s: number) {
   const m = Math.floor(s / 60);
   const sec = Math.floor(s % 60);
   return `${m}:${sec.toString().padStart(2, '0')}`;
+}
+
+function blobToBase64(blob: Blob): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const r = new FileReader();
+    r.onload = () => {
+      const dataUrl = r.result as string;
+      const i = dataUrl.indexOf(',');
+      resolve(i >= 0 ? dataUrl.slice(i + 1) : dataUrl);
+    };
+    r.onerror = () => reject(r.error);
+    r.readAsDataURL(blob);
+  });
 }
