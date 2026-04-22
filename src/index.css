@@ -136,7 +136,8 @@ All colors MUST be HSL.
     /* Studio tokens default (light fallback) */
     --studio-bg: 0 0% 6%;
     --studio-panel: 220 18% 10%;
-  
+  }
+
   /* Respect user motion preferences */
   @media (prefers-reduced-motion: reduce) {
     *,
