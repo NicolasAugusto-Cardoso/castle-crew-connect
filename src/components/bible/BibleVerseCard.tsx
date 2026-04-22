@@ -1,41 +1,49 @@
-import { useState, useCallback, useRef, Fragment } from 'react';
-import { Button } from '@/components/ui/button';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
-import { Copy, Check, Share2, Pencil, Eye, EyeOff, FileText, Highlighter, X } from 'lucide-react';
+import { Fragment, useRef, useState, useCallback } from 'react';
 import { cn } from '@/lib/utils';
 import { BibleHighlight } from '@/hooks/useBibleAnnotations';
-import { BibleHighlightPopover, HIGHLIGHT_COLORS } from './BibleHighlightPopover';
-import { toast } from 'sonner';
+import { BibleVerseToolbar } from './BibleVerseToolbar';
 
 interface BibleVerseCardProps {
   verseNumber: number;
   text: string;
   bookName: string;
   chapter: number;
-  isHighlighted?: boolean;
-  isFocused?: boolean;
+  isHighlighted?: boolean; // navigation highlight (came from "saved" / search)
+  isFocused?: boolean; // user-set focus mark
   hasNote?: boolean;
   highlights?: BibleHighlight[];
   onCopy: () => void;
   onShare: () => void;
   onOpenNote: () => void;
   onToggleFocus: () => void;
-  onAddHighlight: (color: string, startOffset: number, endOffset: number, selectedText: string) => Promise<void>;
+  /** Apply highlight to the entire verse text. */
+  onAddHighlight: (
+    color: string,
+    startOffset: number,
+    endOffset: number,
+    selectedText: string
+  ) => Promise<void>;
   onRemoveHighlight: (highlightId: string) => Promise<void>;
   onRemoveAllHighlights: () => Promise<void>;
   copiedVerse?: number | null;
   highlightRef?: React.RefObject<HTMLDivElement>;
 }
 
+/**
+ * Immersive verse component (Apple Books / YouVersion style).
+ *
+ * Interaction model:
+ *  - Single tap: select verse → soft background highlight + floating toolbar.
+ *  - Toolbar color tap: apply highlight to the whole verse instantly.
+ *  - Double tap: toggle focus mark.
+ *  - Tap on existing colored span: remove that highlight (with confirm).
+ *
+ * No yellow card, no "Selecione o texto" tooltip — the verse text is never
+ * covered.
+ */
 export function BibleVerseCard({
   verseNumber,
   text,
-  bookName,
-  chapter,
   isHighlighted,
   isFocused,
   hasNote,
@@ -45,337 +53,137 @@ export function BibleVerseCard({
   onOpenNote,
   onToggleFocus,
   onAddHighlight,
-  onRemoveHighlight,
   onRemoveAllHighlights,
-  copiedVerse,
+  onRemoveHighlight,
   highlightRef,
 }: BibleVerseCardProps) {
-  const [actionsOpen, setActionsOpen] = useState(false);
-  const [highlightMode, setHighlightMode] = useState(false);
-  const [selectedRange, setSelectedRange] = useState<{ start: number; end: number; text: string } | null>(null);
-  const [highlightPopoverPosition, setHighlightPopoverPosition] = useState<{ x: number; y: number } | null>(null);
-  const [isAddingHighlight, setIsAddingHighlight] = useState(false);
-  const textRef = useRef<HTMLParagraphElement>(null);
+  const [selected, setSelected] = useState(false);
+  const [applying, setApplying] = useState(false);
+  const verseRef = useRef<HTMLDivElement>(null);
+  const lastTapRef = useRef(0);
 
-  // Handle double tap/click for focus mode
-  const lastTapRef = useRef<number>(0);
-  const handleDoubleTap = useCallback(() => {
+  const handleTap = useCallback(() => {
     const now = Date.now();
-    const DOUBLE_TAP_DELAY = 300;
-    
+    const DOUBLE_TAP_DELAY = 280;
     if (now - lastTapRef.current < DOUBLE_TAP_DELAY) {
-      onToggleFocus();
+      // Double tap → focus toggle
       lastTapRef.current = 0;
-    } else {
-      lastTapRef.current = now;
+      setSelected(false);
+      onToggleFocus();
+      return;
     }
+    lastTapRef.current = now;
+    setSelected(prev => !prev);
   }, [onToggleFocus]);
 
-  // Handle text selection for highlighting
-  const handleTextSelection = useCallback(() => {
-    if (!highlightMode) return;
-
-    const selection = window.getSelection();
-    if (!selection || selection.isCollapsed || !textRef.current) return;
-
-    const range = selection.getRangeAt(0);
-    const selectedText = selection.toString().trim();
-    
-    if (!selectedText || selectedText.length === 0) return;
-
-    // Calculate offsets relative to the text content
-    const textContent = text;
-    const startOffset = textContent.indexOf(selectedText);
-    const endOffset = startOffset + selectedText.length;
-
-    if (startOffset === -1) return;
-
-    // Get position for popover
-    const rect = range.getBoundingClientRect();
-    setHighlightPopoverPosition({
-      x: rect.left + rect.width / 2,
-      y: rect.bottom + 10,
-    });
-
-    setSelectedRange({ start: startOffset, end: endOffset, text: selectedText });
-  }, [highlightMode, text]);
-
-  // Apply highlight
-  const handleApplyHighlight = async (color: string) => {
-    if (!selectedRange) return;
-
-    setIsAddingHighlight(true);
+  const handlePickColor = async (color: string) => {
+    setApplying(true);
     try {
-      await onAddHighlight(color, selectedRange.start, selectedRange.end, selectedRange.text);
-      toast.success('Grifo aplicado!');
-    } catch (error) {
-      toast.error('Erro ao aplicar grifo');
+      await onAddHighlight(color, 0, text.length, text);
     } finally {
-      setIsAddingHighlight(false);
-      setSelectedRange(null);
-      setHighlightPopoverPosition(null);
-      setHighlightMode(false);
-      window.getSelection()?.removeAllRanges();
+      setApplying(false);
+      setSelected(false);
     }
   };
 
-  // Render text with highlights
-  const renderHighlightedText = () => {
+  const handleClearHighlights = async () => {
+    await onRemoveAllHighlights();
+    setSelected(false);
+  };
+
+  // Render text, painting saved highlight ranges inline.
+  const renderText = () => {
     if (highlights.length === 0) return text;
 
-    // Sort highlights by start offset
-    const sortedHighlights = [...highlights].sort((a, b) => a.start_offset - b.start_offset);
-    
-    const result: React.ReactNode[] = [];
-    let lastEnd = 0;
+    const sorted = [...highlights].sort((a, b) => a.start_offset - b.start_offset);
+    const out: React.ReactNode[] = [];
+    let cursor = 0;
 
-    sortedHighlights.forEach((highlight, index) => {
-      // Validate offsets
-      if (highlight.start_offset < 0 || highlight.end_offset > text.length || highlight.start_offset >= highlight.end_offset) {
+    sorted.forEach((h, i) => {
+      if (h.start_offset < 0 || h.end_offset > text.length || h.start_offset >= h.end_offset) {
         return;
       }
-
-      // Add text before this highlight
-      if (highlight.start_offset > lastEnd) {
-        result.push(
-          <Fragment key={`text-${index}`}>
-            {text.slice(lastEnd, highlight.start_offset)}
-          </Fragment>
-        );
+      if (h.start_offset > cursor) {
+        out.push(<Fragment key={`t-${i}`}>{text.slice(cursor, h.start_offset)}</Fragment>);
       }
-
-      // Add highlighted text with click to remove
-      const highlightedPart = text.slice(highlight.start_offset, highlight.end_offset);
-      result.push(
+      out.push(
         <span
-          key={`highlight-${highlight.id}`}
-          className="px-0.5 rounded cursor-pointer hover:opacity-80 transition-opacity"
-          style={{ backgroundColor: highlight.color }}
-          onClick={(e) => {
+          key={`h-${h.id}`}
+          className="rounded-sm px-0.5 transition-opacity hover:opacity-80"
+          style={{ backgroundColor: h.color }}
+          onClick={e => {
             e.stopPropagation();
-            if (confirm('Remover este grifo?')) {
-              onRemoveHighlight(highlight.id);
+            if (window.confirm('Remover este grifo?')) {
+              onRemoveHighlight(h.id);
             }
           }}
-          title="Clique para remover"
+          role="button"
+          tabIndex={0}
+          title="Toque para remover este grifo"
         >
-          {highlightedPart}
+          {text.slice(h.start_offset, h.end_offset)}
         </span>
       );
-
-      lastEnd = highlight.end_offset;
+      cursor = h.end_offset;
     });
 
-    // Add remaining text
-    if (lastEnd < text.length) {
-      result.push(
-        <Fragment key="text-end">
-          {text.slice(lastEnd)}
-        </Fragment>
-      );
+    if (cursor < text.length) {
+      out.push(<Fragment key="t-end">{text.slice(cursor)}</Fragment>);
     }
-
-    return result;
+    return out;
   };
 
   return (
-    <div
-      ref={highlightRef}
-      id={`verse-${verseNumber}`}
-      className={cn(
-        "group p-4 rounded-xl transition-all duration-300 relative",
-        isHighlighted
-          ? "bg-primary/10 ring-2 ring-primary/50"
-          : isFocused
-          ? "bg-primary text-primary-foreground"
-          : "hover:bg-secondary/50",
-        highlightMode && "ring-2 ring-yellow-400/50"
-      )}
-      onClick={handleDoubleTap}
-      onMouseUp={handleTextSelection}
-      onTouchEnd={handleTextSelection}
-    >
-      {/* Note indicator */}
-      {hasNote && (
-        <div className="absolute top-2 right-2">
+    <>
+      <div
+        ref={highlightRef}
+        id={`verse-${verseNumber}`}
+        className={cn(
+          'group relative rounded-lg px-2 py-1.5 transition-colors duration-200 cursor-pointer select-none',
+          isHighlighted && 'bg-primary/10 ring-1 ring-primary/30',
+          isFocused && !isHighlighted && 'bg-primary/5',
+          selected && !isHighlighted && 'bg-secondary'
+        )}
+        onClick={handleTap}
+      >
+        {hasNote && (
           <span
-            className="w-2.5 h-2.5 bg-primary rounded-full block cursor-pointer animate-pulse"
-            onClick={(e) => {
-              e.stopPropagation();
-              onOpenNote();
-            }}
-            title="Ver anotação"
+            aria-label="Versículo possui anotação"
+            className="absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-primary"
           />
-        </div>
-      )}
+        )}
 
-      {/* Highlight mode indicator */}
-      {highlightMode && (
-        <div className="absolute top-2 left-2 flex items-center gap-1 text-xs text-yellow-600 bg-yellow-100 px-2 py-0.5 rounded-full">
-          <Highlighter className="w-3 h-3" />
-          <span>Selecione o texto</span>
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              setHighlightMode(false);
-            }}
-            className="ml-1 hover:text-yellow-800"
-          >
-            <X className="w-3 h-3" />
-          </button>
+        <div ref={verseRef} className="leading-relaxed text-base sm:text-lg text-foreground">
+          <sup className="mr-1.5 text-xs font-bold text-primary align-baseline">
+            {verseNumber}
+          </sup>
+          {renderText()}
         </div>
-      )}
-
-      <div className="flex gap-3">
-        <span className={cn(
-          "font-bold text-base flex-shrink-0 w-8 text-right",
-          isFocused ? "text-primary-foreground" : "text-primary"
-        )}>
-          {verseNumber}
-        </span>
-        <p
-          ref={textRef}
-          className={cn(
-            "leading-relaxed text-base sm:text-lg flex-1",
-            isFocused ? "text-primary-foreground" : "text-foreground",
-            highlightMode && "select-text cursor-text"
-          )}
-        >
-          {renderHighlightedText()}
-        </p>
       </div>
 
-      {/* Actions on hover/tap */}
-      <div className={cn(
-        "flex justify-end gap-1 mt-2 transition-opacity",
-        "opacity-0 group-hover:opacity-100",
-        (actionsOpen || highlightMode) && "opacity-100"
-      )}>
-        {/* Copy */}
-        <Button
-          variant="ghost"
-          size="sm"
-          className={cn(
-            "h-8 px-2 rounded-lg",
-            isFocused ? "text-primary-foreground/70 hover:text-primary-foreground hover:bg-primary-foreground/10" : "text-muted-foreground hover:text-foreground"
-          )}
-          onClick={(e) => {
-            e.stopPropagation();
+      {selected && (
+        <BibleVerseToolbar
+          anchor={verseRef.current}
+          hasHighlights={highlights.length > 0}
+          hasNote={!!hasNote}
+          isApplying={applying}
+          onPickColor={handlePickColor}
+          onCopy={() => {
             onCopy();
+            setSelected(false);
           }}
-        >
-          {copiedVerse === verseNumber ? (
-            <Check className="w-4 h-4" />
-          ) : (
-            <Copy className="w-4 h-4" />
-          )}
-        </Button>
-
-        {/* Share */}
-        <Button
-          variant="ghost"
-          size="sm"
-          className={cn(
-            "h-8 px-2 rounded-lg",
-            isFocused ? "text-primary-foreground/70 hover:text-primary-foreground hover:bg-primary-foreground/10" : "text-muted-foreground hover:text-foreground"
-          )}
-          onClick={(e) => {
-            e.stopPropagation();
+          onShare={() => {
             onShare();
+            setSelected(false);
           }}
-        >
-          <Share2 className="w-4 h-4" />
-        </Button>
-
-        {/* Focus mode toggle */}
-        <Button
-          variant="ghost"
-          size="sm"
-          className={cn(
-            "h-8 px-2 rounded-lg",
-            isFocused ? "text-primary-foreground/70 hover:text-primary-foreground hover:bg-primary-foreground/10" : "text-muted-foreground hover:text-foreground"
-          )}
-          onClick={(e) => {
-            e.stopPropagation();
-            onToggleFocus();
+          onOpenNote={() => {
+            onOpenNote();
+            setSelected(false);
           }}
-          title={isFocused ? "Desativar destaque" : "Ativar destaque"}
-        >
-          {isFocused ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-        </Button>
-
-        {/* Actions menu (note + highlight) */}
-        <Popover open={actionsOpen} onOpenChange={setActionsOpen}>
-          <PopoverTrigger asChild>
-            <Button
-              variant="ghost"
-              size="sm"
-              className={cn(
-                "h-8 px-2 rounded-lg",
-                isFocused ? "text-primary-foreground/70 hover:text-primary-foreground hover:bg-primary-foreground/10" : "text-muted-foreground hover:text-foreground"
-              )}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <Pencil className="w-4 h-4" />
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-48 p-2" align="end">
-            <div className="space-y-1">
-              <Button
-                variant="ghost"
-                className="w-full justify-start gap-2 h-9"
-                onClick={() => {
-                  setActionsOpen(false);
-                  onOpenNote();
-                }}
-              >
-                <FileText className="w-4 h-4" />
-                {hasNote ? 'Ver/Editar Anotação' : 'Anotar'}
-              </Button>
-              <Button
-                variant="ghost"
-                className="w-full justify-start gap-2 h-9"
-                onClick={() => {
-                  setActionsOpen(false);
-                  setHighlightMode(true);
-                }}
-              >
-                <Highlighter className="w-4 h-4" />
-                Grifar
-              </Button>
-              {highlights.length > 0 && (
-                <Button
-                  variant="ghost"
-                  className="w-full justify-start gap-2 h-9 text-destructive hover:text-destructive"
-                  onClick={() => {
-                    setActionsOpen(false);
-                    if (confirm('Remover todos os grifos deste versículo?')) {
-                      onRemoveAllHighlights();
-                    }
-                  }}
-                >
-                  <X className="w-4 h-4" />
-                  Limpar grifos
-                </Button>
-              )}
-            </div>
-          </PopoverContent>
-        </Popover>
-      </div>
-
-      {/* Highlight color selection popover */}
-      {selectedRange && highlightPopoverPosition && (
-        <BibleHighlightPopover
-          selectedText={selectedRange.text}
-          onApply={handleApplyHighlight}
-          onClose={() => {
-            setSelectedRange(null);
-            setHighlightPopoverPosition(null);
-          }}
-          isApplying={isAddingHighlight}
-          position={highlightPopoverPosition}
+          onClearHighlights={handleClearHighlights}
+          onClose={() => setSelected(false)}
         />
       )}
-    </div>
+    </>
   );
 }
