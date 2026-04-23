@@ -5,9 +5,3 @@ verify_jwt = false
 
 [functions.bible-proxy]
 verify_jwt = false
-
-[functions.studio-ai-assistant]
-verify_jwt = false
-
-[functions.studio-transcribe]
-verify_jwt = false

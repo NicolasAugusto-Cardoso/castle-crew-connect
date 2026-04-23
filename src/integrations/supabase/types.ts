@@ -799,56 +799,6 @@ export type Database = {
           },
         ]
       }
-      media_projects: {
-        Row: {
-          created_at: string
-          id: string
-          output_url: string | null
-          project_data: Json
-          source_url: string | null
-          task_id: string | null
-          thumbnail_url: string | null
-          title: string
-          type: string
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          output_url?: string | null
-          project_data?: Json
-          source_url?: string | null
-          task_id?: string | null
-          thumbnail_url?: string | null
-          title?: string
-          type: string
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          output_url?: string | null
-          project_data?: Json
-          source_url?: string | null
-          task_id?: string | null
-          thumbnail_url?: string | null
-          title?: string
-          type?: string
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "media_projects_task_id_fkey"
-            columns: ["task_id"]
-            isOneToOne: false
-            referencedRelation: "social_media_tasks"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       post_comments: {
         Row: {
           content: string
@@ -1050,48 +1000,6 @@ export type Database = {
         }
         Relationships: []
       }
-      social_media_tasks: {
-        Row: {
-          assigned_to: string | null
-          completed_at: string | null
-          created_at: string
-          created_by: string
-          due_date: string | null
-          id: string
-          instructions: string | null
-          reference_urls: Json
-          status: Database["public"]["Enums"]["task_status"]
-          title: string
-          updated_at: string
-        }
-        Insert: {
-          assigned_to?: string | null
-          completed_at?: string | null
-          created_at?: string
-          created_by: string
-          due_date?: string | null
-          id?: string
-          instructions?: string | null
-          reference_urls?: Json
-          status?: Database["public"]["Enums"]["task_status"]
-          title: string
-          updated_at?: string
-        }
-        Update: {
-          assigned_to?: string | null
-          completed_at?: string | null
-          created_at?: string
-          created_by?: string
-          due_date?: string | null
-          id?: string
-          instructions?: string | null
-          reference_urls?: Json
-          status?: Database["public"]["Enums"]["task_status"]
-          title?: string
-          updated_at?: string
-        }
-        Relationships: []
-      }
       testimonials: {
         Row: {
           author_name: string | null
@@ -1210,7 +1118,6 @@ export type Database = {
       app_role: "admin" | "social_media" | "collaborator" | "user" | "volunteer"
       basket_type: "P" | "M" | "G"
       donation_status: "pending" | "reviewing" | "confirmed" | "rejected"
-      task_status: "pending" | "in_production" | "completed"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1341,7 +1248,6 @@ export const Constants = {
       app_role: ["admin", "social_media", "collaborator", "user", "volunteer"],
       basket_type: ["P", "M", "G"],
       donation_status: ["pending", "reviewing", "confirmed", "rejected"],
-      task_status: ["pending", "in_production", "completed"],
     },
   },
 } as const
