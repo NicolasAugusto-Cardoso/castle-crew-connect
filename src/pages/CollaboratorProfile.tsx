@@ -85,7 +85,7 @@ export default function CollaboratorProfilePage() {
                 <CardTitle className="truncate">{name}</CardTitle>
                 <CardDescription className="flex items-center gap-2 mt-1">
                   Perfil de Colaborador
-                  {hasCoords && <CheckCircle2 className="h-4 w-4 text-green-600" />}
+                  {hasCoords && <CheckCircle2 className="h-4 w-4 text-primary" />}
                 </CardDescription>
                 {profile?.accepting_new !== undefined && (
                   <Badge
@@ -143,11 +143,11 @@ export default function CollaboratorProfilePage() {
                       <p className="text-sm text-muted-foreground">CEP: {profile.postal_code}</p>
                     )}
                     {hasCoords ? (
-                      <p className="text-xs text-green-600 flex items-center gap-1 mt-2">
+                      <p className="text-xs text-primary flex items-center gap-1 mt-2">
                         <CheckCircle2 className="h-3 w-3" /> Endereço geolocalizado
                       </p>
                     ) : (
-                      <p className="text-xs text-amber-600 flex items-center gap-1 mt-2">
+                      <p className="text-xs text-muted-foreground flex items-center gap-1 mt-2">
                         <MapPin className="h-3 w-3" /> Aguardando geolocalização
                       </p>
                     )}
