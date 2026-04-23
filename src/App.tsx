@@ -29,10 +29,6 @@ import Events from "./pages/Events";
 import EventDetails from "./pages/EventDetails";
 import Donations from "./pages/Donations";
 import Bible from "./pages/Bible";
-import SocialMediaTasks from "./pages/SocialMediaTasks";
-import Studio from "./pages/Studio";
-import PhotoEditor from "./pages/PhotoEditor";
-import VideoEditor from "./pages/VideoEditor";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 
 // Guard para rota de doações - redireciona se desabilitado
@@ -157,26 +153,6 @@ const App = () => {
                 </ProtectedRoute>
               } />
               <Route path="/users" element={<Users />} />
-              <Route path="/social-media-tasks" element={
-                <ProtectedRoute allowedRoles={['admin', 'volunteer', 'social_media']}>
-                  <SocialMediaTasks />
-                </ProtectedRoute>
-              } />
-              <Route path="/studio" element={
-                <ProtectedRoute allowedRoles={['admin', 'social_media']}>
-                  <Studio />
-                </ProtectedRoute>
-              } />
-              <Route path="/studio/photo/:projectId?" element={
-                <ProtectedRoute allowedRoles={['admin', 'social_media']}>
-                  <PhotoEditor />
-                </ProtectedRoute>
-              } />
-              <Route path="/studio/video/:projectId?" element={
-                <ProtectedRoute allowedRoles={['admin', 'social_media']}>
-                  <VideoEditor />
-                </ProtectedRoute>
-              } />
               <Route path="/delete-account" element={<DeleteAccount />} />
             </Route>
             <Route path="*" element={<NotFound />} />
