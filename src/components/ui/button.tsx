@@ -9,22 +9,22 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-primary text-primary-foreground hover:bg-primary/90",
+        default: "border border-neon-blue/70 bg-neon-blue/10 text-neon-blue shadow-[0_0_18px_-8px_hsl(var(--neon-blue))] hover:bg-neon-blue/20 hover:border-neon-blue hover:shadow-[0_0_22px_-5px_hsl(var(--neon-blue)/0.75)] transition-all",
         destructive: "bg-destructive text-destructive-foreground hover:bg-destructive/90",
-        outline: "border border-white/10 bg-transparent text-foreground hover:bg-white/5 hover:border-white/20",
-        secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80",
-        ghost: "hover:bg-white/5 hover:text-foreground",
-        link: "text-foreground underline-offset-4 hover:underline",
+        outline: "border border-neon-purple/70 bg-neon-purple/10 text-neon-purple hover:bg-neon-purple/20 hover:border-neon-purple hover:shadow-[0_0_18px_-6px_hsl(var(--neon-purple)/0.65)] transition-all",
+        secondary: "border border-neon-green/70 bg-neon-green/10 text-neon-green hover:bg-neon-green/20 hover:border-neon-green hover:shadow-[0_0_18px_-6px_hsl(var(--neon-green)/0.65)] transition-all",
+        ghost: "text-neon-blue hover:bg-neon-blue/10 hover:text-neon-blue hover:shadow-[0_0_14px_-7px_hsl(var(--neon-blue))] transition-all",
+        link: "text-neon-blue underline-offset-4 hover:text-neon-purple hover:underline",
         // REFACTOR Dark Mode — Variante A (Clean): preto + borda prata sutil
         clean: "bg-background border border-white/10 text-foreground hover:bg-white/5 hover:border-white/20 transition-colors",
         // REFACTOR Dark Mode — Variante B (Destaque): gradiente prata/branco, texto escuro AAA
         premium: "bg-gradient-to-r from-[hsl(0,0%,95%)] to-[hsl(0,0%,78%)] text-[#121212] font-semibold border border-white/10 hover:brightness-105 hover:scale-[1.02] transition-all",
         // Neon outline variants — combinam com CardThemed (mesma paleta)
-        neonBlue: "bg-transparent border border-blue-500/70 text-blue-400 hover:bg-blue-500/10 hover:border-blue-400 hover:shadow-[0_0_16px_-4px_rgba(59,130,246,0.5)] transition-all",
-        neonPurple: "bg-transparent border border-purple-500/70 text-purple-400 hover:bg-purple-500/10 hover:border-purple-400 hover:shadow-[0_0_16px_-4px_rgba(168,85,247,0.5)] transition-all",
-        neonGreen: "bg-transparent border border-emerald-500/70 text-emerald-400 hover:bg-emerald-500/10 hover:border-emerald-400 hover:shadow-[0_0_16px_-4px_rgba(16,185,129,0.5)] transition-all",
-        neonYellow: "bg-transparent border border-amber-500/70 text-amber-400 hover:bg-amber-500/10 hover:border-amber-400 hover:shadow-[0_0_16px_-4px_rgba(245,158,11,0.5)] transition-all",
-        neonRed: "bg-transparent border border-rose-500/70 text-rose-400 hover:bg-rose-500/10 hover:border-rose-400 hover:shadow-[0_0_16px_-4px_rgba(244,63,94,0.5)] transition-all",
+        neonBlue: "bg-neon-blue/10 border border-neon-blue/70 text-neon-blue hover:bg-neon-blue/20 hover:border-neon-blue hover:shadow-[0_0_16px_-4px_hsl(var(--neon-blue)/0.65)] transition-all",
+        neonPurple: "bg-neon-purple/10 border border-neon-purple/70 text-neon-purple hover:bg-neon-purple/20 hover:border-neon-purple hover:shadow-[0_0_16px_-4px_hsl(var(--neon-purple)/0.65)] transition-all",
+        neonGreen: "bg-neon-green/10 border border-neon-green/70 text-neon-green hover:bg-neon-green/20 hover:border-neon-green hover:shadow-[0_0_16px_-4px_hsl(var(--neon-green)/0.65)] transition-all",
+        neonYellow: "bg-neon-yellow/10 border border-neon-yellow/70 text-neon-yellow hover:bg-neon-yellow/20 hover:border-neon-yellow hover:shadow-[0_0_16px_-4px_hsl(var(--neon-yellow)/0.65)] transition-all",
+        neonRed: "bg-neon-red/10 border border-neon-red/70 text-neon-red hover:bg-neon-red/20 hover:border-neon-red hover:shadow-[0_0_16px_-4px_hsl(var(--neon-red)/0.65)] transition-all",
       },
       size: {
         default: "h-10 px-4 py-2",
