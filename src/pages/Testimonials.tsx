@@ -1,6 +1,14 @@
 import { useAuth } from '@/hooks/useAuth';
 import { useTestimonials } from '@/hooks/useTestimonials';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
+import {
+  CardThemed,
+  CardThemedHeader,
+  CardThemedTitle,
+  CardThemedContent,
+} from '@/components/ui/themed-card';
+import { COLOR_THEMES, getColorTheme } from '@/lib/colorThemes';
+import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Sparkles, Loader2, MoreVertical, Trash2 } from 'lucide-react';
