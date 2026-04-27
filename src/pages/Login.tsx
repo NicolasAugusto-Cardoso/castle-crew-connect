@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 import { Eye, EyeOff } from 'lucide-react';
-import castleLogo from '@/assets/castle-logo-login-new.png';
+import castleLogo from '@/assets/castle-logo-login-v2.png';
 import { loginSchema, signupSchema } from '@/lib/validations';
 
 export default function Login() {
