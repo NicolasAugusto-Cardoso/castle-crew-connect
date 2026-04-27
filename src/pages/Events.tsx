@@ -6,7 +6,8 @@ import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Plus, MapPin, User
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { CardThemed, CardThemedContent } from '@/components/ui/themed-card';
-import { COLOR_THEMES, getColorTheme } from '@/lib/colorThemes';
+import { COLOR_THEMES, getColorTheme, getSectionTheme } from '@/lib/colorThemes';
+import { SectionHeading } from '@/components/ui/section-heading';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
@@ -179,7 +180,7 @@ export default function Events() {
   return (
     <div className="space-y-4 pb-20 p-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-foreground">Eventos</h1>
+        <SectionHeading colorTheme={getSectionTheme('events')} as="h1">Eventos</SectionHeading>
         {canManageEvents && (
           <Button onClick={() => setCreateDialogOpen(true)} size="sm">
             <Plus className="w-4 h-4 mr-1" />
