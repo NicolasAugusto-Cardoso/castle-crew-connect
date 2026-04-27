@@ -9,6 +9,7 @@ import { toast } from 'sonner';
 import { Eye, EyeOff } from 'lucide-react';
 import castleLogo from '@/assets/castle-logo-login-v2.png';
 import { loginSchema, signupSchema } from '@/lib/validations';
+import { Splash } from '@/components/Splash';
 
 export default function Login() {
   const { signIn, signUp, isAuthenticated } = useAuth();
@@ -16,6 +17,7 @@ export default function Login() {
   const [showLoginPassword, setShowLoginPassword] = useState(false);
   const [showSignupPassword, setShowSignupPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [showPostLoginSplash, setShowPostLoginSplash] = useState(false);
 
   // Redirect if already logged in
   useEffect(() => {
@@ -67,9 +69,8 @@ export default function Login() {
       } else if (data?.session) {
         console.log('[LOGIN] Login realizado com sucesso!');
         toast.success('Login realizado com sucesso!');
-        setTimeout(() => {
-          window.location.href = '/';
-        }, 500);
+        // Exibe a vinheta UniCristo antes de entrar no app
+        setShowPostLoginSplash(true);
       } else {
         console.error('[LOGIN] Estado inesperado - sem erro mas sem sessão');
         toast.error('Erro inesperado ao processar login. Tente novamente.');
@@ -158,9 +159,13 @@ export default function Login() {
   };
 
   return (
-    // REFACTOR Dark: container com fundo preto puro (sem gradiente azul)
-    <div className="min-h-screen flex items-center justify-center p-3 xs:p-4 sm:p-6 bg-background">
-      <Card className="w-full max-w-md card-elevated">
+    <>
+      {showPostLoginSplash && (
+        <Splash onComplete={() => { window.location.href = '/'; }} />
+      )}
+      {/* REFACTOR Dark: container com fundo preto puro (sem gradiente azul) */}
+      <div className="min-h-screen flex items-center justify-center p-3 xs:p-4 sm:p-6 bg-background">
+        <Card className="w-full max-w-md card-elevated">
         <CardHeader className="text-center space-y-3 xs:space-y-4 px-4 xs:px-6 pt-6 xs:pt-8">
           <div className="flex justify-center">
             {/* REFACTOR Dark: ring prata sutil + glow suave em vez de shadow azul */}
