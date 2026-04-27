@@ -166,7 +166,7 @@ export default function Login() {
             {/* REFACTOR Dark: ring prata sutil + glow suave em vez de shadow azul */}
             <img 
               src={castleLogo} 
-              alt="Castle App Logo" 
+              alt="UniCristo Logo" 
               className="w-20 h-20 xs:w-24 xs:h-24 rounded-full ring-1 ring-white/15 object-contain bg-white p-2 shadow-[0_0_30px_rgba(255,255,255,0.06)]"
             />
           </div>
