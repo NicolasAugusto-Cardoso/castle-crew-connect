@@ -36,9 +36,9 @@ export default function Donations() {
     <div className="container mx-auto px-3 xs:px-4 sm:px-6 py-4 xs:py-5 sm:py-6 max-w-4xl">
       {/* Header */}
       <div className="mb-6 text-center">
-        <h1 className="text-xl xs:text-2xl sm:text-3xl font-bold text-foreground mb-2">
+        <SectionHeading colorTheme={getSectionTheme('donations')} as="h1" icon={<Heart className="w-6 h-6" />}>
           Doações
-        </h1>
+        </SectionHeading>
         <p className="text-sm xs:text-base text-muted-foreground">
           Doe cestas básicas e ajude famílias em necessidade
         </p>
