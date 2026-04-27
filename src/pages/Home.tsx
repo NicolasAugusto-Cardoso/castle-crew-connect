@@ -135,7 +135,7 @@ export default function Home() {
       {/* Welcome Section */}
       <div className="mb-6 xs:mb-7 sm:mb-8 text-center animate-fade-in px-2">
         <h1 className="text-lg xs:text-xl sm:text-2xl md:text-3xl font-bold text-foreground mb-1.5 xs:mb-2 break-words leading-tight">
-          Bem-vindo ao Castle App
+          Bem-vindo ao UniCristo
         </h1>
         <p className="text-sm xs:text-base text-muted-foreground">
           Comunidade, fé e transformação

@@ -69,7 +69,7 @@ export const Layout = () => {
         <div className="w-full h-[60px] px-2 xs:px-3 sm:px-4 flex items-center justify-between md:px-8 relative">
           {/* Logo centralizada com position absolute */}
           <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
-            <img src={castleLogo} alt="Castle App" className="h-10 xs:h-11 sm:h-12 md:h-14 w-auto" />
+            <img src={castleLogo} alt="UniCristo" className="h-10 xs:h-11 sm:h-12 md:h-14 w-auto" />
           </div>
           
           {/* Espaçador esquerdo */}

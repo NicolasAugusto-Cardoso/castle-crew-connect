@@ -171,7 +171,7 @@ export default function Login() {
             />
           </div>
           <div>
-            <CardTitle className="text-2xl xs:text-3xl gradient-text mb-1.5 xs:mb-2">Castle App</CardTitle>
+            <CardTitle className="text-2xl xs:text-3xl gradient-text mb-1.5 xs:mb-2">UniCristo</CardTitle>
             <CardDescription className="text-xs xs:text-sm text-muted-foreground">Faça login ou crie sua conta</CardDescription>
           </div>
         </CardHeader>
