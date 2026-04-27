@@ -14,6 +14,8 @@ import { Button } from '@/components/ui/button';
 import { Sparkles, Loader2, MoreVertical, Trash2 } from 'lucide-react';
 import { CreateTestimonialDialog } from '@/components/testimonials/CreateTestimonialDialog';
 import { EditTestimonialDialog } from '@/components/testimonials/EditTestimonialDialog';
+import { SectionHeading } from '@/components/ui/section-heading';
+import { getSectionTheme } from '@/lib/colorThemes';
 import {
   DropdownMenu,
   DropdownMenuContent,
