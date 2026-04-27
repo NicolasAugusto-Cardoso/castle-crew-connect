@@ -7,8 +7,9 @@ import {
   CardThemedHeader,
   CardThemedTitle,
   CardThemedContent,
+  CardThemedAccent,
 } from '@/components/ui/themed-card';
-import { COLOR_THEMES, getColorTheme, type ColorTheme } from '@/lib/colorThemes';
+import { COLOR_THEMES, getColorTheme, getNeonVariant, type ColorTheme } from '@/lib/colorThemes';
 import { cn } from '@/lib/utils';
 
 type BasketModel = Database['public']['Tables']['basket_models']['Row'];
