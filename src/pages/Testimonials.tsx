@@ -1,11 +1,21 @@
 import { useAuth } from '@/hooks/useAuth';
 import { useTestimonials } from '@/hooks/useTestimonials';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
+import {
+  CardThemed,
+  CardThemedHeader,
+  CardThemedTitle,
+  CardThemedContent,
+} from '@/components/ui/themed-card';
+import { COLOR_THEMES, getColorTheme } from '@/lib/colorThemes';
+import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Sparkles, Loader2, MoreVertical, Trash2 } from 'lucide-react';
 import { CreateTestimonialDialog } from '@/components/testimonials/CreateTestimonialDialog';
 import { EditTestimonialDialog } from '@/components/testimonials/EditTestimonialDialog';
+import { SectionHeading } from '@/components/ui/section-heading';
+import { getSectionTheme } from '@/lib/colorThemes';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -47,11 +57,14 @@ export default function Testimonials() {
   return (
     <div className="container mx-auto px-3 xs:px-4 sm:px-6 py-4 xs:py-5 sm:py-6 max-w-4xl">
       <div className="mb-6 xs:mb-7 sm:mb-8">
-        <div className="flex items-center gap-2 xs:gap-3 mb-2">
-          <Sparkles className="w-6 xs:w-7 sm:w-8 h-6 xs:h-7 sm:h-8 text-accent flex-shrink-0" />
-          <h1 className="text-2xl xs:text-2xl sm:text-3xl font-bold gradient-text">Testemunhos</h1>
-        </div>
-        <p className="text-sm xs:text-base text-muted-foreground">
+        <SectionHeading
+          colorTheme={getSectionTheme('testimonials')}
+          as="h1"
+          icon={<Sparkles className="w-6 xs:w-7 sm:w-8 h-6 xs:h-7 sm:h-8" />}
+        >
+          Testemunhos
+        </SectionHeading>
+        <p className="text-sm xs:text-base text-muted-foreground mt-2">
           Histórias reais de transformação através de Jesus
         </p>
       </div>
@@ -78,60 +91,64 @@ export default function Testimonials() {
         </Card>
       ) : (
         <div className="grid gap-4 xs:gap-5 sm:gap-6 grid-cols-1 md:grid-cols-2">
-          {testimonials.map((testimonial) => (
-            <Card key={testimonial.id} className="card-elevated">
-              <CardHeader>
-                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
-                  <div className="flex-1 min-w-0">
-                    <CardTitle className="text-lg sm:text-xl break-words">{testimonial.title}</CardTitle>
-                    <p className="text-sm font-semibold text-primary mt-1">
-                      {testimonial.author_name || 'Anônimo'}
-                    </p>
+          {testimonials.map((testimonial, idx) => {
+            const theme = getColorTheme(idx);
+            const t = COLOR_THEMES[theme];
+            return (
+              <CardThemed key={testimonial.id} colorTheme={theme}>
+                <CardThemedHeader>
+                  <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+                    <div className="flex-1 min-w-0">
+                      <CardThemedTitle colorTheme={theme} as="h3" className="text-lg sm:text-xl break-words">
+                        {testimonial.title}
+                      </CardThemedTitle>
+                      <p className={cn('text-sm font-semibold mt-1', t.accent)}>
+                        {testimonial.author_name || 'Anônimo'}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      {canManageTestimonials && (
+                        <Badge variant={testimonial.status === 'published' ? 'default' : 'secondary'} className="whitespace-nowrap">
+                          {testimonial.status === 'published' ? 'Publicado' : 'Rascunho'}
+                        </Badge>
+                      )}
+                      {user?.id === testimonial.created_by && testimonial.status === 'draft' && (
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <button className="p-1.5 sm:p-2 hover:bg-secondary rounded-lg transition-colors">
+                              <MoreVertical className="w-4 h-4" />
+                            </button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <EditTestimonialDialog testimonial={testimonial} />
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      )}
+                      {canManageTestimonials && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => {
+                            setTestimonialToDelete(testimonial.id);
+                            setDeleteOpen(true);
+                          }}
+                          className="hover:bg-destructive/10 hover:text-destructive h-8 w-8 sm:h-10 sm:w-10"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      )}
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2 flex-shrink-0">
-                    {canManageTestimonials && (
-                      <Badge variant={testimonial.status === 'published' ? 'default' : 'secondary'} className="whitespace-nowrap">
-                        {testimonial.status === 'published' ? 'Publicado' : 'Rascunho'}
-                      </Badge>
-                    )}
-                    {/* Mostrar editar apenas para o próprio criador se for rascunho */}
-                    {user?.id === testimonial.created_by && testimonial.status === 'draft' && (
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <button className="p-1.5 sm:p-2 hover:bg-secondary rounded-lg transition-colors">
-                            <MoreVertical className="w-4 h-4" />
-                          </button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <EditTestimonialDialog testimonial={testimonial} />
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    )}
-                    {/* Mostrar apenas delete para admins */}
-                    {canManageTestimonials && (
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => {
-                          setTestimonialToDelete(testimonial.id);
-                          setDeleteOpen(true);
-                        }}
-                        className="hover:bg-destructive/10 hover:text-destructive h-8 w-8 sm:h-10 sm:w-10"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    )}
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm sm:text-base text-foreground leading-relaxed break-words">{testimonial.content}</p>
-                <p className="text-xs text-muted-foreground mt-4">
-                  {new Date(testimonial.created_at).toLocaleDateString('pt-BR')}
-                </p>
-              </CardContent>
-            </Card>
-          ))}
+                </CardThemedHeader>
+                <CardThemedContent>
+                  <p className="text-sm sm:text-base text-slate-300 leading-relaxed break-words">{testimonial.content}</p>
+                  <p className="text-xs text-slate-400 mt-4">
+                    {new Date(testimonial.created_at).toLocaleDateString('pt-BR')}
+                  </p>
+                </CardThemedContent>
+              </CardThemed>
+            );
+          })}
         </div>
       )}
 

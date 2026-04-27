@@ -3,6 +3,13 @@ import type { Config } from "tailwindcss";
 export default {
   darkMode: ["class"],
   content: ["./pages/**/*.{ts,tsx}", "./components/**/*.{ts,tsx}", "./app/**/*.{ts,tsx}", "./src/**/*.{ts,tsx}"],
+  // Safelist multicolored accent classes (built dynamically in src/lib/colorThemes.ts)
+  safelist: [
+    {
+      pattern:
+        /(bg|border|text|ring|focus-visible:ring|hover:bg|hover:shadow)-(blue|purple|emerald|amber|rose)-(200|300|400|500|600)(\/(?:10|15|20|30|40|50))?/,
+    },
+  ],
   prefix: "",
   theme: {
     screens: {

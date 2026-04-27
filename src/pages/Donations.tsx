@@ -10,6 +10,8 @@ import { CampaignCard } from '@/components/donations/CampaignCard';
 import { DonationDialog } from '@/components/donations/DonationDialog';
 import { TransparencySection } from '@/components/donations/TransparencySection';
 import { AdminPanel } from '@/components/donations/AdminPanel';
+import { SectionHeading } from '@/components/ui/section-heading';
+import { getSectionTheme } from '@/lib/colorThemes';
 import { Database } from '@/integrations/supabase/types';
 
 type BasketModel = Database['public']['Tables']['basket_models']['Row'];
@@ -34,9 +36,9 @@ export default function Donations() {
     <div className="container mx-auto px-3 xs:px-4 sm:px-6 py-4 xs:py-5 sm:py-6 max-w-4xl">
       {/* Header */}
       <div className="mb-6 text-center">
-        <h1 className="text-xl xs:text-2xl sm:text-3xl font-bold text-foreground mb-2">
+        <SectionHeading colorTheme={getSectionTheme('donations')} as="h1" icon={<Heart className="w-6 h-6" />}>
           Doações
-        </h1>
+        </SectionHeading>
         <p className="text-sm xs:text-base text-muted-foreground">
           Doe cestas básicas e ajude famílias em necessidade
         </p>
@@ -65,13 +67,16 @@ export default function Donations() {
           {/* Active Campaigns */}
           {campaigns && campaigns.length > 0 && (
             <div className="space-y-4">
-              <h2 className="text-lg font-semibold flex items-center gap-2">
-                <Package className="w-5 h-5 text-primary" />
+              <SectionHeading
+                colorTheme={getSectionTheme('donations')}
+                as="h2"
+                icon={<Package className="w-5 h-5" />}
+              >
                 Campanhas Ativas
-              </h2>
+              </SectionHeading>
               <div className="grid gap-4 sm:grid-cols-2">
-                {campaigns.map((campaign) => (
-                  <CampaignCard key={campaign.id} campaign={campaign} />
+                {campaigns.map((campaign, idx) => (
+                  <CampaignCard key={campaign.id} campaign={campaign} index={idx} />
                 ))}
               </div>
             </div>
@@ -79,10 +84,13 @@ export default function Donations() {
 
           {/* Basket Selection */}
           <div className="space-y-4">
-            <h2 className="text-lg font-semibold flex items-center gap-2">
-              <Package className="w-5 h-5 text-primary" />
+            <SectionHeading
+              colorTheme={getSectionTheme('donations')}
+              as="h2"
+              icon={<Package className="w-5 h-5" />}
+            >
               Escolha uma Cesta
-            </h2>
+            </SectionHeading>
 
             {loadingBaskets ? (
               <div className="flex justify-center py-8">
@@ -97,12 +105,13 @@ export default function Donations() {
               </Card>
             ) : (
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {activeBaskets.map((basket) => (
+                {activeBaskets.map((basket, idx) => (
                   <BasketCard
                     key={basket.id}
                     basket={basket}
                     onSelect={handleSelectBasket}
                     selected={selectedBasket?.id === basket.id}
+                    index={idx}
                   />
                 ))}
               </div>
