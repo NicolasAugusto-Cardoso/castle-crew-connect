@@ -10,6 +10,8 @@ import { CampaignCard } from '@/components/donations/CampaignCard';
 import { DonationDialog } from '@/components/donations/DonationDialog';
 import { TransparencySection } from '@/components/donations/TransparencySection';
 import { AdminPanel } from '@/components/donations/AdminPanel';
+import { SectionHeading } from '@/components/ui/section-heading';
+import { getSectionTheme } from '@/lib/colorThemes';
 import { Database } from '@/integrations/supabase/types';
 
 type BasketModel = Database['public']['Tables']['basket_models']['Row'];
@@ -65,13 +67,16 @@ export default function Donations() {
           {/* Active Campaigns */}
           {campaigns && campaigns.length > 0 && (
             <div className="space-y-4">
-              <h2 className="text-lg font-semibold flex items-center gap-2">
-                <Package className="w-5 h-5 text-primary" />
+              <SectionHeading
+                colorTheme={getSectionTheme('donations')}
+                as="h2"
+                icon={<Package className="w-5 h-5" />}
+              >
                 Campanhas Ativas
-              </h2>
+              </SectionHeading>
               <div className="grid gap-4 sm:grid-cols-2">
-                {campaigns.map((campaign) => (
-                  <CampaignCard key={campaign.id} campaign={campaign} />
+                {campaigns.map((campaign, idx) => (
+                  <CampaignCard key={campaign.id} campaign={campaign} index={idx} />
                 ))}
               </div>
             </div>
@@ -79,10 +84,13 @@ export default function Donations() {
 
           {/* Basket Selection */}
           <div className="space-y-4">
-            <h2 className="text-lg font-semibold flex items-center gap-2">
-              <Package className="w-5 h-5 text-primary" />
+            <SectionHeading
+              colorTheme={getSectionTheme('donations')}
+              as="h2"
+              icon={<Package className="w-5 h-5" />}
+            >
               Escolha uma Cesta
-            </h2>
+            </SectionHeading>
 
             {loadingBaskets ? (
               <div className="flex justify-center py-8">
@@ -97,12 +105,13 @@ export default function Donations() {
               </Card>
             ) : (
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {activeBaskets.map((basket) => (
+                {activeBaskets.map((basket, idx) => (
                   <BasketCard
                     key={basket.id}
                     basket={basket}
                     onSelect={handleSelectBasket}
                     selected={selectedBasket?.id === basket.id}
+                    index={idx}
                   />
                 ))}
               </div>
