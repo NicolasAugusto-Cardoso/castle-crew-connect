@@ -81,6 +81,14 @@ All colors MUST be HSL.
 
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
+    /* Neon accent palette — HSL tokens only */
+    --neon-blue: 217 91% 60%;
+    --neon-purple: 271 91% 65%;
+    --neon-green: 158 64% 52%;
+    --neon-yellow: 38 92% 55%;
+    --neon-red: 347 89% 61%;
+    --neon-card: 0 0% 4%;
+
     /* Sidebar (segue o mesmo design dark) */
     --sidebar-background: 0 0% 5%;
     --sidebar-foreground: 0 0% 90%;
@@ -117,6 +125,12 @@ All colors MUST be HSL.
     --ring: 0 0% 75%;
     --shadow-card: 0 0 0 1px rgba(255, 255, 255, 0.06);
     --shadow-glow: 0 0 24px rgba(255, 255, 255, 0.06);
+    --neon-blue: 217 91% 60%;
+    --neon-purple: 271 91% 65%;
+    --neon-green: 158 64% 52%;
+    --neon-yellow: 38 92% 55%;
+    --neon-red: 347 89% 61%;
+    --neon-card: 0 0% 4%;
   }
 
   /* Respect user motion preferences */
