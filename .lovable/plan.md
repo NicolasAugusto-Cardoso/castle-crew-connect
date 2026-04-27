@@ -1,84 +1,73 @@
 ## Objetivo
 
-Aplicar uma paleta multicolorida (azul → roxo → verde → amarelo → vermelho) sobre o tema dark atual, **sem migrar para fundo claro**. O fundo do app continua preto (#0A0A0A). O que muda: cards, bordas e subtítulos passam a usar acentos coloridos rotativos. Variante A adaptada ao dark — cards com fundo translúcido pastel-escuro, borda fina vibrante e título colorido vibrante.
+Mudar o estilo da paleta multicolorida de "pastel translúcido" para o **neon-outline** da referência: cards com **fundo preto sólido**, **borda fina vibrante colorida**, **título branco**, **valor/número grande na cor do tema**, **ícone na cor do tema** e **glow colorido sutil no hover**. Botões ganham uma variante combinando.
 
-## Sistema de cores (adaptação dark da Variante A)
+## O que muda visualmente
 
-5 temas, cada um com 4 tokens Tailwind:
+Antes: card com `bg-blue-500/10` + `border-2 border-blue-400/40` + título `text-blue-300`.
+Depois: card com `bg-[#0A0A0A]` + `border border-blue-500/70` + título branco + número/ícone `text-blue-400` + `hover:shadow-[0_0_24px_-4px_rgba(...)]`.
 
-| Tema    | Card bg                | Borda                | Título                | Hover bg               |
-|---------|------------------------|----------------------|-----------------------|------------------------|
-| blue    | `bg-blue-500/10`       | `border-blue-400/40` | `text-blue-300`       | `hover:bg-blue-500/15` |
-| purple  | `bg-purple-500/10`     | `border-purple-400/40` | `text-purple-300`   | `hover:bg-purple-500/15` |
-| green   | `bg-emerald-500/10`    | `border-emerald-400/40` | `text-emerald-300` | `hover:bg-emerald-500/15` |
-| yellow  | `bg-amber-500/10`      | `border-amber-400/40`  | `text-amber-300`    | `hover:bg-amber-500/15` |
-| red     | `bg-rose-500/10`       | `border-rose-400/40`   | `text-rose-300`     | `hover:bg-rose-500/15` |
+## Implementação
 
-Comum a todos os cards: `border-2 rounded-2xl transition-all duration-300 hover:shadow-lg`. Texto corrido fica neutro (`text-slate-300`/`text-muted-foreground`).
+### 1. `src/lib/colorThemes.ts` — refatorar tokens
+Substituir os tokens da Variante A por neon-outline. Cada `ColorTheme` passa a ter:
+- `card: "bg-[#0A0A0A]"` (sólido, igual ao app)
+- `border: "border-{cor}-500/70"` (1px vibrante)
+- `title: "text-foreground"` (branco — só `accent` é colorido)
+- `accent: "text-{cor}-400"` (ícones + valores grandes)
+- `hoverBorder: "hover:border-{cor}-400"`
+- `hoverShadow: "hover:shadow-[0_0_24px_-4px_rgba(...)]"` (glow colorido)
+- `ring: "focus-visible:ring-{cor}-400"`
 
-Sequência circular padrão: **blue → purple → green → yellow → red** (helper `getColorTheme(index)`).
+Helpers `getColorTheme` / `getSectionTheme` continuam iguais. Rotação circular blue → purple → green → yellow → red preservada.
 
-## Implementação técnica
+### 2. `src/components/ui/themed-card.tsx` — ajustar wrapper
+- `CardThemed`: trocar `border-2 rounded-2xl` por `border rounded-2xl` (1px), aplicar `card + border + hoverBorder + hoverShadow`. Padding interno reduzido para `p-5` (mais compacto, igual à referência).
+- `CardThemedTitle`: por padrão **branco** (`text-foreground`). Nova prop `colored` para casos onde o título deve receber a cor do tema.
+- **Novo** `CardThemedAccent`: bloco grande em `text-3xl font-bold {accent}` para o número/valor de destaque (ex: "R$ 50,00", "0", contadores).
+- `CardThemedFooter`: estilizado com `text-xs text-slate-500` (linha "Atualizado" sutil).
 
-### 1. Novo arquivo `src/lib/colorThemes.ts`
-- Exporta tipo `ColorTheme = 'blue' | 'purple' | 'green' | 'yellow' | 'red'`.
-- Exporta `COLOR_THEMES: Record<ColorTheme, { card, border, title, hoverBg, shadow, ring }>` com as classes Tailwind acima.
-- Exporta `getColorTheme(index: number): ColorTheme` que faz `THEMES[index % 5]`.
-- Exporta `getSectionTheme(route: string): ColorTheme` mapeando rotas → cor fixa para subtítulos de seção (Eventos=blue, Doações=green, Galeria=purple, Testemunhos=yellow, Bíblia=red, Contato=blue, Discipulado=green, Colaboradores=purple, Home=blue).
-
-### 2. Novo wrapper `src/components/ui/themed-card.tsx`
-- `<CardThemed colorTheme="blue" className="…">` que estende o `Card` shadcn aplicando as classes do tema (bg, border-2, hover) + repassa children.
-- Subcomponentes `CardThemedHeader`, `CardThemedTitle` (recebe colorTheme e aplica `text-{cor}-300 font-semibold`) e reexporta `CardContent`/`CardFooter`.
-- Mantém compatibilidade: aceita todas as props do `Card` original.
-
-### 3. Novo `src/components/ui/section-heading.tsx`
-- `<SectionHeading colorTheme="blue" as="h2">Título</SectionHeading>`
-- Renderiza heading com `text-{cor}-300 font-bold tracking-tight` + tamanho responsivo conforme nível.
-- Usado para subtítulos de seções dentro das páginas.
-
-### 4. Aplicação nos grids/listas (rotação circular)
-Refatorar para usar `CardThemed` + `getColorTheme(index)`:
-- `src/components/donations/BasketCard.tsx` → recebe `index` como prop, aplica tema.
-- `src/components/donations/CampaignCard.tsx` → idem.
-- `src/components/events/*` (cards de evento na lista de Eventos).
-- `src/components/gallery/*` (cards de pasta da Galeria).
-- `src/components/testimonials/*` (cards de testemunho).
-- `src/components/posts/*` (cards de post na Home).
-- Em cada página consumidora (`Donations.tsx`, `Events.tsx`, `Gallery.tsx`, `Testimonials.tsx`, `Home.tsx`, `Discipleship.tsx`, `Collaborators.tsx`, `Bible.tsx`), passar `index` no `.map()`.
-
-### 5. Subtítulos por seção (cor fixa)
-Substituir `<h2>`/`<h3>` de seção em cada página por `<SectionHeading colorTheme={…}>`, usando a cor fixa da seção definida em `getSectionTheme`.
-
-### 6. Cards genéricos do shadcn
-**Não** modificar `src/components/ui/card.tsx` (afeta dialogs, popovers e dezenas de usos internos). O `CardThemed` é um wrapper opt-in. Cards de UI puramente funcionais (forms, dialogs) continuam usando o `Card` neutro.
-
-### 7. Safelist Tailwind
-Como as classes coloridas são montadas dinamicamente, adicionar `safelist` em `tailwind.config.ts` para garantir que JIT não remova:
+### 3. `src/components/ui/button.tsx` — nova variante `neon`
+Adicionar variante que combine com os cards:
+```ts
+neon: "bg-transparent border border-blue-500/70 text-blue-400 hover:bg-blue-500/10 hover:border-blue-400 hover:shadow-[0_0_16px_-4px_rgba(59,130,246,0.5)] transition-all"
 ```
-safelist: [
-  { pattern: /(bg|border|text|hover:bg|hover:shadow)-(blue|purple|emerald|amber|rose)-(100|200|300|400|500)(\/\d+)?/ },
-]
-```
+Como Tailwind `cva` não aceita cor dinâmica, criar **5 variantes**: `neonBlue`, `neonPurple`, `neonGreen`, `neonYellow`, `neonRed`. Usadas em CTAs dentro de cards coloridos.
 
-## Páginas afetadas (resumo)
+Adicionar também helper `getNeonVariant(theme: ColorTheme)` em `colorThemes.ts` que retorna o nome da variante correspondente.
 
-- **Home** — subtítulos por seção + posts em rotação.
-- **Eventos** — heading azul, cards rotativos.
-- **Doações** — heading verde, BasketCard/CampaignCard rotativos.
-- **Galeria** — heading roxo, pastas rotativas.
-- **Testemunhos** — heading amarelo, cards rotativos.
-- **Bíblia** — heading vermelho, cards de leitura.
-- **Discipulado / Colaboradores / Contato** — headings na cor da seção, listas rotativas.
+### 4. Atualizar consumidores
+- **BasketCard**: título branco; preço `R$ XX,XX` migra para `<CardThemedAccent>` colorido; botão "Selecionar" usa `variant={getNeonVariant(theme)}`.
+- **CampaignCard**: título branco; metas (valores) usam cor do tema; ícone `<Target>` na cor do tema.
+- **Testemunhos**: título do testemunho branco; nome do autor na cor do tema (já é, mantém).
+- **Galeria**: título da pasta branco; ícone Folder colorido; data colorida.
+- **Eventos**: título do evento branco; ícones (Clock, MapPin, Users) na cor do tema.
 
-## O que NÃO muda
+### 5. SectionHeading
+Mantém comportamento atual (subtítulos coloridos `text-{cor}-300`) — não muda. A diferenciação fica clara: **subtítulos de seção** = coloridos; **títulos dentro de cards** = brancos com acento colorido.
 
-- Splash, Login, fundo geral preto, paleta prata/branco do tema base, botões `btn-premium`/`btn-clean`, navegação, tipografia base.
-- `src/index.css` (tokens HSL), `src/components/ui/card.tsx`, demais primitives shadcn.
-- Lógica de negócio, queries, RLS, rotas.
+### 6. Safelist Tailwind
+Já cobre as classes necessárias (`border-{cor}-500/70`, `hover:border-{cor}-400`, `text-{cor}-400`). O `hover:shadow-[…]` é literal arbitrary value e funciona sem safelist.
+
+### 7. Atualizar memória
+Atualizar `mem://design/multicolored-accent-palette` para refletir o novo estilo neon-outline (substitui a descrição "pastel translúcido").
+
+## Arquivos editados
+
+- `src/lib/colorThemes.ts` (tokens + helper `getNeonVariant`)
+- `src/components/ui/themed-card.tsx` (padding, novo `CardThemedAccent`, título branco por padrão)
+- `src/components/ui/button.tsx` (5 variantes neon)
+- `src/components/donations/BasketCard.tsx`
+- `src/components/donations/CampaignCard.tsx`
+- `src/pages/Testimonials.tsx`
+- `src/pages/Gallery.tsx`
+- `src/pages/Events.tsx`
+- `.lovable/memory/design/multicolored-accent-palette.md`
 
 ## Critério de aceite
 
-- Em cada grid/lista, os cards alternam circularmente entre as 5 cores começando por azul.
-- Subtítulos de seção usam a cor fixa definida e legíveis sobre fundo preto (tons -300, contraste OK).
-- Hover suave (`duration-300`) com leve aumento de opacidade do fundo + sombra colorida discreta.
-- Nenhuma regressão visual em dialogs, forms, chat e splash.
+- Cards com fundo preto sólido (sem fill colorido), borda fina vibrante, igual à referência.
+- Valores numéricos (preço, metas, contadores) e ícones em cor do tema; títulos brancos.
+- Hover gera glow colorido sutil.
+- Botões CTA dentro de cards coloridos seguem o mesmo padrão neon-outline.
+- Subtítulos de seção (SectionHeading) continuam coloridos para hierarquia visual.

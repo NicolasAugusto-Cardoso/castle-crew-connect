@@ -19,6 +19,12 @@ const buttonVariants = cva(
         clean: "bg-background border border-white/10 text-foreground hover:bg-white/5 hover:border-white/20 transition-colors",
         // REFACTOR Dark Mode — Variante B (Destaque): gradiente prata/branco, texto escuro AAA
         premium: "bg-gradient-to-r from-[hsl(0,0%,95%)] to-[hsl(0,0%,78%)] text-[#121212] font-semibold border border-white/10 hover:brightness-105 hover:scale-[1.02] transition-all",
+        // Neon outline variants — combinam com CardThemed (mesma paleta)
+        neonBlue: "bg-transparent border border-blue-500/70 text-blue-400 hover:bg-blue-500/10 hover:border-blue-400 hover:shadow-[0_0_16px_-4px_rgba(59,130,246,0.5)] transition-all",
+        neonPurple: "bg-transparent border border-purple-500/70 text-purple-400 hover:bg-purple-500/10 hover:border-purple-400 hover:shadow-[0_0_16px_-4px_rgba(168,85,247,0.5)] transition-all",
+        neonGreen: "bg-transparent border border-emerald-500/70 text-emerald-400 hover:bg-emerald-500/10 hover:border-emerald-400 hover:shadow-[0_0_16px_-4px_rgba(16,185,129,0.5)] transition-all",
+        neonYellow: "bg-transparent border border-amber-500/70 text-amber-400 hover:bg-amber-500/10 hover:border-amber-400 hover:shadow-[0_0_16px_-4px_rgba(245,158,11,0.5)] transition-all",
+        neonRed: "bg-transparent border border-rose-500/70 text-rose-400 hover:bg-rose-500/10 hover:border-rose-400 hover:shadow-[0_0_16px_-4px_rgba(244,63,94,0.5)] transition-all",
       },
       size: {
         default: "h-10 px-4 py-2",
