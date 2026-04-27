@@ -166,12 +166,12 @@ export default function Login() {
             {/* REFACTOR Dark: ring prata sutil + glow suave em vez de shadow azul */}
             <img 
               src={castleLogo} 
-              alt="Castle App Logo" 
+              alt="UniCristo Logo" 
               className="w-20 h-20 xs:w-24 xs:h-24 rounded-full ring-1 ring-white/15 object-contain bg-white p-2 shadow-[0_0_30px_rgba(255,255,255,0.06)]"
             />
           </div>
           <div>
-            <CardTitle className="text-2xl xs:text-3xl gradient-text mb-1.5 xs:mb-2">Castle App</CardTitle>
+            <CardTitle className="text-2xl xs:text-3xl gradient-text mb-1.5 xs:mb-2">UniCristo</CardTitle>
             <CardDescription className="text-xs xs:text-sm text-muted-foreground">Faça login ou crie sua conta</CardDescription>
           </div>
         </CardHeader>
