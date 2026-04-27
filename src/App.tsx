@@ -48,9 +48,9 @@ const DonationsGuard: React.FC<{ children: React.ReactNode }> = ({ children }) =
 
 const queryClient = new QueryClient();
 
-// Pre-splash loading screen with same gradient as splash
+// Pre-splash loading screen — fundo preto para alinhar com a nova vinheta UniCristo
 const PreSplashScreen = () => (
-  <div className="fixed inset-0 z-[9999] bg-gradient-to-br from-primary-light via-primary to-primary-dark" />
+  <div className="fixed inset-0 z-[9999]" style={{ backgroundColor: '#000000' }} />
 );
 
 // Protected Layout Wrapper
@@ -59,7 +59,7 @@ const ProtectedLayout = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-primary-light via-primary to-primary-dark" />
+      <div className="min-h-screen" style={{ backgroundColor: '#000000' }} />
     );
   }
 
