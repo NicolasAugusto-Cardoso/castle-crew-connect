@@ -15,6 +15,8 @@ import { CreateFolderDialog } from '@/components/gallery/CreateFolderDialog';
 import { UploadMediaDialog } from '@/components/gallery/UploadMediaDialog';
 import { useNavigate } from 'react-router-dom';
 import { Input } from '@/components/ui/input';
+import { SectionHeading } from '@/components/ui/section-heading';
+import { getSectionTheme } from '@/lib/colorThemes';
 
 export default function Gallery() {
   const navigate = useNavigate();
