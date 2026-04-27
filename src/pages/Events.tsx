@@ -219,8 +219,8 @@ export default function Events() {
             </Card>
           ) : (
             <div className="space-y-3">
-              {upcomingEvents.map((event) => (
-                <EventCard key={event.id} event={event} />
+              {upcomingEvents.map((event, idx) => (
+                <EventCard key={event.id} event={event} index={idx} />
               ))}
             </div>
           )}
@@ -303,8 +303,8 @@ export default function Events() {
               </p>
             ) : (
               <div className="space-y-3">
-                {displayEvents.map((event) => (
-                  <EventCard key={event.id} event={event} />
+                {displayEvents.map((event, idx) => (
+                  <EventCard key={event.id} event={event} index={idx} />
                 ))}
               </div>
             )}
