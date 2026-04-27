@@ -6,15 +6,15 @@ interface SplashProps {
 
 /**
  * Vinheta UniCristo
- * - Fundo preto puro (#000)
- * - Cruz minimalista que vira dourada (#D4AF37)
+ * - Fundo preto (#000)
+ * - Cruz minimalista no lugar do "t" que vira dourada (#D4AF37)
  * - Palavra "unicristo" revelada por uma linha luminosa branca
  * - Subtítulo "TORNANDO JESUS MAIS CONHECIDO"
- * - Duração total ~3s
+ * - Responsivo (mobile / tablet / desktop)
+ * - Duração total ~3.1s (com fade-out final)
  */
 export const Splash: React.FC<SplashProps> = ({ onComplete }) => {
   useEffect(() => {
-    // Anima por ~3.1s e sinaliza fim (App fará fade-out via troca de tela)
     const timer = setTimeout(() => {
       onComplete();
     }, 3100);
@@ -24,13 +24,15 @@ export const Splash: React.FC<SplashProps> = ({ onComplete }) => {
 
   return (
     <div
-      className="fixed inset-0 z-[9999] flex items-center justify-center overflow-hidden animate-[splashFadeOut_200ms_ease-out_2900ms_forwards]"
+      className="uc-splash-root fixed inset-0 z-[9999] flex items-center justify-center overflow-hidden"
       style={{
         backgroundColor: '#000000',
         fontFamily: "'Montserrat', system-ui, sans-serif",
+        animation: 'uc_splashFadeOut 200ms ease-out 2900ms forwards',
       }}
     >
       <style>{`
+        /* ===== KEYFRAMES ===== */
         @keyframes uc_revealText {
           0%   { clip-path: inset(0 100% 0 0); }
           100% { clip-path: inset(0 0 0 0); }
@@ -51,9 +53,24 @@ export const Splash: React.FC<SplashProps> = ({ onComplete }) => {
           0%   { opacity: 0; transform: translateY(-5px); }
           100% { opacity: 1; transform: translateY(0); }
         }
-        @keyframes splashFadeOut {
+        @keyframes uc_splashFadeOut {
           0%   { opacity: 1; }
           100% { opacity: 0; }
+        }
+
+        /* ===== ESTRUTURA ===== */
+        .uc-splash-container {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          width: 100%;
+        }
+
+        .uc-logo-container {
+          position: relative;
+          display: inline-block;
+          padding-right: 8px; /* compensa o letter-spacing final */
         }
 
         .uc-word-wrapper {
@@ -82,15 +99,14 @@ export const Splash: React.FC<SplashProps> = ({ onComplete }) => {
           z-index: 5;
         }
 
-        /* Cruz no lugar do "t" — mesma altura visual da letra (38px) e ritmo do letter-spacing */
+        /* Cruz minimalista (substitui o "t") */
         .uc-cross {
           position: relative;
-          width: 14px;
-          height: 38px;
-          margin: 0 8px;
+          width: 16px;
+          height: 34px;
+          margin-right: 8px;
           display: inline-block;
-          vertical-align: middle;
-          transform: translateY(-3px);
+          transform: translateY(-2px);
         }
         .uc-cross::before {
           content: '';
@@ -106,7 +122,7 @@ export const Splash: React.FC<SplashProps> = ({ onComplete }) => {
         .uc-cross::after {
           content: '';
           position: absolute;
-          top: 28%;
+          top: 30%;
           left: 0;
           width: 100%;
           height: 2px;
@@ -121,14 +137,60 @@ export const Splash: React.FC<SplashProps> = ({ onComplete }) => {
           letter-spacing: 5px;
           margin-top: 15px;
           opacity: 0;
-          animation: uc_fadeSubtitle 0.8s ease-in-out 2.3s forwards;
           text-align: center;
+          animation: uc_fadeSubtitle 0.8s ease-in-out 2.3s forwards;
+        }
+
+        /* ===== RESPONSIVO ===== */
+        /* Smartphones (até 767px) */
+        @media (max-width: 767px) {
+          .uc-word-wrapper {
+            font-size: 24px;
+            letter-spacing: 5px;
+          }
+          .uc-logo-container {
+            padding-right: 5px;
+          }
+          .uc-cross {
+            width: 10px;
+            height: 22px;
+            margin-right: 5px;
+            transform: translateY(-1px);
+          }
+          .uc-subtitle {
+            font-size: 8px;
+            letter-spacing: 3px;
+            margin-top: 10px;
+            padding: 0 15px;
+          }
+        }
+
+        /* Desktops grandes (1200px+) */
+        @media (min-width: 1200px) {
+          .uc-word-wrapper {
+            font-size: 52px;
+            letter-spacing: 12px;
+          }
+          .uc-logo-container {
+            padding-right: 12px;
+          }
+          .uc-cross {
+            width: 22px;
+            height: 46px;
+            margin-right: 12px;
+            transform: translateY(-3px);
+          }
+          .uc-subtitle {
+            font-size: 14px;
+            letter-spacing: 8px;
+            margin-top: 20px;
+          }
         }
       `}</style>
 
-      <div className="flex flex-col items-center justify-center">
-        <div className="relative inline-block" style={{ paddingRight: 8 }}>
-          <span className="uc-drawing-line" />
+      <div className="uc-splash-container">
+        <div className="uc-logo-container">
+          <div className="uc-drawing-line" />
           <div className="uc-word-wrapper">
             <span>unicris</span>
             <span className="uc-cross" aria-hidden="true" />
