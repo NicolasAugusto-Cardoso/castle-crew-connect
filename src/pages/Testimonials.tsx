@@ -64,8 +64,7 @@ export default function Testimonials() {
         >
           Testemunhos
         </SectionHeading>
-        </div>
-        <p className="text-sm xs:text-base text-muted-foreground">
+        <p className="text-sm xs:text-base text-muted-foreground mt-2">
           Histórias reais de transformação através de Jesus
         </p>
       </div>
