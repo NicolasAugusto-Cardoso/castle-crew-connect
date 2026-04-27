@@ -5,6 +5,8 @@ import { ptBR } from 'date-fns/locale';
 import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Plus, MapPin, Users, Clock, MoreVertical, Pencil, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { CardThemed, CardThemedContent } from '@/components/ui/themed-card';
+import { COLOR_THEMES, getColorTheme } from '@/lib/colorThemes';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
@@ -79,21 +81,21 @@ export default function Events() {
     }
   };
 
-  const EventCard = ({ event }: { event: Event }) => {
+  const EventCard = ({ event, index = 0 }: { event: Event; index?: number }) => {
     const eventDate = new Date(event.event_date);
     const isPast = isBefore(eventDate, startOfDay(new Date()));
     const isFull = event.max_participants && event.registration_count >= event.max_participants;
+    const theme = getColorTheme(index);
+    const t = COLOR_THEMES[theme];
 
     return (
-      <Card
-        className={cn(
-          'cursor-pointer transition-all hover:shadow-md',
-          isPast && 'opacity-60'
-        )}
+      <CardThemed
+        colorTheme={theme}
+        className={cn('cursor-pointer', isPast && 'opacity-60')}
         onClick={() => navigate(`/events/${event.id}`)}
       >
         {event.cover_image_url && (
-          <div className="h-32 overflow-hidden rounded-t-lg">
+          <div className="h-32 overflow-hidden rounded-t-xl">
             <img
               src={event.cover_image_url}
               alt={event.title}
@@ -101,12 +103,12 @@ export default function Events() {
             />
           </div>
         )}
-        <CardContent className={cn('p-4', !event.cover_image_url && 'pt-4')}>
+        <CardThemedContent className={cn('p-4', !event.cover_image_url && 'pt-4')}>
           <div className="flex items-start justify-between gap-2">
             <div className="flex-1 min-w-0">
-              <h3 className="font-semibold text-foreground truncate">{event.title}</h3>
+              <h3 className={cn('font-semibold truncate', t.title)}>{event.title}</h3>
               {event.description && (
-                <p className="text-sm text-muted-foreground line-clamp-2 mt-1">
+                <p className="text-sm text-slate-400 line-clamp-2 mt-1">
                   {event.description}
                 </p>
               )}
@@ -121,9 +123,9 @@ export default function Events() {
               {canManageEvents && (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button 
-                      variant="ghost" 
-                      size="icon" 
+                    <Button
+                      variant="ghost"
+                      size="icon"
                       className="h-8 w-8"
                       onClick={(e) => e.stopPropagation()}
                     >
@@ -135,7 +137,7 @@ export default function Events() {
                       <Pencil className="w-4 h-4 mr-2" />
                       Editar
                     </DropdownMenuItem>
-                    <DropdownMenuItem 
+                    <DropdownMenuItem
                       onClick={(e) => handleDeleteClick(event, e as unknown as React.MouseEvent)}
                       className="text-destructive focus:text-destructive"
                     >
@@ -148,29 +150,29 @@ export default function Events() {
             </div>
           </div>
 
-          <div className="mt-3 space-y-1.5 text-sm text-muted-foreground">
+          <div className="mt-3 space-y-1.5 text-sm text-slate-400">
             <div className="flex items-center gap-2">
-              <Clock className="w-4 h-4 flex-shrink-0" />
+              <Clock className={cn('w-4 h-4 flex-shrink-0', t.accent)} />
               <span>
                 {format(eventDate, "dd 'de' MMMM 'às' HH:mm", { locale: ptBR })}
               </span>
             </div>
             {event.location && (
               <div className="flex items-center gap-2">
-                <MapPin className="w-4 h-4 flex-shrink-0" />
+                <MapPin className={cn('w-4 h-4 flex-shrink-0', t.accent)} />
                 <span className="truncate">{event.location}</span>
               </div>
             )}
             <div className="flex items-center gap-2">
-              <Users className="w-4 h-4 flex-shrink-0" />
+              <Users className={cn('w-4 h-4 flex-shrink-0', t.accent)} />
               <span>
                 {event.registration_count} inscrito{event.registration_count !== 1 ? 's' : ''}
                 {event.max_participants && ` / ${event.max_participants} vagas`}
               </span>
             </div>
           </div>
-        </CardContent>
-      </Card>
+        </CardThemedContent>
+      </CardThemed>
     );
   };
 
