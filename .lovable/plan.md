@@ -1,42 +1,84 @@
-## Substituir o componente Splash pelo HTML/CSS enviado
+## Objetivo
 
-Adotar exatamente o markup e o CSS do arquivo anexado em `src/components/Splash.tsx`, preservando a interface React (`onComplete`) e mantendo a integração já existente em `App.tsx` (abertura) e `Login.tsx` (após login).
+Aplicar uma paleta multicolorida (azul → roxo → verde → amarelo → vermelho) sobre o tema dark atual, **sem migrar para fundo claro**. O fundo do app continua preto (#0A0A0A). O que muda: cards, bordas e subtítulos passam a usar acentos coloridos rotativos. Variante A adaptada ao dark — cards com fundo translúcido pastel-escuro, borda fina vibrante e título colorido vibrante.
 
-### Mudanças em `src/components/Splash.tsx`
+## Sistema de cores (adaptação dark da Variante A)
 
-Reescrever o componente com a estrutura do HTML enviado:
+5 temas, cada um com 4 tokens Tailwind:
 
-- **Estrutura**:
-  ```
-  .uc-splash-container
-    └─ .uc-logo-container
-       ├─ .uc-drawing-line   (linha luminosa)
-       └─ .uc-word-wrapper
-          ├─ <span>unicris</span>
-          ├─ <span class="uc-cross"></span>   (cruz no lugar do "t")
-          └─ <span>o</span>
-    └─ .uc-subtitle "TORNANDO JESUS MAIS CONHECIDO"
-  ```
+| Tema    | Card bg                | Borda                | Título                | Hover bg               |
+|---------|------------------------|----------------------|-----------------------|------------------------|
+| blue    | `bg-blue-500/10`       | `border-blue-400/40` | `text-blue-300`       | `hover:bg-blue-500/15` |
+| purple  | `bg-purple-500/10`     | `border-purple-400/40` | `text-purple-300`   | `hover:bg-purple-500/15` |
+| green   | `bg-emerald-500/10`    | `border-emerald-400/40` | `text-emerald-300` | `hover:bg-emerald-500/15` |
+| yellow  | `bg-amber-500/10`      | `border-amber-400/40`  | `text-amber-300`    | `hover:bg-amber-500/15` |
+| red     | `bg-rose-500/10`       | `border-rose-400/40`   | `text-rose-300`     | `hover:bg-rose-500/15` |
 
-- **CSS**: copiar literalmente todas as regras (`.word-wrapper`, `.drawing-line`, `.cross`, `.subtitle`) e os keyframes (`revealText`, `moveLine`, `fadeOutLine`, `turnGold`, `fadeSubtitle`) dentro de uma tag `<style>` no componente. Prefixar as classes com `uc-` para isolar o escopo (evita colisão com Tailwind/outras classes).
+Comum a todos os cards: `border-2 rounded-2xl transition-all duration-300 hover:shadow-lg`. Texto corrido fica neutro (`text-slate-300`/`text-muted-foreground`).
 
-- **Responsividade**: incluir as media queries do anexo:
-  - `@media (max-width: 767px)` → fonte 24px, cruz 10×22px, subtítulo 8px.
-  - `@media (min-width: 1200px)` → fonte 52px, cruz 22×46px, subtítulo 14px.
-  - Faixa intermediária (768–1199px) → valores padrão (38px / 16×34px / 11px).
+Sequência circular padrão: **blue → purple → green → yellow → red** (helper `getColorTheme(index)`).
 
-- **Container raiz**: `fixed inset-0 z-[9999]` com `background-color: #000000`, `display: flex`, centralizado, `font-family: 'Montserrat'`. Fade-out final de 200ms via keyframe `uc_splashFadeOut` aos 2900ms.
+## Implementação técnica
 
-- **Tempo de vida**: `setTimeout(onComplete, 3100)` (1.8s reveal + 1s cruz dourada + 0.8s subtítulo + ~300ms respiro + fade-out 200ms já dentro da janela).
+### 1. Novo arquivo `src/lib/colorThemes.ts`
+- Exporta tipo `ColorTheme = 'blue' | 'purple' | 'green' | 'yellow' | 'red'`.
+- Exporta `COLOR_THEMES: Record<ColorTheme, { card, border, title, hoverBg, shadow, ring }>` com as classes Tailwind acima.
+- Exporta `getColorTheme(index: number): ColorTheme` que faz `THEMES[index % 5]`.
+- Exporta `getSectionTheme(route: string): ColorTheme` mapeando rotas → cor fixa para subtítulos de seção (Eventos=blue, Doações=green, Galeria=purple, Testemunhos=yellow, Bíblia=red, Contato=blue, Discipulado=green, Colaboradores=purple, Home=blue).
 
-- **Interface**: manter `interface SplashProps { onComplete: () => void }` exportada como `export const Splash`, sem mudar nada em quem consome (`App.tsx` e `Login.tsx`).
+### 2. Novo wrapper `src/components/ui/themed-card.tsx`
+- `<CardThemed colorTheme="blue" className="…">` que estende o `Card` shadcn aplicando as classes do tema (bg, border-2, hover) + repassa children.
+- Subcomponentes `CardThemedHeader`, `CardThemedTitle` (recebe colorTheme e aplica `text-{cor}-300 font-semibold`) e reexporta `CardContent`/`CardFooter`.
+- Mantém compatibilidade: aceita todas as props do `Card` original.
 
-### Arquivos não tocados
+### 3. Novo `src/components/ui/section-heading.tsx`
+- `<SectionHeading colorTheme="blue" as="h2">Título</SectionHeading>`
+- Renderiza heading com `text-{cor}-300 font-bold tracking-tight` + tamanho responsivo conforme nível.
+- Usado para subtítulos de seções dentro das páginas.
 
-- `index.html` já carrega Montserrat (200/400) — sem alteração.
-- `App.tsx` continua usando `<Splash />` como pre-splash.
-- `Login.tsx` continua exibindo `<Splash />` após login bem-sucedido.
+### 4. Aplicação nos grids/listas (rotação circular)
+Refatorar para usar `CardThemed` + `getColorTheme(index)`:
+- `src/components/donations/BasketCard.tsx` → recebe `index` como prop, aplica tema.
+- `src/components/donations/CampaignCard.tsx` → idem.
+- `src/components/events/*` (cards de evento na lista de Eventos).
+- `src/components/gallery/*` (cards de pasta da Galeria).
+- `src/components/testimonials/*` (cards de testemunho).
+- `src/components/posts/*` (cards de post na Home).
+- Em cada página consumidora (`Donations.tsx`, `Events.tsx`, `Gallery.tsx`, `Testimonials.tsx`, `Home.tsx`, `Discipleship.tsx`, `Collaborators.tsx`, `Bible.tsx`), passar `index` no `.map()`.
 
-### Único arquivo alterado
+### 5. Subtítulos por seção (cor fixa)
+Substituir `<h2>`/`<h3>` de seção em cada página por `<SectionHeading colorTheme={…}>`, usando a cor fixa da seção definida em `getSectionTheme`.
 
-- `src/components/Splash.tsx` — reescrito com o HTML/CSS do anexo (com classes prefixadas e adaptação para React).
+### 6. Cards genéricos do shadcn
+**Não** modificar `src/components/ui/card.tsx` (afeta dialogs, popovers e dezenas de usos internos). O `CardThemed` é um wrapper opt-in. Cards de UI puramente funcionais (forms, dialogs) continuam usando o `Card` neutro.
+
+### 7. Safelist Tailwind
+Como as classes coloridas são montadas dinamicamente, adicionar `safelist` em `tailwind.config.ts` para garantir que JIT não remova:
+```
+safelist: [
+  { pattern: /(bg|border|text|hover:bg|hover:shadow)-(blue|purple|emerald|amber|rose)-(100|200|300|400|500)(\/\d+)?/ },
+]
+```
+
+## Páginas afetadas (resumo)
+
+- **Home** — subtítulos por seção + posts em rotação.
+- **Eventos** — heading azul, cards rotativos.
+- **Doações** — heading verde, BasketCard/CampaignCard rotativos.
+- **Galeria** — heading roxo, pastas rotativas.
+- **Testemunhos** — heading amarelo, cards rotativos.
+- **Bíblia** — heading vermelho, cards de leitura.
+- **Discipulado / Colaboradores / Contato** — headings na cor da seção, listas rotativas.
+
+## O que NÃO muda
+
+- Splash, Login, fundo geral preto, paleta prata/branco do tema base, botões `btn-premium`/`btn-clean`, navegação, tipografia base.
+- `src/index.css` (tokens HSL), `src/components/ui/card.tsx`, demais primitives shadcn.
+- Lógica de negócio, queries, RLS, rotas.
+
+## Critério de aceite
+
+- Em cada grid/lista, os cards alternam circularmente entre as 5 cores começando por azul.
+- Subtítulos de seção usam a cor fixa definida e legíveis sobre fundo preto (tons -300, contraste OK).
+- Hover suave (`duration-300`) com leve aumento de opacidade do fundo + sombra colorida discreta.
+- Nenhuma regressão visual em dialogs, forms, chat e splash.
