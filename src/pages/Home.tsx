@@ -142,20 +142,20 @@ export default function Home() {
         </p>
       </div>
 
-      {/* Verse of the Day */}
+      {/* Verse of the Day — REFACTOR Dark: monocromático, sem gradiente azul */}
       {verse && !loadingVerse ? (
-        <Card className="mb-5 xs:mb-5.5 sm:mb-6 bg-gradient-to-br from-primary-light to-primary text-white card-elevated animate-fade-in">
+        <Card className="mb-5 xs:mb-5.5 sm:mb-6 card-elevated animate-fade-in">
           <CardHeader className="pb-2.5 xs:pb-3 px-4 xs:px-5 sm:px-6 pt-4 xs:pt-5 sm:pt-6">
             <div className="flex items-center gap-1.5 xs:gap-2">
-              <BookOpen className="w-4 xs:w-4.5 sm:w-5 h-4 xs:h-4.5 sm:h-5 text-accent flex-shrink-0" />
-              <h2 className="text-base xs:text-lg font-bold">Versículo do Dia</h2>
+              <BookOpen className="w-4 xs:w-4.5 sm:w-5 h-4 xs:h-4.5 sm:h-5 text-foreground/80 flex-shrink-0" />
+              <h2 className="text-base xs:text-lg font-bold text-foreground">Versículo do Dia</h2>
             </div>
           </CardHeader>
           <CardContent className="px-4 xs:px-5 sm:px-6 pb-4 xs:pb-5 sm:pb-6">
-            <p className="text-sm xs:text-base md:text-lg mb-2.5 xs:mb-3 leading-relaxed whitespace-pre-wrap break-words">
+            <p className="text-sm xs:text-base md:text-lg mb-2.5 xs:mb-3 leading-relaxed whitespace-pre-wrap break-words text-foreground/90">
               "{verse.text}"
             </p>
-            <p className="text-xs xs:text-sm md:text-base font-bold text-accent hover:text-white transition-colors cursor-default">
+            <p className="text-xs xs:text-sm md:text-base font-semibold text-muted-foreground tracking-wide">
               {verse.reference}
             </p>
           </CardContent>

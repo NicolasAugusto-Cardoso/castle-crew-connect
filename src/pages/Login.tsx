@@ -158,19 +158,21 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-3 xs:p-4 sm:p-6 bg-gradient-to-br from-background via-background to-primary/5">
+    // REFACTOR Dark: container com fundo preto puro (sem gradiente azul)
+    <div className="min-h-screen flex items-center justify-center p-3 xs:p-4 sm:p-6 bg-background">
       <Card className="w-full max-w-md card-elevated">
         <CardHeader className="text-center space-y-3 xs:space-y-4 px-4 xs:px-6 pt-6 xs:pt-8">
           <div className="flex justify-center">
+            {/* REFACTOR Dark: ring prata sutil + glow suave em vez de shadow azul */}
             <img 
               src={castleLogo} 
               alt="Castle App Logo" 
-              className="w-20 h-20 xs:w-24 xs:h-24 rounded-full ring-4 ring-primary shadow-lg object-contain bg-white p-2"
+              className="w-20 h-20 xs:w-24 xs:h-24 rounded-full ring-1 ring-white/15 object-contain bg-white p-2 shadow-[0_0_30px_rgba(255,255,255,0.06)]"
             />
           </div>
           <div>
             <CardTitle className="text-2xl xs:text-3xl gradient-text mb-1.5 xs:mb-2">Castle App</CardTitle>
-            <CardDescription className="text-xs xs:text-sm">Faça login ou crie sua conta</CardDescription>
+            <CardDescription className="text-xs xs:text-sm text-muted-foreground">Faça login ou crie sua conta</CardDescription>
           </div>
         </CardHeader>
         <CardContent className="px-4 xs:px-6 pb-6 xs:pb-8">
@@ -226,9 +228,11 @@ export default function Login() {
                   </div>
                 </div>
 
+                {/* REFACTOR Dark: Variante B (premium prata + texto escuro) */}
                 <Button 
                   type="submit" 
-                  className="w-full h-10 xs:h-11 sm:h-12 btn-gradient text-sm xs:text-base"
+                  variant="premium"
+                  className="w-full h-10 xs:h-11 sm:h-12 text-sm xs:text-base"
                   disabled={isLoading}
                 >
                   {isLoading ? 'Entrando...' : 'Entrar'}
@@ -331,9 +335,11 @@ export default function Login() {
                   </div>
                 </div>
 
+                {/* REFACTOR Dark: Variante A (clean preto + borda prata) */}
                 <Button 
                   type="submit" 
-                  className="w-full h-10 xs:h-11 sm:h-12 btn-accent text-sm xs:text-base"
+                  variant="clean"
+                  className="w-full h-10 xs:h-11 sm:h-12 text-sm xs:text-base"
                   disabled={isLoading}
                 >
                   {isLoading ? 'Criando conta...' : 'Criar Conta'}
