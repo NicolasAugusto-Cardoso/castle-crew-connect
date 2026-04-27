@@ -182,7 +182,7 @@ export default function Events() {
       <div className="flex items-center justify-between">
         <SectionHeading colorTheme={getSectionTheme('events')} as="h1">Eventos</SectionHeading>
         {canManageEvents && (
-          <Button onClick={() => setCreateDialogOpen(true)} size="sm">
+          <Button onClick={() => setCreateDialogOpen(true)} size="sm" variant="neonBlue">
             <Plus className="w-4 h-4 mr-1" />
             Novo Evento
           </Button>
@@ -208,10 +208,10 @@ export default function Events() {
               ))}
             </div>
           ) : upcomingEvents.length === 0 ? (
-            <Card>
+            <Card colorTheme="blue">
               <CardContent className="p-8 text-center">
-                <CalendarIcon className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-                <p className="text-muted-foreground">
+                <CalendarIcon className="w-12 h-12 mx-auto text-neon-blue mb-4 drop-shadow-[0_0_10px_hsl(var(--neon-blue)/0.6)]" />
+                <p className="text-slate-300">
                   {canManageEvents
                     ? 'Nenhum evento agendado. Crie o primeiro!'
                     : 'Nenhum evento agendado no momento.'}
@@ -228,17 +228,17 @@ export default function Events() {
         </TabsContent>
 
         <TabsContent value="calendar" className="mt-4">
-          <Card>
+          <Card colorTheme="purple">
             <CardContent className="p-4">
               {/* Calendar Header */}
               <div className="flex items-center justify-between mb-4">
-                <Button variant="ghost" size="icon" onClick={handlePrevMonth}>
+                <Button variant="neonPurple" size="icon" onClick={handlePrevMonth}>
                   <ChevronLeft className="w-5 h-5" />
                 </Button>
-                <h2 className="text-lg font-semibold capitalize">
+                <h2 className="text-lg font-semibold capitalize text-neon-purple">
                   {format(currentMonth, 'MMMM yyyy', { locale: ptBR })}
                 </h2>
-                <Button variant="ghost" size="icon" onClick={handleNextMonth}>
+                <Button variant="neonPurple" size="icon" onClick={handleNextMonth}>
                   <ChevronRight className="w-5 h-5" />
                 </Button>
               </div>
