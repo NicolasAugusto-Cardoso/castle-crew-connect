@@ -1,83 +1,81 @@
 /**
- * Multicolored accent palette layered on top of the dark theme.
- * Variant A (Clean & Soft) adapted for dark background:
- *   - card bg: translucent pastel-dark
- *   - border: vibrant -400 at 40% alpha (border-2)
- *   - title: vibrant -300 (good contrast on #0A0A0A, WCAG AA)
- *   - hover: slightly stronger bg + colored shadow
+ * Multicolored "neon outline" accent palette layered on top of the dark theme.
  *
- * Body/paragraph text stays neutral (text-slate-300 / text-muted-foreground)
- * for visual rest as required by the spec.
+ * Visual reference: solid black card, vibrant 1px colored border, glow on hover.
+ * - card bg:   solid #0A0A0A (matches app background)
+ * - border:    vibrant -500 at 70% alpha
+ * - title:     white/foreground (only accent values are colored)
+ * - accent:    -400 (icons + headline numbers)
+ * - hover:     subtle colored glow + border intensifies to -400
  */
 
 export type ColorTheme = "blue" | "purple" | "green" | "yellow" | "red";
 
 export interface ColorThemeTokens {
-  /** Card background (translucent pastel-dark) */
   card: string;
-  /** Card border (vibrant) — pair with `border-2` */
   border: string;
-  /** Section/card title color */
   title: string;
-  /** Hover background intensification */
-  hoverBg: string;
-  /** Hover colored shadow */
   hoverShadow: string;
-  /** Focus ring color */
+  hoverBorder: string;
   ring: string;
-  /** Solid accent (icons, badges) */
   accent: string;
+  glowColor: string;
 }
 
 export const COLOR_THEMES: Record<ColorTheme, ColorThemeTokens> = {
   blue: {
-    card: "bg-blue-500/10",
-    border: "border-blue-400/40",
-    title: "text-blue-300",
-    hoverBg: "hover:bg-blue-500/15",
-    hoverShadow: "hover:shadow-lg hover:shadow-blue-500/20",
+    card: "bg-[#0A0A0A]",
+    border: "border-blue-500/70",
+    title: "text-foreground",
+    hoverShadow: "hover:shadow-[0_0_24px_-4px_rgba(59,130,246,0.55)]",
+    hoverBorder: "hover:border-blue-400",
     ring: "focus-visible:ring-blue-400",
     accent: "text-blue-400",
+    glowColor: "rgba(59,130,246,0.55)",
   },
   purple: {
-    card: "bg-purple-500/10",
-    border: "border-purple-400/40",
-    title: "text-purple-300",
-    hoverBg: "hover:bg-purple-500/15",
-    hoverShadow: "hover:shadow-lg hover:shadow-purple-500/20",
+    card: "bg-[#0A0A0A]",
+    border: "border-purple-500/70",
+    title: "text-foreground",
+    hoverShadow: "hover:shadow-[0_0_24px_-4px_rgba(168,85,247,0.55)]",
+    hoverBorder: "hover:border-purple-400",
     ring: "focus-visible:ring-purple-400",
     accent: "text-purple-400",
+    glowColor: "rgba(168,85,247,0.55)",
   },
   green: {
-    card: "bg-emerald-500/10",
-    border: "border-emerald-400/40",
-    title: "text-emerald-300",
-    hoverBg: "hover:bg-emerald-500/15",
-    hoverShadow: "hover:shadow-lg hover:shadow-emerald-500/20",
+    card: "bg-[#0A0A0A]",
+    border: "border-emerald-500/70",
+    title: "text-foreground",
+    hoverShadow: "hover:shadow-[0_0_24px_-4px_rgba(16,185,129,0.55)]",
+    hoverBorder: "hover:border-emerald-400",
     ring: "focus-visible:ring-emerald-400",
     accent: "text-emerald-400",
+    glowColor: "rgba(16,185,129,0.55)",
   },
   yellow: {
-    card: "bg-amber-500/10",
-    border: "border-amber-400/40",
-    title: "text-amber-300",
-    hoverBg: "hover:bg-amber-500/15",
-    hoverShadow: "hover:shadow-lg hover:shadow-amber-500/20",
+    card: "bg-[#0A0A0A]",
+    border: "border-amber-500/70",
+    title: "text-foreground",
+    hoverShadow: "hover:shadow-[0_0_24px_-4px_rgba(245,158,11,0.55)]",
+    hoverBorder: "hover:border-amber-400",
     ring: "focus-visible:ring-amber-400",
     accent: "text-amber-400",
+    glowColor: "rgba(245,158,11,0.55)",
   },
   red: {
-    card: "bg-rose-500/10",
-    border: "border-rose-400/40",
-    title: "text-rose-300",
-    hoverBg: "hover:bg-rose-500/15",
-    hoverShadow: "hover:shadow-lg hover:shadow-rose-500/20",
+    card: "bg-[#0A0A0A]",
+    border: "border-rose-500/70",
+    title: "text-foreground",
+    hoverShadow: "hover:shadow-[0_0_24px_-4px_rgba(244,63,94,0.55)]",
+    hoverBorder: "hover:border-rose-400",
     ring: "focus-visible:ring-rose-400",
     accent: "text-rose-400",
+    glowColor: "rgba(244,63,94,0.55)",
   },
 };
 
-/** Circular rotation order: blue → purple → green → yellow → red */
+/** Circular rotation: blue → purple → green → yellow → red */
 export const THEME_ROTATION: ColorTheme[] = [
   "blue",
   "purple",
@@ -86,14 +84,12 @@ export const THEME_ROTATION: ColorTheme[] = [
   "red",
 ];
 
-/** Pick a theme by index (mod 5) for grids/lists. */
 export function getColorTheme(index: number): ColorTheme {
   const i = ((index % THEME_ROTATION.length) + THEME_ROTATION.length) %
     THEME_ROTATION.length;
   return THEME_ROTATION[i];
 }
 
-/** Fixed color per app section/route for section headings. */
 const SECTION_THEME_MAP: Record<string, ColorTheme> = {
   home: "blue",
   events: "blue",
@@ -108,4 +104,24 @@ const SECTION_THEME_MAP: Record<string, ColorTheme> = {
 
 export function getSectionTheme(section: string): ColorTheme {
   return SECTION_THEME_MAP[section] ?? "blue";
+}
+
+/** Maps a color theme to the corresponding Button neon variant name. */
+export type NeonButtonVariant =
+  | "neonBlue"
+  | "neonPurple"
+  | "neonGreen"
+  | "neonYellow"
+  | "neonRed";
+
+const NEON_VARIANT_MAP: Record<ColorTheme, NeonButtonVariant> = {
+  blue: "neonBlue",
+  purple: "neonPurple",
+  green: "neonGreen",
+  yellow: "neonYellow",
+  red: "neonRed",
+};
+
+export function getNeonVariant(theme: ColorTheme): NeonButtonVariant {
+  return NEON_VARIANT_MAP[theme];
 }

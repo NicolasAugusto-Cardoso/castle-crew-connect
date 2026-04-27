@@ -63,8 +63,8 @@ export const CampaignCard = ({
           <Badge
             variant="outline"
             className={cn(
-              'border-2',
-              campaign.active ? `${t.border} ${t.title}` : 'border-muted text-muted-foreground',
+              'border',
+              campaign.active ? `${t.border} ${t.accent}` : 'border-muted text-muted-foreground',
             )}
           >
             {campaign.active ? 'Ativa' : 'Encerrada'}
@@ -79,14 +79,14 @@ export const CampaignCard = ({
       </CardThemedHeader>
       <CardThemedContent className="space-y-3">
         {campaign.description && (
-          <p className="text-sm text-slate-300/80">{campaign.description}</p>
+          <p className="text-sm text-slate-400">{campaign.description}</p>
         )}
 
         {campaign.goal_amount && (
           <div className="space-y-1">
             <div className="flex justify-between text-sm">
               <span className="text-slate-400">Meta financeira</span>
-              <span className={cn('font-medium', t.title)}>
+              <span className={cn('font-semibold', t.accent)}>
                 R$ {currentAmount.toFixed(2).replace('.', ',')} / R${' '}
                 {Number(campaign.goal_amount).toFixed(2).replace('.', ',')}
               </span>
@@ -99,7 +99,7 @@ export const CampaignCard = ({
           <div className="space-y-1">
             <div className="flex justify-between text-sm">
               <span className="text-slate-400">Meta de cestas</span>
-              <span className={cn('font-medium', t.title)}>
+              <span className={cn('font-semibold', t.accent)}>
                 {currentBaskets} / {campaign.goal_baskets}
               </span>
             </div>

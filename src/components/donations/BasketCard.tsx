@@ -7,8 +7,9 @@ import {
   CardThemedHeader,
   CardThemedTitle,
   CardThemedContent,
+  CardThemedAccent,
 } from '@/components/ui/themed-card';
-import { COLOR_THEMES, getColorTheme, type ColorTheme } from '@/lib/colorThemes';
+import { COLOR_THEMES, getColorTheme, getNeonVariant, type ColorTheme } from '@/lib/colorThemes';
 import { cn } from '@/lib/utils';
 
 type BasketModel = Database['public']['Tables']['basket_models']['Row'];
@@ -57,21 +58,21 @@ export const BasketCard = ({
             <Package className={cn('w-5 h-5', t.accent)} />
             {basket.title}
           </CardThemedTitle>
-          <Badge variant="outline" className={cn('border-2', t.border, t.title)}>
+          <Badge variant="outline" className={cn('border', t.border, t.accent)}>
             {BASKET_SIZE_LABELS[basket.type]}
           </Badge>
         </div>
       </CardThemedHeader>
       <CardThemedContent>
         {basket.description && (
-          <p className="text-sm text-slate-300/80 mb-3">{basket.description}</p>
+          <p className="text-sm text-slate-400 mb-3">{basket.description}</p>
         )}
-        <div className="flex items-center justify-between">
-          <span className={cn('text-2xl font-bold', t.title)}>
+        <div className="flex items-center justify-between gap-3">
+          <CardThemedAccent colorTheme={theme}>
             R$ {Number(basket.price).toFixed(2).replace('.', ',')}
-          </span>
+          </CardThemedAccent>
           <Button
-            variant={selected ? 'default' : 'outline'}
+            variant={selected ? 'default' : getNeonVariant(theme)}
             size="sm"
             onClick={(e) => {
               e.stopPropagation();
