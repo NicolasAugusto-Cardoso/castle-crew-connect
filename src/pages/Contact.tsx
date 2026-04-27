@@ -265,8 +265,8 @@ export default function Contact() {
 
   return (
     <div className="min-h-screen flex flex-col">
-      {/* Padding Superior com fundo branco */}
-      <div className="bg-white dark:bg-card py-4 xs:py-5 sm:py-6">
+      {/* Cabeçalho — Dark Mode: usa card escuro com borda prata sutil */}
+      <div className="bg-card border-b border-white/[0.08] py-4 xs:py-5 sm:py-6">
         <div className="container mx-auto px-3 xs:px-4 max-w-4xl">
           <div className="flex items-center gap-2 xs:gap-3 mb-2">
             <Mail className="w-6 xs:w-7 sm:w-8 h-6 xs:h-7 sm:h-8 text-primary flex-shrink-0" />
