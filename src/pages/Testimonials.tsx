@@ -57,9 +57,13 @@ export default function Testimonials() {
   return (
     <div className="container mx-auto px-3 xs:px-4 sm:px-6 py-4 xs:py-5 sm:py-6 max-w-4xl">
       <div className="mb-6 xs:mb-7 sm:mb-8">
-        <div className="flex items-center gap-2 xs:gap-3 mb-2">
-          <Sparkles className="w-6 xs:w-7 sm:w-8 h-6 xs:h-7 sm:h-8 text-accent flex-shrink-0" />
-          <h1 className="text-2xl xs:text-2xl sm:text-3xl font-bold gradient-text">Testemunhos</h1>
+        <SectionHeading
+          colorTheme={getSectionTheme('testimonials')}
+          as="h1"
+          icon={<Sparkles className="w-6 xs:w-7 sm:w-8 h-6 xs:h-7 sm:h-8" />}
+        >
+          Testemunhos
+        </SectionHeading>
         </div>
         <p className="text-sm xs:text-base text-muted-foreground">
           Histórias reais de transformação através de Jesus
