@@ -33,6 +33,13 @@ export default {
         'outfit': ['Outfit', 'system-ui', 'sans-serif'],
       },
       colors: {
+        neon: {
+          blue: "hsl(var(--neon-blue) / <alpha-value>)",
+          purple: "hsl(var(--neon-purple) / <alpha-value>)",
+          green: "hsl(var(--neon-green) / <alpha-value>)",
+          yellow: "hsl(var(--neon-yellow) / <alpha-value>)",
+          red: "hsl(var(--neon-red) / <alpha-value>)",
+        },
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
