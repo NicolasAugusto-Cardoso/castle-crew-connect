@@ -45,10 +45,13 @@ export default function Gallery() {
   return (
     <div className="container mx-auto px-3 xs:px-4 sm:px-6 py-4 xs:py-5 sm:py-6 max-w-6xl">
       <div className="mb-6 xs:mb-7 sm:mb-8">
-        <div className="flex items-center gap-2 xs:gap-3 mb-2">
-          <Folder className="w-6 xs:w-7 sm:w-8 h-6 xs:h-7 sm:h-8 text-primary flex-shrink-0" />
-          <h1 className="text-2xl xs:text-2xl sm:text-3xl font-bold gradient-text">Galeria</h1>
-        </div>
+        <SectionHeading
+          colorTheme={getSectionTheme('gallery')}
+          as="h1"
+          icon={<Folder className="w-6 xs:w-7 sm:w-8 h-6 xs:h-7 sm:h-8" />}
+        >
+          Galeria
+        </SectionHeading>
         <p className="text-sm xs:text-base text-muted-foreground">
           Fotos e vídeos dos eventos e ações do movimento
         </p>
