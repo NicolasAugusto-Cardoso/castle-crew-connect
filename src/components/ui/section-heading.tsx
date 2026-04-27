@@ -32,7 +32,8 @@ export const SectionHeading = React.forwardRef<
       className={cn(
         "font-bold tracking-tight inline-flex items-center gap-2",
         SIZE_BY_LEVEL[Tag],
-        t.title,
+        t.accent,
+        "drop-shadow-[0_0_10px_currentColor]",
         className,
       )}
       {...props}

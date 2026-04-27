@@ -9,6 +9,8 @@ import { useDonationsEnabled } from '@/hooks/useAppSettings';
 import castleLogo from '@/assets/castle-logo-header-v2.png';
 import { Badge } from '@/components/ui/badge';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { COLOR_THEMES, getColorTheme } from '@/lib/colorThemes';
+import { cn } from '@/lib/utils';
 
 
 export const Layout = () => {
@@ -139,17 +141,19 @@ export const Layout = () => {
       {/* Sidebar Navigation (Desktop) */}
       <aside className="hidden md:block fixed left-0 top-[calc(60px+var(--safe-top,0px))] bottom-0 w-64 bg-card border-r border-border z-30">
         <nav className="p-4 space-y-2">
-          {visibleNavItems.map((item) => {
+            {visibleNavItems.map((item, index) => {
             const isActive = location.pathname === item.path;
+              const t = COLOR_THEMES[getColorTheme(index)];
             return (
               <button
                 key={item.path}
                 onClick={() => navigate(item.path)}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all border ${
-                  isActive
-                    ? 'bg-white/[0.06] text-foreground border-white/15'
-                    : 'text-muted-foreground hover:bg-white/[0.04] hover:text-foreground border-transparent'
-                }`}
+                  className={cn(
+                    'w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 border',
+                    isActive
+                      ? ['bg-[hsl(var(--neon-card))]', t.accent, t.border, t.hoverShadow]
+                      : ['text-slate-400 border-transparent hover:bg-white/[0.04]', t.hoverBorder, t.accent],
+                  )}
               >
                 <div className="relative">
                   <item.icon className="w-5 h-5" />
@@ -195,20 +199,20 @@ export const Layout = () => {
       {/* Bottom Navigation (Mobile) — REFACTOR Dark: card escuro + borda prata em vez de gradiente azul */}
       <nav className="fixed bottom-0 left-0 right-0 bg-card border-t border-white/[0.08] md:hidden z-40 pb-safe-nav backdrop-blur-sm">
         <div className="flex justify-around items-center py-2">
-          {visibleNavItems.map((item) => {
+          {visibleNavItems.map((item, index) => {
             const isActive = location.pathname === item.path;
+            const t = COLOR_THEMES[getColorTheme(index)];
             return (
               <button
                 key={item.path}
                 onClick={() => navigate(item.path)}
-                className={`flex items-center justify-center px-3 py-2.5 transition-all relative min-w-[44px] min-h-[44px] ${
-                  isActive 
-                    ? 'text-foreground' 
-                    : 'text-muted-foreground hover:text-foreground'
-                }`}
+                className={cn(
+                  'flex items-center justify-center px-3 py-2.5 transition-all duration-300 relative min-w-[44px] min-h-[44px]',
+                  isActive ? t.accent : 'text-slate-400',
+                )}
               >
                 <div className="relative">
-                  <item.icon className={`w-6 h-6 ${isActive ? 'drop-shadow-[0_0_6px_rgba(255,255,255,0.4)]' : ''}`} />
+                  <item.icon className={cn('w-6 h-6', isActive && 'drop-shadow-[0_0_8px_currentColor]')} />
                   {item.path === '/contact' && unreadCount > 0 && (
                     <Badge 
                       variant="destructive" 
@@ -226,7 +230,7 @@ export const Layout = () => {
                     </Badge>
                   )}
                 </div>
-                {isActive && <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-10 h-0.5 bg-white/40 rounded-full" />}
+                {isActive && <div className={cn('absolute bottom-0 left-1/2 -translate-x-1/2 w-10 h-0.5 rounded-full shadow-[0_0_8px_currentColor]', t.accent, 'bg-current')} />}
               </button>
             );
           })}

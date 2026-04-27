@@ -1,10 +1,29 @@
 import * as React from "react";
 
+import { COLOR_THEMES, getColorTheme, type ColorTheme } from "@/lib/colorThemes";
 import { cn } from "@/lib/utils";
 
-const Card = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(({ className, ...props }, ref) => (
-  <div ref={ref} className={cn("rounded-lg border bg-card text-card-foreground shadow-sm", className)} {...props} />
-));
+interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
+  colorTheme?: ColorTheme;
+  noHover?: boolean;
+}
+
+const Card = React.forwardRef<HTMLDivElement, CardProps>(({ className, colorTheme, noHover = false, ...props }, ref) => {
+  const t = COLOR_THEMES[colorTheme ?? getColorTheme(0)];
+  return (
+    <div
+      ref={ref}
+      className={cn(
+        "rounded-2xl border bg-[hsl(var(--neon-card))] text-card-foreground shadow-[0_0_18px_-10px_hsl(var(--neon-blue))] transition-all duration-300",
+        t.border,
+        !noHover && t.hoverBorder,
+        !noHover && t.hoverShadow,
+        className,
+      )}
+      {...props}
+    />
+  );
+});
 Card.displayName = "Card";
 
 const CardHeader = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
@@ -16,14 +35,14 @@ CardHeader.displayName = "CardHeader";
 
 const CardTitle = React.forwardRef<HTMLParagraphElement, React.HTMLAttributes<HTMLHeadingElement>>(
   ({ className, ...props }, ref) => (
-    <h3 ref={ref} className={cn("text-2xl font-semibold leading-none tracking-tight", className)} {...props} />
+    <h3 ref={ref} className={cn("text-2xl font-semibold leading-none tracking-tight text-foreground", className)} {...props} />
   ),
 );
 CardTitle.displayName = "CardTitle";
 
 const CardDescription = React.forwardRef<HTMLParagraphElement, React.HTMLAttributes<HTMLParagraphElement>>(
   ({ className, ...props }, ref) => (
-    <p ref={ref} className={cn("text-sm text-muted-foreground", className)} {...props} />
+    <p ref={ref} className={cn("text-sm text-slate-300", className)} {...props} />
   ),
 );
 CardDescription.displayName = "CardDescription";
