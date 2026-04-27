@@ -82,13 +82,15 @@ export const Splash: React.FC<SplashProps> = ({ onComplete }) => {
           z-index: 5;
         }
 
+        /* Cruz no lugar do "t" — mesma altura visual da letra (38px) e ritmo do letter-spacing */
         .uc-cross {
           position: relative;
-          width: 16px;
-          height: 34px;
-          margin-right: 8px;
+          width: 14px;
+          height: 38px;
+          margin: 0 8px;
           display: inline-block;
-          transform: translateY(-2px);
+          vertical-align: middle;
+          transform: translateY(-3px);
         }
         .uc-cross::before {
           content: '';
@@ -104,7 +106,7 @@ export const Splash: React.FC<SplashProps> = ({ onComplete }) => {
         .uc-cross::after {
           content: '';
           position: absolute;
-          top: 30%;
+          top: 28%;
           left: 0;
           width: 100%;
           height: 2px;
@@ -128,8 +130,9 @@ export const Splash: React.FC<SplashProps> = ({ onComplete }) => {
         <div className="relative inline-block" style={{ paddingRight: 8 }}>
           <span className="uc-drawing-line" />
           <div className="uc-word-wrapper">
+            <span>unicris</span>
             <span className="uc-cross" aria-hidden="true" />
-            <span>unicristo</span>
+            <span>o</span>
           </div>
         </div>
         <div className="uc-subtitle">TORNANDO JESUS MAIS CONHECIDO</div>
