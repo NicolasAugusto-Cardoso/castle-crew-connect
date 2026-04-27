@@ -6,7 +6,7 @@ import { useUnreadDiscipleship } from '@/hooks/useUnreadDiscipleship';
 import { usePushNotifications } from '@/hooks/usePushNotifications';
 import { useShowCollaboratorsTab } from '@/hooks/useCollaborators';
 import { useDonationsEnabled } from '@/hooks/useAppSettings';
-import castleLogo from '@/assets/castle-app-home.png';
+import castleLogo from '@/assets/castle-logo-header-v2.png';
 import { Badge } from '@/components/ui/badge';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 
