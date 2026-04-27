@@ -64,8 +64,8 @@ export const Layout = () => {
   return (
     <div className="min-h-[100dvh] bg-background flex flex-col overflow-x-hidden">
       
-      {/* Header - with safe area padding for notch */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-white shadow-[0_1px_3px_rgba(0,0,0,0.1)] backdrop-blur-sm pt-safe">
+      {/* Header — REFACTOR Dark: fundo preto + borda prata sutil em vez de sombra branca */}
+      <header className="fixed top-0 left-0 right-0 z-50 bg-background border-b border-white/[0.08] backdrop-blur-sm pt-safe">
         <div className="w-full h-[60px] px-2 xs:px-3 sm:px-4 flex items-center justify-between md:px-8 relative">
           {/* Logo centralizada com position absolute */}
           <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
@@ -145,10 +145,10 @@ export const Layout = () => {
               <button
                 key={item.path}
                 onClick={() => navigate(item.path)}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all border ${
                   isActive
-                    ? 'bg-primary text-primary-foreground shadow-lg'
-                    : 'hover:bg-secondary text-foreground'
+                    ? 'bg-white/[0.06] text-foreground border-white/15'
+                    : 'text-muted-foreground hover:bg-white/[0.04] hover:text-foreground border-transparent'
                 }`}
               >
                 <div className="relative">
@@ -192,8 +192,8 @@ export const Layout = () => {
         </div>
       </main>
 
-      {/* Bottom Navigation (Mobile) - using pb-safe-nav for controlled spacing */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-gradient-to-r from-[#33C2FF] to-[#2367FF] md:hidden z-40 pb-safe-nav">
+      {/* Bottom Navigation (Mobile) — REFACTOR Dark: card escuro + borda prata em vez de gradiente azul */}
+      <nav className="fixed bottom-0 left-0 right-0 bg-card border-t border-white/[0.08] md:hidden z-40 pb-safe-nav backdrop-blur-sm">
         <div className="flex justify-around items-center py-2">
           {visibleNavItems.map((item) => {
             const isActive = location.pathname === item.path;
@@ -203,8 +203,8 @@ export const Layout = () => {
                 onClick={() => navigate(item.path)}
                 className={`flex items-center justify-center px-3 py-2.5 transition-all relative min-w-[44px] min-h-[44px] ${
                   isActive 
-                    ? 'text-white' 
-                    : 'text-white/80 hover:text-white'
+                    ? 'text-foreground' 
+                    : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
                 <div className="relative">
