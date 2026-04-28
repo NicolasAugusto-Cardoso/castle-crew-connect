@@ -215,7 +215,7 @@ const Bible = () => {
                   {/* Saved Section - only show if user is logged in */}
                   {user && (
                     <div className="mb-6">
-                      <h2 className="text-lg font-semibold mb-3 text-neon-red">Salvos</h2>
+                      <h2 className="text-lg font-semibold mb-3 text-neon-white">Salvos</h2>
                       <BibleSavedSection onNavigateToVerse={handleNavigateToVerse} />
                     </div>
                   )}
