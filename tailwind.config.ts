@@ -7,7 +7,11 @@ export default {
   safelist: [
     {
       pattern:
-        /(bg|border|text|ring|focus-visible:ring|hover:bg|hover:shadow)-(blue|purple|emerald|amber|rose)-(200|300|400|500|600)(\/(?:10|15|20|30|40|50))?/,
+        /(bg|border|text|ring|focus-visible:ring|hover:bg|hover:shadow|hover:border)-(blue|purple|emerald|amber|rose)-(200|300|400|500|600)(\/(?:10|15|20|30|40|50|55|70))?/,
+    },
+    {
+      pattern:
+        /(bg|border|text|ring|focus-visible:ring|hover:bg|hover:border|hover:shadow|hover:text)-neon-(blue|purple|green|yellow|red)(\/(?:10|18|20|30|40|45|55|70))?/,
     },
   ],
   prefix: "",
