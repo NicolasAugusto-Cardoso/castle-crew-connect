@@ -342,7 +342,7 @@ export default function Contact() {
                 />
               </div>
 
-              <Button type="submit" className="w-full h-12" disabled={submitting}>
+              <Button type="submit" variant="neonBlue" className="w-full h-12" disabled={submitting}>
                 {submitting && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
                 {submitting ? 'Enviando...' : 'Enviar Mensagem'}
               </Button>
@@ -353,7 +353,7 @@ export default function Contact() {
 
       {canManageMessages && (
         <div className="space-y-4">
-          <h2 className="text-xl font-bold mb-4">Mensagens Recebidas</h2>
+          <h2 className="text-xl font-bold mb-4 text-[hsl(var(--page-primary,var(--neon-blue)))]">Mensagens Recebidas</h2>
           
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -442,7 +442,7 @@ export default function Contact() {
       {/* Seção para Colaboradores */}
       {isCollaborator && (
         <div className="space-y-4">
-          <h2 className="text-xl font-bold mb-4">Mensagens Recebidas</h2>
+          <h2 className="text-xl font-bold mb-4 text-[hsl(var(--page-primary,var(--neon-blue)))]">Mensagens Recebidas</h2>
           
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -538,7 +538,7 @@ export default function Contact() {
 
       {!canManageMessages && !isCollaborator && (
         <div className="mt-8">
-          <h2 className="text-xl font-bold mb-4">Minhas Mensagens</h2>
+          <h2 className="text-xl font-bold mb-4 text-[hsl(var(--page-primary,var(--neon-blue)))]">Minhas Mensagens</h2>
           <div className="space-y-6">
             {/* Card de Administração - Sempre Visível */}
             <Card className="card-elevated border-2 border-primary/20 hover:shadow-lg transition-shadow cursor-pointer" onClick={() => adminMessage && navigate(`/contact/${adminMessage.id}`)}>
