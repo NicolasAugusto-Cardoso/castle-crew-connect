@@ -143,13 +143,17 @@ export function BibleVerseToolbar({
         </ToolbarIconButton>
       )}
 
-      {/* Pointer arrow */}
+      {/* Pointer arrow — offset horizontally to point at the selected verse */}
       <span
         aria-hidden
         className={cn(
-          'absolute left-1/2 -translate-x-1/2 h-2 w-2 rotate-45 bg-popover border-border/60',
+          'absolute h-2 w-2 rotate-45 bg-popover border-border/60',
           placeAbove ? '-bottom-1 border-b border-r' : '-top-1 border-t border-l'
         )}
+        style={{
+          left: `calc(50% + ${arrowOffsetPx}px)`,
+          transform: 'translateX(-50%) rotate(45deg)',
+        }}
       />
     </div>
   );
