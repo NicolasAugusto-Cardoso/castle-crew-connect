@@ -159,21 +159,21 @@ const Bible = () => {
 
   return (
     <div className="flex flex-col h-[calc(100vh-4rem)] animate-fade-in">
-      {/* Header — Tema Vermelho neon (Bíblia) */}
+      {/* Header — Tema branco unificado */}
       {!isReading && (
-        <div className="bg-background border-b border-[hsl(var(--neon-red)/0.30)] px-4 py-4 sm:px-6">
+        <div className="bg-background border-b border-[hsl(var(--neon-white)/0.30)] px-4 py-4 sm:px-6">
           <div className="container mx-auto">
             <div className="mb-4">
               <SectionHeading
                 as="h1"
-                colorTheme="red"
+                colorTheme="white"
                 icon={<Book className="w-6 h-6" />}
               >
                 Bíblia
               </SectionHeading>
             </div>
-            {/* Version selector — borda vermelha sutil */}
-            <div className="bg-[hsl(var(--neon-card))] rounded-xl p-3 border border-[hsl(var(--neon-red)/0.45)] shadow-[0_0_10px_-8px_hsl(var(--neon-red)/0.30)]">
+            {/* Version selector */}
+            <div className="bg-[hsl(var(--neon-card))] rounded-xl p-3 border border-[hsl(var(--neon-white)/0.45)] shadow-[0_0_10px_-8px_hsl(var(--neon-white)/0.30)]">
               <BibleVersionSelector value={version} onChange={setVersion} />
             </div>
           </div>
