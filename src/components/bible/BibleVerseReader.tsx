@@ -62,42 +62,43 @@ export const BibleVerseReader = ({
     }
   }, [highlightVerse, data]);
 
-  const handleCopyVerse = async (verseNumber: number, text: string) => {
-    const reference = `${book.name} ${chapter}:${verseNumber}`;
-    const fullText = `"${text}" - ${reference}`;
-    
-    try {
-      await navigator.clipboard.writeText(fullText);
-      setCopiedVerse(verseNumber);
-      toast.success('Versículo copiado!');
-      setTimeout(() => setCopiedVerse(null), 2000);
-    } catch {
-      toast.error('Erro ao copiar');
-    }
-  };
-
-  const handleShareVerse = async (verseNumber: number, text: string) => {
-    const reference = `${book.name} ${chapter}:${verseNumber}`;
-    const fullText = `"${text}" - ${reference}`;
-    
-    if (navigator.share) {
+  const handleCopyVerse = useCallback(
+    async (verseNumber: number, text: string) => {
+      const reference = `${book.name} ${chapter}:${verseNumber}`;
+      const fullText = `"${text}" - ${reference}`;
       try {
-        await navigator.share({
-          title: reference,
-          text: fullText,
-        });
+        await navigator.clipboard.writeText(fullText);
+        setCopiedVerse(verseNumber);
+        toast.success('Versículo copiado!');
+        setTimeout(() => setCopiedVerse(null), 2000);
       } catch {
-        // User cancelled or error
+        toast.error('Erro ao copiar');
       }
-    } else {
-      handleCopyVerse(verseNumber, text);
-    }
-  };
+    },
+    [book.name, chapter]
+  );
 
-  const handleOpenNote = (verseNumber: number) => {
+  const handleShareVerse = useCallback(
+    async (verseNumber: number, text: string) => {
+      const reference = `${book.name} ${chapter}:${verseNumber}`;
+      const fullText = `"${text}" - ${reference}`;
+      if (navigator.share) {
+        try {
+          await navigator.share({ title: reference, text: fullText });
+        } catch {
+          /* user cancelled */
+        }
+      } else {
+        handleCopyVerse(verseNumber, text);
+      }
+    },
+    [book.name, chapter, handleCopyVerse]
+  );
+
+  const handleOpenNote = useCallback((verseNumber: number) => {
     setSelectedVerseForNote(verseNumber);
     setNoteDialogOpen(true);
-  };
+  }, []);
 
   const handleSaveNote = async (
     contentJson: { text: string; formatting?: { bold?: boolean; underline?: boolean } },
@@ -125,46 +126,61 @@ export const BibleVerseReader = ({
     }
   };
 
-  const handleToggleFocus = async (verseNumber: number) => {
-    try {
-      const result = await toggleFocusMark({
+  const handleToggleFocus = useCallback(
+    async (verseNumber: number) => {
+      try {
+        const result = await toggleFocusMark({
+          version,
+          bookAbbrev: book.abbrev.pt,
+          chapter,
+          verse: verseNumber,
+        });
+        toast.success(result.action === 'added' ? 'Destaque ativado' : 'Destaque removido');
+      } catch {
+        toast.error('Erro ao alternar destaque');
+      }
+    },
+    [toggleFocusMark, version, book.abbrev.pt, chapter]
+  );
+
+  const handleAddHighlight = useCallback(
+    async (
+      verseNumber: number,
+      color: string,
+      startOffset: number,
+      endOffset: number,
+      selectedText: string
+    ) => {
+      await addHighlight({
         version,
         bookAbbrev: book.abbrev.pt,
         chapter,
         verse: verseNumber,
+        color,
+        start_offset: startOffset,
+        end_offset: endOffset,
+        highlighted_text: selectedText,
       });
-      toast.success(result.action === 'added' ? 'Destaque ativado' : 'Destaque removido');
-    } catch {
-      toast.error('Erro ao alternar destaque');
-    }
-  };
+    },
+    [addHighlight, version, book.abbrev.pt, chapter]
+  );
 
-  const handleAddHighlight = async (verseNumber: number, color: string, startOffset: number, endOffset: number, selectedText: string) => {
-    await addHighlight({
-      version,
-      bookAbbrev: book.abbrev.pt,
-      chapter,
-      verse: verseNumber,
-      color,
-      start_offset: startOffset,
-      end_offset: endOffset,
-      highlighted_text: selectedText,
-    });
-  };
-
-  const handleRemoveHighlightsForVerse = async (verseNumber: number) => {
-    try {
-      await removeHighlightsForVerse({
-        version,
-        bookAbbrev: book.abbrev.pt,
-        chapter,
-        verse: verseNumber,
-      });
-      toast.success('Grifos removidos');
-    } catch {
-      toast.error('Erro ao remover grifos');
-    }
-  };
+  const handleRemoveHighlightsForVerse = useCallback(
+    async (verseNumber: number) => {
+      try {
+        await removeHighlightsForVerse({
+          version,
+          bookAbbrev: book.abbrev.pt,
+          chapter,
+          verse: verseNumber,
+        });
+        toast.success('Grifos removidos');
+      } catch {
+        toast.error('Erro ao remover grifos');
+      }
+    },
+    [removeHighlightsForVerse, version, book.abbrev.pt, chapter]
+  );
 
   const hasPrevChapter = chapter > 1;
   const hasNextChapter = chapter < book.chapters;
