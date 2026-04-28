@@ -88,7 +88,7 @@ All colors MUST be HSL.
     --neon-purple: 283 67% 60%;    /* #AF52DE */
     --neon-green: 135 59% 49%;     /* #34C759 */
     --neon-yellow: 48 100% 50%;    /* #FFCC00 */
-    --neon-red: 3 100% 59%;        /* #FF3B30 */
+    --neon-red: 4 100% 78%;        /* soft luminous red (~red-300/rose-300) */
     --neon-orange: 35 100% 50%;    /* #FF9500 */
     --neon-white: 0 0% 100%;       /* #FFFFFF */
     --neon-card: 0 0% 4%;
@@ -133,7 +133,7 @@ All colors MUST be HSL.
     --neon-purple: 283 67% 60%;
     --neon-green: 135 59% 49%;
     --neon-yellow: 48 100% 50%;
-    --neon-red: 3 100% 59%;
+    --neon-red: 4 100% 78%;
     --neon-orange: 35 100% 50%;
     --neon-white: 0 0% 100%;
     --neon-card: 0 0% 4%;
