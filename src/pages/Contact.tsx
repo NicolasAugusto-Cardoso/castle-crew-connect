@@ -18,6 +18,8 @@ import { Mail, Phone, Loader2, MessageSquare, Users, Trash2, Search } from 'luci
 import { contactFormSchema } from '@/lib/validations';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
+import { SectionHeading } from '@/components/ui/section-heading';
+import { getSectionTheme } from '@/lib/colorThemes';
 
 export default function Contact() {
   const navigate = useNavigate();
@@ -265,14 +267,17 @@ export default function Contact() {
 
   return (
     <div className="min-h-screen flex flex-col">
-      {/* Cabeçalho — Dark Mode: usa card escuro com borda prata sutil */}
-      <div className="bg-card border-b border-white/[0.08] py-4 xs:py-5 sm:py-6">
+      {/* Cabeçalho — Dark Mode com tema azul (Contato) */}
+      <div className="bg-card border-b border-[hsl(var(--page-primary,var(--neon-blue))/0.20)] py-4 xs:py-5 sm:py-6">
         <div className="container mx-auto px-3 xs:px-4 max-w-4xl">
-          <div className="flex items-center gap-2 xs:gap-3 mb-2">
-            <Mail className="w-6 xs:w-7 sm:w-8 h-6 xs:h-7 sm:h-8 text-primary flex-shrink-0" />
-            <h1 className="text-2xl xs:text-2xl sm:text-3xl font-bold gradient-text">Contato</h1>
-          </div>
-          <p className="text-sm xs:text-base text-muted-foreground">
+          <SectionHeading
+            colorTheme={getSectionTheme('contact')}
+            as="h1"
+            icon={<Mail className="w-6 xs:w-7 sm:w-8 h-6 xs:h-7 sm:h-8" />}
+          >
+            Contato
+          </SectionHeading>
+          <p className="text-sm xs:text-base text-muted-foreground mt-2">
             {canManageMessages ? 'Gerencie as mensagens recebidas' : 'Entre em contato conosco'}
           </p>
         </div>
@@ -282,9 +287,9 @@ export default function Contact() {
       <div className="flex-1 bg-transparent py-4 xs:py-5 sm:py-6">
         <div className="container mx-auto px-3 xs:px-4 max-w-4xl">
           {!canManageMessages && !isCollaborator && !adminMessage && (
-        <Card className="mb-6 card-elevated">
+        <Card className="mb-6">
           <CardHeader>
-            <CardTitle>Envie uma Mensagem</CardTitle>
+            <CardTitle className="text-[hsl(var(--page-primary,var(--neon-blue)))]">Envie uma Mensagem</CardTitle>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -337,7 +342,7 @@ export default function Contact() {
                 />
               </div>
 
-              <Button type="submit" className="w-full h-12" disabled={submitting}>
+              <Button type="submit" variant="neonBlue" className="w-full h-12" disabled={submitting}>
                 {submitting && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
                 {submitting ? 'Enviando...' : 'Enviar Mensagem'}
               </Button>
@@ -348,7 +353,7 @@ export default function Contact() {
 
       {canManageMessages && (
         <div className="space-y-4">
-          <h2 className="text-xl font-bold mb-4">Mensagens Recebidas</h2>
+          <h2 className="text-xl font-bold mb-4 text-[hsl(var(--page-primary,var(--neon-blue)))]">Mensagens Recebidas</h2>
           
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -437,7 +442,7 @@ export default function Contact() {
       {/* Seção para Colaboradores */}
       {isCollaborator && (
         <div className="space-y-4">
-          <h2 className="text-xl font-bold mb-4">Mensagens Recebidas</h2>
+          <h2 className="text-xl font-bold mb-4 text-[hsl(var(--page-primary,var(--neon-blue)))]">Mensagens Recebidas</h2>
           
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -533,7 +538,7 @@ export default function Contact() {
 
       {!canManageMessages && !isCollaborator && (
         <div className="mt-8">
-          <h2 className="text-xl font-bold mb-4">Minhas Mensagens</h2>
+          <h2 className="text-xl font-bold mb-4 text-[hsl(var(--page-primary,var(--neon-blue)))]">Minhas Mensagens</h2>
           <div className="space-y-6">
             {/* Card de Administração - Sempre Visível */}
             <Card className="card-elevated border-2 border-primary/20 hover:shadow-lg transition-shadow cursor-pointer" onClick={() => adminMessage && navigate(`/contact/${adminMessage.id}`)}>

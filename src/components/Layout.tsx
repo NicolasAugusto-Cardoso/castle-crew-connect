@@ -9,7 +9,7 @@ import { useDonationsEnabled } from '@/hooks/useAppSettings';
 import castleLogo from '@/assets/castle-logo-header-v2.png';
 import { Badge } from '@/components/ui/badge';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { COLOR_THEMES, getColorTheme, getRouteTheme, THEME_VAR } from '@/lib/colorThemes';
+import { COLOR_THEMES, getRouteTheme, THEME_VAR } from '@/lib/colorThemes';
 import { cn } from '@/lib/utils';
 
 
@@ -149,7 +149,7 @@ export const Layout = () => {
         <nav className="p-4 space-y-2">
             {visibleNavItems.map((item, index) => {
             const isActive = location.pathname === item.path;
-              const t = COLOR_THEMES[getColorTheme(index)];
+              const t = COLOR_THEMES[getRouteTheme(item.path)];
             return (
               <button
                 key={item.path}
@@ -207,7 +207,7 @@ export const Layout = () => {
         <div className="flex justify-around items-center py-2">
           {visibleNavItems.map((item, index) => {
             const isActive = location.pathname === item.path;
-            const t = COLOR_THEMES[getColorTheme(index)];
+            const t = COLOR_THEMES[getRouteTheme(item.path)];
             return (
               <button
                 key={item.path}
