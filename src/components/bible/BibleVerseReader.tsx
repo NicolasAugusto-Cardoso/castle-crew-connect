@@ -214,7 +214,7 @@ export const BibleVerseReader = ({
   const selectedNote = selectedVerseForNote !== null ? getNote(selectedVerseForNote) : undefined;
 
   return (
-    <div className="flex flex-col h-full min-h-0">
+    <div className="flex flex-col">
       {/* Sticky Header - Clean white with subtle border */}
       <div className="flex items-center justify-between gap-2 pb-4 border-b border-border bg-background sticky top-0 z-10">
         <div className="flex items-center gap-2 min-w-0 flex-1">
@@ -273,8 +273,8 @@ export const BibleVerseReader = ({
         </div>
       </div>
 
-      {/* Fullscreen Verses - Scrollable area */}
-      <div className="flex-1 overflow-y-auto pt-4 -mx-4 px-4 sm:-mx-6 sm:px-6">
+      {/* Verses — flow naturally; global <main> handles scrolling */}
+      <div className="pt-4 -mx-4 px-4 sm:-mx-6 sm:px-6">
         {/* Show loading state only on first load (no data yet) */}
         {isLoading && !data ? (
           <div className="flex items-center justify-center py-12">

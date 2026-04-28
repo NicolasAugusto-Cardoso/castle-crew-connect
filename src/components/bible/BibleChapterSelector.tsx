@@ -44,7 +44,7 @@ export const BibleChapterSelector = ({
       </div>
 
       {/* Chapters Grid */}
-      <div className="grid grid-cols-5 sm:grid-cols-7 md:grid-cols-10 gap-2 max-h-[calc(100vh-20rem)] overflow-y-auto pr-1">
+      <div className="grid grid-cols-5 sm:grid-cols-7 md:grid-cols-10 gap-2 pb-24">
         {chapters.map((chapter) => (
           <Button
             key={chapter}

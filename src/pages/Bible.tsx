@@ -158,10 +158,10 @@ const Bible = () => {
   const isReading = navState.step === 'reading';
 
   return (
-    <div className="flex flex-col h-[calc(100vh-4rem)] animate-fade-in">
-      {/* Header — Tema branco unificado */}
+    <div className="flex flex-col min-h-full animate-fade-in">
+      {/* Header — Tema branco unificado (sticky para permanecer visível durante o scroll global) */}
       {!isReading && (
-        <div className="bg-background border-b border-[hsl(var(--neon-white)/0.30)] px-4 py-4 sm:px-6">
+        <div className="bg-background border-b border-[hsl(var(--neon-white)/0.30)] px-4 py-4 sm:px-6 sticky top-0 z-20">
           <div className="container mx-auto">
             <div className="mb-4">
               <SectionHeading
@@ -180,27 +180,25 @@ const Bible = () => {
         </div>
       )}
 
-      {/* Main Content Area */}
-      <div className={`flex-1 flex flex-col min-h-0 ${isReading ? '' : 'container mx-auto'}`}>
+      {/* Main Content Area — sem scroll interno; o <main> global cuida do scroll */}
+      <div className={isReading ? '' : 'container mx-auto'}>
         {isReading ? (
           // Fullscreen reading view
-          <div className="flex-1 flex flex-col min-h-0 bg-background">
-            <div className="flex-1 overflow-hidden px-4 py-4 sm:px-6">
-              <BibleVerseReader
-                book={navState.book}
-                chapter={navState.chapter}
-                version={version}
-                onBack={handleBackToChapters}
-                onChangeChapter={handleChangeChapter}
-                onGoToVerse={handleGoToVerse}
-                highlightVerse={navState.highlightVerse}
-                onGoToSearch={handleGoToSearch}
-              />
-            </div>
+          <div className="bg-background px-4 py-4 sm:px-6">
+            <BibleVerseReader
+              book={navState.book}
+              chapter={navState.chapter}
+              version={version}
+              onBack={handleBackToChapters}
+              onChangeChapter={handleChangeChapter}
+              onGoToVerse={handleGoToVerse}
+              highlightVerse={navState.highlightVerse}
+              onGoToSearch={handleGoToSearch}
+            />
           </div>
         ) : (
-          // Navigation view - no tabs, direct book list
-          <div className="flex-1 flex flex-col min-h-0 px-4 py-4 sm:px-6 overflow-y-auto">
+          // Navigation view
+          <div className="px-4 py-4 sm:px-6">
             <AnimatePresence mode="wait">
               {navState.step === 'books' && (
                 <motion.div
@@ -210,7 +208,6 @@ const Bible = () => {
                   animate="animate"
                   exit="exit"
                   transition={pageTransition}
-                  className="flex-1"
                 >
                   {/* Saved Section - only show if user is logged in */}
                   {user && (
