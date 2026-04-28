@@ -88,23 +88,8 @@ function BibleVerseCardImpl({
     setReadingMode(prev => !prev);
   }, []);
 
-  // Disable reading mode when clicking outside the verse container.
-  useEffect(() => {
-    if (!readingMode) return;
-    const handler = (e: PointerEvent) => {
-      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
-        setReadingMode(false);
-      }
-    };
-    // small delay to avoid catching the same tap that enabled it
-    const t = setTimeout(() => {
-      document.addEventListener('pointerdown', handler, true);
-    }, 0);
-    return () => {
-      clearTimeout(t);
-      document.removeEventListener('pointerdown', handler, true);
-    };
-  }, [readingMode]);
+  // Reading mode is independent per verse — toggled only by the Eye button,
+  // so multiple verses can be in reading mode at the same time.
 
   const renderText = () => {
     if (highlights.length === 0) return text;
