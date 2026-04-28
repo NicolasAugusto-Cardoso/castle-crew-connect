@@ -63,15 +63,20 @@ export function getColorTheme(index: number): ColorTheme {
   return THEME_ROTATION[i];
 }
 
+/**
+ * Tema unificado: TODAS as seções usam o destaque branco/prata.
+ * Mantemos as chaves de tema (blue/green/etc) para compatibilidade,
+ * mas o mapeamento de seção sempre retorna "white".
+ */
 const SECTION_THEME_MAP: Record<string, ColorTheme> = {
-  home: "blue",
-  events: "green",
-  donations: "green",
-  gallery: "orange",
-  testimonials: "yellow",
-  bible: "red",
-  contact: "purple",
-  discipleship: "blue",
+  home: "white",
+  events: "white",
+  donations: "white",
+  gallery: "white",
+  testimonials: "white",
+  bible: "white",
+  contact: "white",
+  discipleship: "white",
   collaborators: "white",
 };
 
