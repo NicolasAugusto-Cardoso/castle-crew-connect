@@ -273,8 +273,8 @@ export const BibleVerseReader = ({
         </div>
       </div>
 
-      {/* Fullscreen Verses - Scrollable area */}
-      <div className="flex-1 overflow-y-auto pt-4 -mx-4 px-4 sm:-mx-6 sm:px-6">
+      {/* Verses — flow naturally; global <main> handles scrolling */}
+      <div className="pt-4 -mx-4 px-4 sm:-mx-6 sm:px-6">
         {/* Show loading state only on first load (no data yet) */}
         {isLoading && !data ? (
           <div className="flex items-center justify-center py-12">
