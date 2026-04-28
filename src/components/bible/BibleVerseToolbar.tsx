@@ -70,12 +70,14 @@ export function BibleVerseToolbar({
     };
   }, [anchor, onClose]);
 
-  // Position calculation
+  // Position calculation — toolbar centered horizontally on viewport,
+  // placed above or below the verse so it never covers the text.
   const rect = anchor?.getBoundingClientRect();
   const TOOLBAR_HEIGHT = 56;
-  const GAP = 10;
+  const GAP = 12;
   let top = 0;
   let placeAbove = true;
+  let arrowOffsetPx = 0; // horizontal offset (px) of the arrow from toolbar center
 
   if (rect) {
     const spaceAbove = rect.top;
@@ -84,9 +86,13 @@ export function BibleVerseToolbar({
     top = placeAbove
       ? Math.max(8, rect.top - TOOLBAR_HEIGHT - GAP)
       : Math.min(window.innerHeight - TOOLBAR_HEIGHT - 8, rect.bottom + GAP);
-  }
 
-  const left = rect ? Math.max(8, Math.min(window.innerWidth - 8, rect.left + rect.width / 2)) : 0;
+    // Toolbar is centered on viewport; arrow points to the verse center.
+    const verseCenterX = rect.left + rect.width / 2;
+    const viewportCenterX = window.innerWidth / 2;
+    // Clamp so the arrow stays within a reasonable toolbar width range.
+    arrowOffsetPx = Math.max(-120, Math.min(120, verseCenterX - viewportCenterX));
+  }
 
   if (!rect) return null;
 
@@ -97,11 +103,11 @@ export function BibleVerseToolbar({
       aria-label="Ações do versículo"
       className={cn(
         'fixed z-50 flex items-center gap-1 rounded-2xl border border-border/60 bg-popover/95 px-2 py-1.5 shadow-xl backdrop-blur-md',
-        'animate-in fade-in zoom-in-95 duration-150'
+        'animate-in fade-in zoom-in-95 duration-200 ease-out'
       )}
       style={{
         top,
-        left,
+        left: '50%',
         transform: 'translateX(-50%)',
         pointerEvents: isApplying ? 'none' : 'auto',
         opacity: isApplying ? 0.7 : 1,

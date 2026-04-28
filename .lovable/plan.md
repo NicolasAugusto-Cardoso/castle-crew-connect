@@ -1,29 +1,39 @@
-## Correções de cor residual
+## Melhorias na interação de versículos (aba Bíblia)
 
-### 1. Aba Bíblia — remover vermelho residual
-Em `src/pages/Bible.tsx`, trocar todas as ocorrências hardcoded de `neon-red` por `neon-white` (ou `page-primary`):
-- Borda do header (linha 164)
-- Borda do container do version selector (linha 176)
-- Títulos "Salvos" e "Navegar" (linhas 218 e 223): `text-neon-red` → `text-neon-white`
+### 1. Toolbar centralizado e nunca cobrindo o versículo (`BibleVerseToolbar.tsx`)
 
-Em `src/components/bible/BibleSavedSection.tsx` e `src/components/bible/BibleBookList.tsx`, trocar os fallbacks `var(--neon-red)` dentro de `var(--page-primary,var(--neon-red))` por `var(--neon-white)` para garantir consistência caso `--page-primary` não esteja injetado.
+- Trocar o cálculo de `left` baseado no `rect.left + rect.width / 2` por **centralização horizontal na viewport**: `left: 50%` com `transform: translateX(-50%)`.
+- Manter a lógica vertical existente que já posiciona acima/abaixo do versículo conforme espaço disponível (nunca sobre o texto), mas:
+  - Aumentar o `GAP` para `12px` para respiro visual.
+  - Recalcular a posição da seta-pointer para apontar para o versículo (deslocamento horizontal calculado a partir do centro do `rect` do versículo em relação à viewport), já que o toolbar agora está centralizado.
+- Refinar a animação de entrada usando classes Tailwind já presentes (`animate-in fade-in zoom-in-95`) com duração `180ms` e `ease-out` para uma transição mais suave e perceptível.
 
-### 2. Aba Eventos — botão "Novo Evento" branco
-Em `src/pages/Events.tsx`:
-- Linha 185: `variant="neonGreen"` → `variant="neonWhite"` no botão "+ Novo Evento"
-- Linhas 235 e 241: trocar variantes verdes do navegador de mês também para `neonWhite` (consistência)
+### 2. Modo de Leitura por versículo (`BibleVerseCard.tsx`)
 
-### 3. Botões CTA com texto preto
-Forçar texto escuro nos dois CTAs principais:
-- `src/components/posts/CreatePostDialog.tsx` (linha 171): adicionar `!text-neutral-900` ao `Button "Criar Nova Postagem"`
-- `src/components/gallery/CreateFolderDialog.tsx` (linha 95): adicionar `!text-neutral-900` ao `Button "Nova Pasta"`
+- Importar o ícone `Eye` / `EyeOff` do `lucide-react`.
+- Adicionar um botão de toggle **dentro do próprio `BibleVerseCard`** posicionado à direita do número do versículo (ou no canto superior direito ao lado do indicador de nota). Área clicável mínima `44x44px` (`h-11 w-11`) com `aria-label="Ativar/Desativar modo de leitura"`.
+- Estado **local** ao componente: `const [readingMode, setReadingMode] = useState(false)`. Como cada `BibleVerseCard` já é um componente isolado e memoizável, essa mudança **não causa re-render dos outros versículos**.
+- Envolver o componente com `React.memo` (e estabilizar callbacks no pai com `useCallback`) para garantir que apenas o card clicado re-renderize.
+- Quando `readingMode === true`:
+  - Aplicar `style={{ backgroundColor: '#FFFFFF', color: '#000000' }}` no container do versículo (sobrescreve `text-foreground`).
+  - Forçar cor preta no `<sup>` do número e nos spans de highlight (mantendo a `backgroundColor` do grifo, mas com texto preto).
+  - Transição instantânea: `transition-none` durante o toggle (sem `duration-*`), priorizando resposta imediata.
+- O clique no botão Eye **chama `e.stopPropagation()`** para não disparar o `handleTap` que abre o toolbar.
 
-(O `btn-gradient` já tem `color: #121212`, mas o componente `Button` do shadcn aplica `text-primary-foreground` por padrão na variante default, sobrescrevendo. O `!` garante prioridade.)
+### 3. Comportamento de toggle/reset
 
-### Arquivos editados
-- `src/pages/Bible.tsx`
-- `src/components/bible/BibleSavedSection.tsx`
-- `src/components/bible/BibleBookList.tsx`
-- `src/pages/Events.tsx`
-- `src/components/posts/CreatePostDialog.tsx`
-- `src/components/gallery/CreateFolderDialog.tsx`
+- Clicar novamente no ícone (agora `EyeOff`) desativa o modo.
+- Clicar **fora** do versículo: adicionar listener `pointerdown` global montado apenas quando `readingMode === true` (cleanup no unmount), que desativa o modo se o clique ocorrer fora do `verseRef`.
+- O botão Eye fica sempre visível no mobile (sem hover-only), seguindo a regra global de mobile-first.
+
+### 4. Performance
+
+- `React.memo(BibleVerseCard)` com comparação rasa padrão — props já são primitivas/estáveis exceto callbacks.
+- No `BibleVerseReader.tsx`, envolver `handleCopyVerse`, `handleShareVerse`, `handleOpenNote`, `handleToggleFocus`, `handleAddHighlight`, `handleRemoveHighlightsForVerse` em `useCallback` com dependências corretas para que a memoização do card seja efetiva.
+- Estado `readingMode` permanece **local ao card** — nenhuma lista é re-renderizada ao alternar.
+
+### Arquivos a editar
+
+- `src/components/bible/BibleVerseToolbar.tsx` — centralização horizontal + animação refinada + recalibração da seta.
+- `src/components/bible/BibleVerseCard.tsx` — botão Eye, estado local de reading mode, estilo branco/preto, `React.memo`, listener de clique externo.
+- `src/components/bible/BibleVerseReader.tsx` — envolver handlers em `useCallback` para preservar a memoização.
