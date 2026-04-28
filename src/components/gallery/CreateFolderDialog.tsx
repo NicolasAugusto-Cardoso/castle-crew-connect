@@ -12,7 +12,8 @@ import {
 } from '@/components/ui/dialog';
 import { useGallery } from '@/hooks/useGallery';
 import { supabase } from '@/integrations/supabase/client';
-import { Plus, Upload, X } from 'lucide-react';
+import { Plus } from 'lucide-react';
+import { MediaUpload } from '@/components/ui/media-upload';
 import { toast } from 'sonner';
 
 export function CreateFolderDialog() {
