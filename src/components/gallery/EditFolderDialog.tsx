@@ -206,44 +206,17 @@ export function EditFolderDialog({ folder }: EditFolderDialogProps) {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="cover">Foto de Capa</Label>
-            <div className="flex gap-3 items-start">
-              <div className="flex-1">
-                <Input
-                  id="cover"
-                  type="file"
-                  accept="image/jpeg,image/jpg,image/png"
-                  onChange={handleCoverChange}
-                  disabled={isSubmitting}
-                  className="cursor-pointer"
-                />
-                <p className="text-xs text-muted-foreground mt-1">
-                  Imagens JPG, JPEG ou PNG até 5MB
-                </p>
-              </div>
-            </div>
-            {coverPreview && (
-              <div className="relative w-full h-32 sm:h-48 rounded-lg overflow-hidden bg-muted">
-                <img
-                  src={coverPreview}
-                  alt="Preview"
-                  className="w-full h-full object-cover"
-                />
-                <Button
-                  type="button"
-                  variant="destructive"
-                  size="icon"
-                  className="absolute top-2 right-2"
-                  onClick={() => {
-                    setCoverFile(null);
-                    setCoverPreview('');
-                  }}
-                  disabled={isSubmitting}
-                >
-                  <X className="w-4 h-4" />
-                </Button>
-              </div>
-            )}
+            <Label>Foto de Capa</Label>
+            <MediaUpload
+              accept="image/jpeg,image/jpg,image/png"
+              value={coverFile}
+              onChange={handleCoverChange}
+              maxSizeMB={5}
+              disabled={isSubmitting}
+              previewUrl={!coverFile ? coverPreview : undefined}
+              label="Selecionar foto de capa"
+              hint="JPG, JPEG ou PNG • até 5 MB"
+            />
           </div>
 
           <div className="flex flex-col sm:flex-row gap-3 sm:justify-between">
