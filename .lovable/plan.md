@@ -1,73 +1,83 @@
 ## Objetivo
 
-Mudar o estilo da paleta multicolorida de "pastel translúcido" para o **neon-outline** da referência: cards com **fundo preto sólido**, **borda fina vibrante colorida**, **título branco**, **valor/número grande na cor do tema**, **ícone na cor do tema** e **glow colorido sutil no hover**. Botões ganham uma variante combinando.
+Refinar o design system neon: brilho mais sutil (nível 4/10), corrigir tabs sobrepostas em Eventos/Bíblia/Colaboradores, padronizar uma cor por aba e aplicar o sistema visual à página Contato.
 
-## O que muda visualmente
+## 1. Reduzir intensidade do glow (nível 4/10)
 
-Antes: card com `bg-blue-500/10` + `border-2 border-blue-400/40` + título `text-blue-300`.
-Depois: card com `bg-[#0A0A0A]` + `border border-blue-500/70` + título branco + número/ícone `text-blue-400` + `hover:shadow-[0_0_24px_-4px_rgba(...)]`.
+Substituir todos os `shadow-[…]` neon por valores mais suaves, reduzindo blur, spread e opacidade.
 
-## Implementação
+**Padrão antigo → novo:**
+- Card border idle: `shadow-[0_0_18px_-10px_hsl(...)]` → `shadow-[0_0_10px_-8px_hsl(.../0.35)]`
+- Card hover: `shadow-[0_0_24px_-4px_hsl(.../0.55)]` → `shadow-[0_0_14px_-6px_hsl(.../0.30)]`
+- Botões neon (default + neonX): `shadow-[0_0_18px_-8px_hsl(...)]` / hover `0_0_22px_-5px_.../0.75` → idle removido, hover `0_0_12px_-6px_.../0.35`
+- Tabs ativos: `shadow-[0_0_16px_-6px_.../0.75]` → `shadow-[0_0_10px_-6px_.../0.35]`
+- Mobile nav active icon `drop-shadow-[0_0_8px_currentColor]` → `drop-shadow-[0_0_4px_currentColor]` + `opacity 0.6` via inline
+- Underline mobile nav `shadow-[0_0_8px_currentColor]` → `shadow-[0_0_4px_currentColor]`
+- Reduzir bordas de `/70` → `/55` para suavizar contorno
 
-### 1. `src/lib/colorThemes.ts` — refatorar tokens
-Substituir os tokens da Variante A por neon-outline. Cada `ColorTheme` passa a ter:
-- `card: "bg-[#0A0A0A]"` (sólido, igual ao app)
-- `border: "border-{cor}-500/70"` (1px vibrante)
-- `title: "text-foreground"` (branco — só `accent` é colorido)
-- `accent: "text-{cor}-400"` (ícones + valores grandes)
-- `hoverBorder: "hover:border-{cor}-400"`
-- `hoverShadow: "hover:shadow-[0_0_24px_-4px_rgba(...)]"` (glow colorido)
-- `ring: "focus-visible:ring-{cor}-400"`
+Arquivos:
+- `src/lib/colorThemes.ts` (tokens `border`, `hoverShadow`)
+- `src/components/ui/button.tsx` (todas variantes neon + default/outline/secondary/ghost)
+- `src/components/ui/tabs.tsx` (TabsList + TabsTrigger active state)
+- `src/components/ui/card.tsx` (shadow base)
+- `src/components/Layout.tsx` (sidebar + bottom nav glows)
 
-Helpers `getColorTheme` / `getSectionTheme` continuam iguais. Rotação circular blue → purple → green → yellow → red preservada.
+## 2. Sistema de cor contextual por aba (CSS variables)
 
-### 2. `src/components/ui/themed-card.tsx` — ajustar wrapper
-- `CardThemed`: trocar `border-2 rounded-2xl` por `border rounded-2xl` (1px), aplicar `card + border + hoverBorder + hoverShadow`. Padding interno reduzido para `p-5` (mais compacto, igual à referência).
-- `CardThemedTitle`: por padrão **branco** (`text-foreground`). Nova prop `colored` para casos onde o título deve receber a cor do tema.
-- **Novo** `CardThemedAccent`: bloco grande em `text-3xl font-bold {accent}` para o número/valor de destaque (ex: "R$ 50,00", "0", contadores).
-- `CardThemedFooter`: estilizado com `text-xs text-slate-500` (linha "Atualizado" sutil).
+Criar contexto: cada rota injeta `--page-primary` e `--page-glow` no container raiz da página. Componentes lêem essas variáveis em vez de cor fixa.
 
-### 3. `src/components/ui/button.tsx` — nova variante `neon`
-Adicionar variante que combine com os cards:
-```ts
-neon: "bg-transparent border border-blue-500/70 text-blue-400 hover:bg-blue-500/10 hover:border-blue-400 hover:shadow-[0_0_16px_-4px_rgba(59,130,246,0.5)] transition-all"
-```
-Como Tailwind `cva` não aceita cor dinâmica, criar **5 variantes**: `neonBlue`, `neonPurple`, `neonGreen`, `neonYellow`, `neonRed`. Usadas em CTAs dentro de cards coloridos.
+**Implementação:**
+- Adicionar mapa rota→cor em `src/lib/colorThemes.ts` (já existe `getSectionTheme`).
+- Em `src/components/Layout.tsx`, calcular tema da rota atual via `getSectionTheme(location.pathname)` e aplicar `style={{ '--page-primary': '<hsl>', '--page-glow': '<hsl>/0.35' }}` no `<main>`.
+- Atualizar `tabs.tsx`, `button.tsx` (variant `default`), `card.tsx` (default) e ícone ativo da bottom nav para usar `hsl(var(--page-primary))` em vez de `--neon-blue` hardcoded.
+- Sidebar/bottom nav continuam com cores rotativas por item (uso intencional para distinguir abas), mas o ícone ativo usa `--page-primary` para reforçar consistência.
 
-Adicionar também helper `getNeonVariant(theme: ColorTheme)` em `colorThemes.ts` que retorna o nome da variante correspondente.
+Mapa final (já parcialmente em `SECTION_THEME_MAP`):
+- home/events/contact → blue
+- donations/discipleship → green
+- gallery/collaborators → purple
+- testimonials → yellow
+- bible → red
 
-### 4. Atualizar consumidores
-- **BasketCard**: título branco; preço `R$ XX,XX` migra para `<CardThemedAccent>` colorido; botão "Selecionar" usa `variant={getNeonVariant(theme)}`.
-- **CampaignCard**: título branco; metas (valores) usam cor do tema; ícone `<Target>` na cor do tema.
-- **Testemunhos**: título do testemunho branco; nome do autor na cor do tema (já é, mantém).
-- **Galeria**: título da pasta branco; ícone Folder colorido; data colorida.
-- **Eventos**: título do evento branco; ícones (Clock, MapPin, Users) na cor do tema.
+## 3. Corrigir sobreposição de Tabs
 
-### 5. SectionHeading
-Mantém comportamento atual (subtítulos coloridos `text-{cor}-300`) — não muda. A diferenciação fica clara: **subtítulos de seção** = coloridos; **títulos dentro de cards** = brancos com acento colorido.
+**Eventos** (`src/pages/Events.tsx` L193): `TabsList className="grid w-full grid-cols-2"` força largura cheia mas trigger shadow ativa estouraba. Adicionar `gap-2`, `isolate` no TabsList e `relative` no trigger. Remover qualquer `-ml`/`-mr`.
 
-### 6. Safelist Tailwind
-Já cobre as classes necessárias (`border-{cor}-500/70`, `hover:border-{cor}-400`, `text-{cor}-400`). O `hover:shadow-[…]` é literal arbitrary value e funciona sem safelist.
+**Bíblia** (`src/components/bible/BibleSavedSection.tsx` L114): `TabsList className="w-full grid grid-cols-2 bg-muted/50 rounded-none"` está sem padding interno e sem gap; o estilo neon novo conflita com `rounded-none` + `bg-muted/50`. Remover overrides legados, usar default da `TabsList` com `w-full grid grid-cols-2 gap-2`.
 
-### 7. Atualizar memória
-Atualizar `mem://design/multicolored-accent-palette` para refletir o novo estilo neon-outline (substitui a descrição "pastel translúcido").
+**Colaboradores** (`src/pages/Collaborators.tsx` L159): `TabsList` sem largura no flex container está colidindo com `<Select>` ao lado. Adicionar `shrink-0` no TabsList e `flex-wrap` no container pai L158.
 
-## Arquivos editados
+Em `src/components/ui/tabs.tsx`:
+- TabsList: adicionar `isolate gap-1`
+- TabsTrigger: adicionar `relative` + `z-0`, ativo `z-10`
+- Remover `overflow-hidden` (recorta o glow e cria conflito visual com hovers adjacentes)
 
-- `src/lib/colorThemes.ts` (tokens + helper `getNeonVariant`)
-- `src/components/ui/themed-card.tsx` (padding, novo `CardThemedAccent`, título branco por padrão)
-- `src/components/ui/button.tsx` (5 variantes neon)
-- `src/components/donations/BasketCard.tsx`
-- `src/components/donations/CampaignCard.tsx`
-- `src/pages/Testimonials.tsx`
-- `src/pages/Gallery.tsx`
-- `src/pages/Events.tsx`
-- `.lovable/memory/design/multicolored-accent-palette.md`
+## 4. Estilizar página Contato
 
-## Critério de aceite
+`src/pages/Contact.tsx` e componentes em `src/components/contact/` estão usando estilos crus. Aplicar:
+- Wrappers de seções → `CardThemed colorTheme="blue"` (cor da seção contact)
+- Botões CTA → `variant="neonBlue"` (ou `getNeonVariant`)
+- Inputs (incluindo `ChatInput`) → adicionar borda neon-blue/40 + focus neon-blue, mantendo arredondamento `rounded-xl`
+- Subtítulos → `<SectionHeading colorTheme="blue">`
+- Lista de conversas → cards com border `border-neon-blue/40` e hover suave
 
-- Cards com fundo preto sólido (sem fill colorido), borda fina vibrante, igual à referência.
-- Valores numéricos (preço, metas, contadores) e ícones em cor do tema; títulos brancos.
-- Hover gera glow colorido sutil.
-- Botões CTA dentro de cards coloridos seguem o mesmo padrão neon-outline.
-- Subtítulos de seção (SectionHeading) continuam coloridos para hierarquia visual.
+Arquivos a editar:
+- `src/pages/Contact.tsx`
+- `src/components/contact/MessageThread.tsx`
+- `src/components/chat/ChatHeader.tsx`, `ChatInput.tsx`
+- `src/components/ui/input.tsx` (opcional: usar `--page-primary` no focus ring)
+
+## 5. Validação
+
+- Verificar visualmente as 4 rotas: /events, /bible, /colaboradores, /contact
+- Confirmar que cada página tem 1 cor dominante consistente
+- Confirmar que tabs não se sobrepõem
+- Confirmar que glow está discreto
+
+## Detalhes técnicos
+
+- Sem mudança de lógica de negócio
+- Sem alteração de estrutura de rotas/dados
+- Apenas Tailwind/CSS
+- Mantido mobile-first (todos breakpoints `sm:` e abaixo)
+- CSS variables aplicadas no `<main>` em Layout.tsx para herança automática

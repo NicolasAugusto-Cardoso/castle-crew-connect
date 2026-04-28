@@ -14,10 +14,12 @@ const Card = React.forwardRef<HTMLDivElement, CardProps>(({ className, colorThem
     <div
       ref={ref}
       className={cn(
-        "rounded-2xl border bg-[hsl(var(--neon-card))] text-card-foreground shadow-[0_0_18px_-10px_hsl(var(--neon-blue))] transition-all duration-300",
-        t.border,
-        !noHover && t.hoverBorder,
-        !noHover && t.hoverShadow,
+        "rounded-2xl border bg-[hsl(var(--neon-card))] text-card-foreground transition-all duration-300",
+        // contextual color: uses --page-primary when defined, falls back to theme
+        "border-[hsl(var(--page-primary,var(--neon-blue))/0.45)] shadow-[0_0_10px_-8px_hsl(var(--page-primary,var(--neon-blue))/0.30)]",
+        colorTheme && t.border,
+        !noHover && (colorTheme ? t.hoverBorder : "hover:border-[hsl(var(--page-primary,var(--neon-blue))/0.75)]"),
+        !noHover && (colorTheme ? t.hoverShadow : "hover:shadow-[0_0_14px_-6px_hsl(var(--page-primary,var(--neon-blue))/0.30)]"),
         className,
       )}
       {...props}
