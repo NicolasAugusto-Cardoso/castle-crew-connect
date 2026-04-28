@@ -81,12 +81,16 @@ All colors MUST be HSL.
 
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
-    /* Neon accent palette — HSL tokens only */
-    --neon-blue: 217 91% 60%;
-    --neon-purple: 271 91% 65%;
-    --neon-green: 158 64% 52%;
-    --neon-yellow: 38 92% 55%;
-    --neon-red: 347 89% 61%;
+    /* Neon accent palette — HSL tokens only
+       Cores Apple-style sincronizadas por aba (Home/Discipulado: Azul, Testemunhos: Amarelo,
+       Bíblia: Vermelho, Eventos: Verde, Contato: Roxo, Galeria: Laranja, Colaboradores: Branco) */
+    --neon-blue: 211 100% 50%;     /* #007AFF */
+    --neon-purple: 283 67% 60%;    /* #AF52DE */
+    --neon-green: 135 59% 49%;     /* #34C759 */
+    --neon-yellow: 48 100% 50%;    /* #FFCC00 */
+    --neon-red: 3 100% 59%;        /* #FF3B30 */
+    --neon-orange: 35 100% 50%;    /* #FF9500 */
+    --neon-white: 0 0% 100%;       /* #FFFFFF */
     --neon-card: 0 0% 4%;
 
     /* Sidebar (segue o mesmo design dark) */
@@ -125,11 +129,13 @@ All colors MUST be HSL.
     --ring: 0 0% 75%;
     --shadow-card: 0 0 0 1px rgba(255, 255, 255, 0.06);
     --shadow-glow: 0 0 24px rgba(255, 255, 255, 0.06);
-    --neon-blue: 217 91% 60%;
-    --neon-purple: 271 91% 65%;
-    --neon-green: 158 64% 52%;
-    --neon-yellow: 38 92% 55%;
-    --neon-red: 347 89% 61%;
+    --neon-blue: 211 100% 50%;
+    --neon-purple: 283 67% 60%;
+    --neon-green: 135 59% 49%;
+    --neon-yellow: 48 100% 50%;
+    --neon-red: 3 100% 59%;
+    --neon-orange: 35 100% 50%;
+    --neon-white: 0 0% 100%;
     --neon-card: 0 0% 4%;
   }
 
