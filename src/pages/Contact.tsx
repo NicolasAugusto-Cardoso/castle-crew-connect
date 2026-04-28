@@ -337,7 +337,7 @@ export default function Contact() {
                 />
               </div>
 
-              <Button type="submit" className="w-full h-12 btn-gradient" disabled={submitting}>
+              <Button type="submit" className="w-full h-12" disabled={submitting}>
                 {submitting && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
                 {submitting ? 'Enviando...' : 'Enviar Mensagem'}
               </Button>

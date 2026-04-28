@@ -111,7 +111,7 @@ export function BibleSavedSection({ onNavigateToVerse }: BibleSavedSectionProps)
   return (
     <div className="bg-card rounded-xl border border-border overflow-hidden">
       <Tabs defaultValue="notes" className="w-full">
-        <TabsList className="w-full grid grid-cols-2 bg-muted/50 rounded-none">
+        <TabsList className="w-full grid grid-cols-2 gap-2 h-auto">
           <TabsTrigger value="notes" className="gap-2">
             <FileText className="w-4 h-4" />
             Anotações

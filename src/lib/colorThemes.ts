@@ -1,12 +1,6 @@
 /**
  * Multicolored "neon outline" accent palette layered on top of the dark theme.
- *
- * Visual reference: solid black card, vibrant 1px colored border, glow on hover.
- * - card bg:   solid #0A0A0A (matches app background)
- * - border:    vibrant -500 at 70% alpha
- * - title:     white/foreground (only accent values are colored)
- * - accent:    -400 (icons + headline numbers)
- * - hover:     subtle colored glow + border intensifies to -400
+ * Glow intensity reduced to ~level 4/10 — subtle, elegant, legible.
  */
 
 export type ColorTheme = "blue" | "purple" | "green" | "yellow" | "red";
@@ -22,60 +16,25 @@ export interface ColorThemeTokens {
   glowColor: string;
 }
 
+const mk = (name: string, hsl: string): ColorThemeTokens => ({
+  card: "bg-[hsl(var(--neon-card))]",
+  border: `border-${name}/55 shadow-[0_0_10px_-8px_hsl(var(${hsl})/0.35)]`,
+  title: "text-foreground",
+  hoverShadow: `hover:shadow-[0_0_14px_-6px_hsl(var(${hsl})/0.30)]`,
+  hoverBorder: `hover:border-${name}`,
+  ring: `focus-visible:ring-${name}`,
+  accent: `text-${name}`,
+  glowColor: `hsl(var(${hsl}) / 0.30)`,
+});
+
 export const COLOR_THEMES: Record<ColorTheme, ColorThemeTokens> = {
-  blue: {
-    card: "bg-[hsl(var(--neon-card))]",
-    border: "border-neon-blue/70 shadow-[0_0_18px_-10px_hsl(var(--neon-blue))]",
-    title: "text-foreground",
-    hoverShadow: "hover:shadow-[0_0_24px_-4px_hsl(var(--neon-blue)/0.55)]",
-    hoverBorder: "hover:border-neon-blue",
-    ring: "focus-visible:ring-neon-blue",
-    accent: "text-neon-blue",
-    glowColor: "hsl(var(--neon-blue) / 0.55)",
-  },
-  purple: {
-    card: "bg-[hsl(var(--neon-card))]",
-    border: "border-neon-purple/70 shadow-[0_0_18px_-10px_hsl(var(--neon-purple))]",
-    title: "text-foreground",
-    hoverShadow: "hover:shadow-[0_0_24px_-4px_hsl(var(--neon-purple)/0.55)]",
-    hoverBorder: "hover:border-neon-purple",
-    ring: "focus-visible:ring-neon-purple",
-    accent: "text-neon-purple",
-    glowColor: "hsl(var(--neon-purple) / 0.55)",
-  },
-  green: {
-    card: "bg-[hsl(var(--neon-card))]",
-    border: "border-neon-green/70 shadow-[0_0_18px_-10px_hsl(var(--neon-green))]",
-    title: "text-foreground",
-    hoverShadow: "hover:shadow-[0_0_24px_-4px_hsl(var(--neon-green)/0.55)]",
-    hoverBorder: "hover:border-neon-green",
-    ring: "focus-visible:ring-neon-green",
-    accent: "text-neon-green",
-    glowColor: "hsl(var(--neon-green) / 0.55)",
-  },
-  yellow: {
-    card: "bg-[hsl(var(--neon-card))]",
-    border: "border-neon-yellow/70 shadow-[0_0_18px_-10px_hsl(var(--neon-yellow))]",
-    title: "text-foreground",
-    hoverShadow: "hover:shadow-[0_0_24px_-4px_hsl(var(--neon-yellow)/0.55)]",
-    hoverBorder: "hover:border-neon-yellow",
-    ring: "focus-visible:ring-neon-yellow",
-    accent: "text-neon-yellow",
-    glowColor: "hsl(var(--neon-yellow) / 0.55)",
-  },
-  red: {
-    card: "bg-[hsl(var(--neon-card))]",
-    border: "border-neon-red/70 shadow-[0_0_18px_-10px_hsl(var(--neon-red))]",
-    title: "text-foreground",
-    hoverShadow: "hover:shadow-[0_0_24px_-4px_hsl(var(--neon-red)/0.55)]",
-    hoverBorder: "hover:border-neon-red",
-    ring: "focus-visible:ring-neon-red",
-    accent: "text-neon-red",
-    glowColor: "hsl(var(--neon-red) / 0.55)",
-  },
+  blue: mk("neon-blue", "--neon-blue"),
+  purple: mk("neon-purple", "--neon-purple"),
+  green: mk("neon-green", "--neon-green"),
+  yellow: mk("neon-yellow", "--neon-yellow"),
+  red: mk("neon-red", "--neon-red"),
 };
 
-/** Circular rotation: blue → purple → green → yellow → red */
 export const THEME_ROTATION: ColorTheme[] = [
   "blue",
   "purple",
@@ -106,7 +65,34 @@ export function getSectionTheme(section: string): ColorTheme {
   return SECTION_THEME_MAP[section] ?? "blue";
 }
 
-/** Maps a color theme to the corresponding Button neon variant name. */
+/** Map a pathname like "/events/123" to the section theme. */
+export function getRouteTheme(pathname: string): ColorTheme {
+  const seg = pathname.replace(/^\/+/, "").split("/")[0] || "home";
+  // path aliases
+  const map: Record<string, string> = {
+    "": "home",
+    colaboradores: "collaborators",
+    collaborator: "collaborators",
+    events: "events",
+    bible: "bible",
+    contact: "contact",
+    donations: "donations",
+    gallery: "gallery",
+    testimonials: "testimonials",
+    discipleship: "discipleship",
+  };
+  return getSectionTheme(map[seg] ?? seg);
+}
+
+/** HSL CSS variable name for a theme (without `var()`). */
+export const THEME_VAR: Record<ColorTheme, string> = {
+  blue: "--neon-blue",
+  purple: "--neon-purple",
+  green: "--neon-green",
+  yellow: "--neon-yellow",
+  red: "--neon-red",
+};
+
 export type NeonButtonVariant =
   | "neonBlue"
   | "neonPurple"

@@ -190,7 +190,7 @@ export default function Events() {
       </div>
 
       <Tabs defaultValue="list" className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
+        <TabsList className="grid w-full grid-cols-2 gap-2 h-auto">
           <TabsTrigger value="list">Lista</TabsTrigger>
           <TabsTrigger value="calendar">Calendário</TabsTrigger>
         </TabsList>

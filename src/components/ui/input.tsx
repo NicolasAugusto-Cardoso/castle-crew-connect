@@ -8,8 +8,8 @@ const Input = React.forwardRef<HTMLInputElement, React.ComponentProps<"input">>(
       <input
         type={type}
         className={cn(
-          // REFACTOR Dark Mode: fundo translúcido prata + anel de foco prata visível
-          "flex h-10 w-full rounded-md border border-white/10 bg-white/[0.04] px-3 py-2 text-base text-foreground ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(0,0%,75%)] focus-visible:ring-offset-0 focus-visible:border-white/20 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm transition-colors",
+          // Dark input — focus ring uses the page-contextual color
+          "flex h-10 w-full rounded-xl border border-white/10 bg-white/[0.04] px-3 py-2 text-base text-foreground ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--page-primary,var(--neon-blue))/0.6)] focus-visible:ring-offset-0 focus-visible:border-[hsl(var(--page-primary,var(--neon-blue))/0.55)] disabled:cursor-not-allowed disabled:opacity-50 md:text-sm transition-colors",
           className,
         )}
         ref={ref}

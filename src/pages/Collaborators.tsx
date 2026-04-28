@@ -155,8 +155,8 @@ export default function Collaborators() {
 
         {/* Tabs de visualização */}
         <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as 'grid' | 'map')} className="w-full">
-          <div className="mb-6 flex flex-col sm:flex-row gap-4 sm:items-center justify-between">
-            <TabsList>
+          <div className="mb-6 flex flex-col sm:flex-row flex-wrap gap-4 sm:items-center justify-between">
+            <TabsList className="shrink-0">
               <TabsTrigger value="grid" className="gap-2">
                 <Grid3x3 className="w-4 h-4" />
                 Grade

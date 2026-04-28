@@ -9,7 +9,7 @@ import { useDonationsEnabled } from '@/hooks/useAppSettings';
 import castleLogo from '@/assets/castle-logo-header-v2.png';
 import { Badge } from '@/components/ui/badge';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { COLOR_THEMES, getColorTheme } from '@/lib/colorThemes';
+import { COLOR_THEMES, getColorTheme, getRouteTheme, THEME_VAR } from '@/lib/colorThemes';
 import { cn } from '@/lib/utils';
 
 
@@ -63,8 +63,14 @@ export const Layout = () => {
   // Get user name from metadata or email
   const displayName = user?.user_metadata?.name || user?.email?.split('@')[0] || 'Usuário';
 
+  const pageTheme = getRouteTheme(location.pathname);
+  const pageVar = THEME_VAR[pageTheme];
+
   return (
-    <div className="min-h-[100dvh] bg-background flex flex-col overflow-x-hidden">
+    <div
+      className="min-h-[100dvh] bg-background flex flex-col overflow-x-hidden"
+      style={{ ['--page-primary' as any]: `var(${pageVar})` }}
+    >
       
       {/* Header — REFACTOR Dark: fundo preto + borda prata sutil em vez de sombra branca */}
       <header className="fixed top-0 left-0 right-0 z-50 bg-background border-b border-white/[0.08] backdrop-blur-sm pt-safe">
@@ -212,7 +218,7 @@ export const Layout = () => {
                 )}
               >
                 <div className="relative">
-                  <item.icon className={cn('w-6 h-6', isActive && 'drop-shadow-[0_0_8px_currentColor]')} />
+                  <item.icon className={cn('w-6 h-6', isActive && 'drop-shadow-[0_0_4px_currentColor]')} />
                   {item.path === '/contact' && unreadCount > 0 && (
                     <Badge 
                       variant="destructive" 
@@ -230,7 +236,7 @@ export const Layout = () => {
                     </Badge>
                   )}
                 </div>
-                {isActive && <div className={cn('absolute bottom-0 left-1/2 -translate-x-1/2 w-10 h-0.5 rounded-full shadow-[0_0_8px_currentColor]', t.accent, 'bg-current')} />}
+                {isActive && <div className={cn('absolute bottom-0 left-1/2 -translate-x-1/2 w-10 h-0.5 rounded-full shadow-[0_0_4px_currentColor]', t.accent, 'bg-current')} />}
               </button>
             );
           })}
