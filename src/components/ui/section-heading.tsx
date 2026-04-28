@@ -33,8 +33,8 @@ export const SectionHeading = React.forwardRef<
         "font-bold tracking-tight inline-flex items-center gap-2",
         SIZE_BY_LEVEL[Tag],
         t.accent,
-        // Glow muito sutil — apenas um leve realce, sem ofuscar a leitura
-        "[text-shadow:0_0_3px_currentColor] [text-shadow-opacity:0.15] [&>span:first-child]:drop-shadow-[0_0_2px_currentColor] [&>span:first-child]:opacity-90",
+        // Sem text-shadow — texto nítido. Apenas o ícone tem um leve drop-shadow.
+        "[&>span:first-child]:drop-shadow-[0_0_1px_currentColor] [&>span:first-child]:opacity-90",
         className,
       )}
       {...props}
