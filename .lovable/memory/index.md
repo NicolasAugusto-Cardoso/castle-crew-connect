@@ -11,7 +11,7 @@ Updated: today
 - **Security**: User deletion follows strict cascading order.
 
 ## Memories
-- [Multicolored Accent Palette](mem://design/multicolored-accent-palette) — 5 cores rotativas (blue/purple/green/yellow/red) com CardThemed e SectionHeading sobre tema dark
+- [Unified White Accent](mem://design/multicolored-accent-palette) — Todas as seções usam destaque branco/prata único sobre dark mode (sem cores por aba)
 - [Splash Screen](mem://design/splash-screen-animation-and-effects) — Visual effects and pre-splash gradient
 - [User Deletion Cascade](mem://architecture/user-deletion-cascade-pattern) — Strict cascade order to avoid FK errors
 - [Contact Messaging](mem://features/contact-messaging-system) — Role-based message visibility
