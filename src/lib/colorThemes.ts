@@ -1,9 +1,20 @@
 /**
  * Multicolored "neon outline" accent palette layered on top of the dark theme.
  * Glow intensity reduced to ~level 4/10 — subtle, elegant, legible.
+ *
+ * Sincronização por aba (Apple-style):
+ *   Home/Discipulado: Azul · Testemunhos: Amarelo · Bíblia: Vermelho
+ *   Eventos: Verde · Contato: Roxo · Galeria: Laranja · Colaboradores: Branco
  */
 
-export type ColorTheme = "blue" | "purple" | "green" | "yellow" | "red";
+export type ColorTheme =
+  | "blue"
+  | "purple"
+  | "green"
+  | "yellow"
+  | "red"
+  | "orange"
+  | "white";
 
 export interface ColorThemeTokens {
   card: string;
@@ -33,6 +44,8 @@ export const COLOR_THEMES: Record<ColorTheme, ColorThemeTokens> = {
   green: mk("neon-green", "--neon-green"),
   yellow: mk("neon-yellow", "--neon-yellow"),
   red: mk("neon-red", "--neon-red"),
+  orange: mk("neon-orange", "--neon-orange"),
+  white: mk("neon-white", "--neon-white"),
 };
 
 export const THEME_ROTATION: ColorTheme[] = [
@@ -41,6 +54,7 @@ export const THEME_ROTATION: ColorTheme[] = [
   "green",
   "yellow",
   "red",
+  "orange",
 ];
 
 export function getColorTheme(index: number): ColorTheme {
@@ -51,14 +65,14 @@ export function getColorTheme(index: number): ColorTheme {
 
 const SECTION_THEME_MAP: Record<string, ColorTheme> = {
   home: "blue",
-  events: "blue",
+  events: "green",
   donations: "green",
-  gallery: "purple",
+  gallery: "orange",
   testimonials: "yellow",
   bible: "red",
-  contact: "blue",
-  discipleship: "green",
-  collaborators: "purple",
+  contact: "purple",
+  discipleship: "blue",
+  collaborators: "white",
 };
 
 export function getSectionTheme(section: string): ColorTheme {
@@ -91,6 +105,8 @@ export const THEME_VAR: Record<ColorTheme, string> = {
   green: "--neon-green",
   yellow: "--neon-yellow",
   red: "--neon-red",
+  orange: "--neon-orange",
+  white: "--neon-white",
 };
 
 export type NeonButtonVariant =
@@ -98,7 +114,9 @@ export type NeonButtonVariant =
   | "neonPurple"
   | "neonGreen"
   | "neonYellow"
-  | "neonRed";
+  | "neonRed"
+  | "neonOrange"
+  | "neonWhite";
 
 const NEON_VARIANT_MAP: Record<ColorTheme, NeonButtonVariant> = {
   blue: "neonBlue",
@@ -106,6 +124,8 @@ const NEON_VARIANT_MAP: Record<ColorTheme, NeonButtonVariant> = {
   green: "neonGreen",
   yellow: "neonYellow",
   red: "neonRed",
+  orange: "neonOrange",
+  white: "neonWhite",
 };
 
 export function getNeonVariant(theme: ColorTheme): NeonButtonVariant {

@@ -36,6 +36,10 @@ const buttonVariants = cva(
           "bg-neon-yellow/10 border border-neon-yellow/55 text-neon-yellow hover:bg-neon-yellow/18 hover:border-neon-yellow hover:shadow-[0_0_12px_-6px_hsl(var(--neon-yellow)/0.35)]",
         neonRed:
           "bg-neon-red/10 border border-neon-red/55 text-neon-red hover:bg-neon-red/18 hover:border-neon-red hover:shadow-[0_0_12px_-6px_hsl(var(--neon-red)/0.35)]",
+        neonOrange:
+          "bg-neon-orange/10 border border-neon-orange/55 text-neon-orange hover:bg-neon-orange/18 hover:border-neon-orange hover:shadow-[0_0_12px_-6px_hsl(var(--neon-orange)/0.35)]",
+        neonWhite:
+          "bg-neon-white/08 border border-neon-white/55 text-neon-white hover:bg-neon-white/18 hover:border-neon-white hover:shadow-[0_0_12px_-6px_hsl(var(--neon-white)/0.35)]",
       },
       size: {
         default: "h-10 px-4 py-2",

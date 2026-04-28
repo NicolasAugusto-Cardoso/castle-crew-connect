@@ -6,6 +6,7 @@ import { BibleChapterSelector } from '@/components/bible/BibleChapterSelector';
 import { BibleVerseReader } from '@/components/bible/BibleVerseReader';
 import { BibleSavedSection } from '@/components/bible/BibleSavedSection';
 import { BibleBook } from '@/hooks/useBible';
+import { SectionHeading } from '@/components/ui/section-heading';
 import {
   useBibleBooksLocal,
   usePrefetchChapterLocal,
@@ -158,18 +159,21 @@ const Bible = () => {
 
   return (
     <div className="flex flex-col h-[calc(100vh-4rem)] animate-fade-in">
-      {/* Clean Header - white background with subtle accent */}
+      {/* Header — Tema Vermelho neon (Bíblia) */}
       {!isReading && (
-        <div className="bg-background border-b border-border px-4 py-4 sm:px-6">
+        <div className="bg-background border-b border-[hsl(var(--neon-red)/0.30)] px-4 py-4 sm:px-6">
           <div className="container mx-auto">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="p-2 rounded-xl bg-primary/10 text-primary">
-                <Book className="w-6 h-6" />
-              </div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Bíblia</h1>
+            <div className="mb-4">
+              <SectionHeading
+                as="h1"
+                colorTheme="red"
+                icon={<Book className="w-6 h-6" />}
+              >
+                Bíblia
+              </SectionHeading>
             </div>
-            {/* Version selector in subtle card */}
-            <div className="bg-card rounded-xl p-3 shadow-sm border border-border">
+            {/* Version selector — borda vermelha sutil */}
+            <div className="bg-[hsl(var(--neon-card))] rounded-xl p-3 border border-[hsl(var(--neon-red)/0.45)] shadow-[0_0_10px_-8px_hsl(var(--neon-red)/0.30)]">
               <BibleVersionSelector value={version} onChange={setVersion} />
             </div>
           </div>
@@ -211,12 +215,12 @@ const Bible = () => {
                   {/* Saved Section - only show if user is logged in */}
                   {user && (
                     <div className="mb-6">
-                      <h2 className="text-lg font-semibold mb-3 text-foreground">Salvos</h2>
+                      <h2 className="text-lg font-semibold mb-3 text-neon-red">Salvos</h2>
                       <BibleSavedSection onNavigateToVerse={handleNavigateToVerse} />
                     </div>
                   )}
 
-                  <h2 className="text-lg font-semibold mb-3 text-foreground">Navegar</h2>
+                  <h2 className="text-lg font-semibold mb-3 text-neon-red">Navegar</h2>
                   <BibleBookList
                     books={books}
                     isLoading={booksLoading}
