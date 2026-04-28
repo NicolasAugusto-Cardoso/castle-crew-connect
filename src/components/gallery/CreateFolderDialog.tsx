@@ -26,20 +26,19 @@ export function CreateFolderDialog() {
   const [coverPreview, setCoverPreview] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleCoverChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      if (!file.type.startsWith('image/')) {
-        toast.error('Apenas imagens são permitidas para a capa');
-        return;
-      }
-      if (file.size > 5 * 1024 * 1024) {
-        toast.error('A imagem deve ter no máximo 5MB');
-        return;
-      }
-      setCoverFile(file);
-      setCoverPreview(URL.createObjectURL(file));
+  const handleCoverChange = (files: File[] | null) => {
+    const file = files?.[0];
+    if (!file) {
+      setCoverFile(null);
+      setCoverPreview('');
+      return;
     }
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('A imagem deve ter no máximo 5MB');
+      return;
+    }
+    setCoverFile(file);
+    setCoverPreview(URL.createObjectURL(file));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
