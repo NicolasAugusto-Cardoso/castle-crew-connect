@@ -69,16 +69,19 @@ export function EditEventDialog({ open, onOpenChange, event }: EditEventDialogPr
     });
   }, [event, form]);
 
-  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setCoverImage(file);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setCoverPreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+  const handleImageSelect = (files: File[] | null) => {
+    const file = files?.[0];
+    if (!file) {
+      setCoverImage(null);
+      setCoverPreview(null);
+      return;
     }
+    setCoverImage(file);
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setCoverPreview(reader.result as string);
+    };
+    reader.readAsDataURL(file);
   };
 
   const handleRemoveImage = () => {
