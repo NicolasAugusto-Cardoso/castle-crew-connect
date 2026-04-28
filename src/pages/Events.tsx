@@ -182,7 +182,7 @@ export default function Events() {
       <div className="flex items-center justify-between">
         <SectionHeading colorTheme={getSectionTheme('events')} as="h1">Eventos</SectionHeading>
         {canManageEvents && (
-          <Button onClick={() => setCreateDialogOpen(true)} size="sm" variant="neonBlue">
+          <Button onClick={() => setCreateDialogOpen(true)} size="sm" variant="neonGreen">
             <Plus className="w-4 h-4 mr-1" />
             Novo Evento
           </Button>
@@ -208,9 +208,9 @@ export default function Events() {
               ))}
             </div>
           ) : upcomingEvents.length === 0 ? (
-            <Card colorTheme="blue">
+            <Card colorTheme="green">
               <CardContent className="p-8 text-center">
-                <CalendarIcon className="w-12 h-12 mx-auto text-neon-blue mb-4 drop-shadow-[0_0_10px_hsl(var(--neon-blue)/0.6)]" />
+                <CalendarIcon className="w-12 h-12 mx-auto text-neon-green mb-4 drop-shadow-[0_0_10px_hsl(var(--neon-green)/0.6)]" />
                 <p className="text-slate-300">
                   {canManageEvents
                     ? 'Nenhum evento agendado. Crie o primeiro!'
@@ -228,17 +228,17 @@ export default function Events() {
         </TabsContent>
 
         <TabsContent value="calendar" className="mt-4">
-          <Card colorTheme="purple">
+          <Card colorTheme="green">
             <CardContent className="p-4">
               {/* Calendar Header */}
               <div className="flex items-center justify-between mb-4">
-                <Button variant="neonPurple" size="icon" onClick={handlePrevMonth}>
+                <Button variant="neonGreen" size="icon" onClick={handlePrevMonth}>
                   <ChevronLeft className="w-5 h-5" />
                 </Button>
-                <h2 className="text-lg font-semibold capitalize text-neon-purple">
+                <h2 className="text-lg font-semibold capitalize text-neon-green">
                   {format(currentMonth, 'MMMM yyyy', { locale: ptBR })}
                 </h2>
-                <Button variant="neonPurple" size="icon" onClick={handleNextMonth}>
+                <Button variant="neonGreen" size="icon" onClick={handleNextMonth}>
                   <ChevronRight className="w-5 h-5" />
                 </Button>
               </div>
@@ -271,16 +271,16 @@ export default function Events() {
                       className={cn(
                         'aspect-square flex flex-col items-center justify-center rounded-lg text-sm transition-all duration-300 relative border border-transparent',
                         isToday(day) && 'bg-neon-yellow/10 text-neon-yellow border-neon-yellow/50 font-semibold shadow-[0_0_12px_-7px_hsl(var(--neon-yellow))]',
-                        isSelected && 'bg-neon-purple/20 text-neon-purple border-neon-purple/70 shadow-[0_0_16px_-6px_hsl(var(--neon-purple)/0.75)]',
-                        !isSelected && hasEvents && 'bg-neon-blue/10 text-neon-blue border-neon-blue/40',
-                        !isSelected && !hasEvents && 'hover:bg-neon-blue/10 hover:text-neon-blue hover:border-neon-blue/40'
+                        isSelected && 'bg-neon-green/20 text-neon-green border-neon-green/70 shadow-[0_0_16px_-6px_hsl(var(--neon-green)/0.75)]',
+                        !isSelected && hasEvents && 'bg-neon-green/10 text-neon-green border-neon-green/40',
+                        !isSelected && !hasEvents && 'hover:bg-neon-green/10 hover:text-neon-green hover:border-neon-green/40'
                       )}
                     >
                       {format(day, 'd')}
                       {hasEvents && !isSelected && (
                         <div className="absolute bottom-1 flex gap-0.5">
                           {dayEvents.slice(0, 3).map((_, i) => (
-                            <div key={i} className="w-1 h-1 rounded-full bg-neon-blue shadow-[0_0_6px_hsl(var(--neon-blue))]" />
+                            <div key={i} className="w-1 h-1 rounded-full bg-neon-green shadow-[0_0_6px_hsl(var(--neon-green))]" />
                           ))}
                         </div>
                       )}
