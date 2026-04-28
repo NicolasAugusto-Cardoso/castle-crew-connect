@@ -171,37 +171,21 @@ export function UploadMediaDialog({ folderId, compact = false }: UploadMediaDial
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="files">Arquivos (.jpeg, .png, .mp4)</Label>
-            <input
-              id="files"
-              type="file"
+            <Label>Fotos ou vídeos</Label>
+            <MediaUpload
+              accept="image/jpeg,image/jpg,image/png,video/mp4,video/*,image/*,.gif"
               multiple
-              accept="image/jpeg,image/jpg,image/png,video/mp4,video/*,image/*"
-              capture="environment"
-              onChange={(e) => setFiles(e.target.files)}
-              className="w-full p-2 border rounded"
+              value={files}
+              onChange={(next) => setFiles(next ?? [])}
+              maxSizeMB={50}
               disabled={isUploading}
+              label="Selecione fotos e vídeos"
+              hint="Imagens (JPG/PNG/GIF) e vídeos (MP4) • até 50 MB cada"
             />
-            <p className="text-sm text-muted-foreground">
-              📱 Mobile: Toque para acessar câmera ou galeria<br />
-              💻 Desktop: Selecione arquivos (.jpeg, .png ou .mp4, máx 50MB cada)
+            <p className="text-xs text-muted-foreground">
+              📱 Mobile: o sistema mostra Câmera, Galeria ou Arquivos automaticamente.
             </p>
           </div>
-
-          {files && files.length > 0 && (
-            <div className="space-y-2">
-              <Label>Arquivos selecionados: {files.length}</Label>
-              <div className="max-h-32 overflow-y-auto space-y-1">
-                {Array.from(files).map((file, index) => (
-                  <div key={index} className="text-sm text-muted-foreground flex items-center gap-2">
-                    {file.type.startsWith('image/') ? '🖼️' : '🎥'}
-                    <span>{file.name}</span>
-                    <span className="text-xs">({(file.size / 1024 / 1024).toFixed(2)} MB)</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
 
           {isUploading && uploadProgress.total > 0 && (
             <div className="space-y-2">
