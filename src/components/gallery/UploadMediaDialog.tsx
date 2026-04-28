@@ -23,7 +23,7 @@ interface UploadMediaDialogProps {
 export function UploadMediaDialog({ folderId, compact = false }: UploadMediaDialogProps) {
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
-  const [files, setFiles] = useState<FileList | null>(null);
+  const [files, setFiles] = useState<File[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState({ current: 0, total: 0 });
 
