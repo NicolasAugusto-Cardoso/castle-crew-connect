@@ -86,7 +86,7 @@ export default function Events() {
     const eventDate = new Date(event.event_date);
     const isPast = isBefore(eventDate, startOfDay(new Date()));
     const isFull = event.max_participants && event.registration_count >= event.max_participants;
-    const theme = getColorTheme(index);
+    const theme = getSectionTheme('events');
     const t = COLOR_THEMES[theme];
 
     return (
