@@ -141,37 +141,17 @@ export function EditEventDialog({ open, onOpenChange, event }: EditEventDialogPr
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             {/* Cover Image */}
-            <div>
+            <div className="space-y-2">
               <Label>Imagem de Capa</Label>
-              {coverPreview ? (
-                <div className="relative mt-2">
-                  <img
-                    src={coverPreview}
-                    alt="Preview"
-                    className="w-full h-32 object-cover rounded-lg"
-                  />
-                  <Button
-                    type="button"
-                    variant="destructive"
-                    size="icon"
-                    className="absolute top-2 right-2 w-6 h-6"
-                    onClick={handleRemoveImage}
-                  >
-                    <X className="w-4 h-4" />
-                  </Button>
-                </div>
-              ) : (
-                <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer hover:bg-muted/50 mt-2">
-                  <ImagePlus className="w-8 h-8 text-muted-foreground mb-2" />
-                  <span className="text-sm text-muted-foreground">Adicionar imagem</span>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={handleImageSelect}
-                  />
-                </label>
-              )}
+              <MediaUpload
+                accept="image/*"
+                value={coverImage}
+                onChange={handleImageSelect}
+                disabled={isUploading}
+                previewUrl={!coverImage ? coverPreview ?? undefined : undefined}
+                label="Selecionar imagem de capa"
+                hint="Imagens • até 5 MB"
+              />
             </div>
 
             {/* Title */}
