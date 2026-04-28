@@ -138,7 +138,7 @@ export function UploadMediaDialog({ folderId, compact = false }: UploadMediaDial
       if (successful > 0) {
         queryClient.invalidateQueries({ queryKey: ['gallery-media', folderId] });
         toast.success(`${successful} arquivo(s) enviado(s)!`);
-        setFiles(null);
+        setFiles([]);
         setOpen(false);
       } else {
         toast.error('Nenhum arquivo foi enviado');
