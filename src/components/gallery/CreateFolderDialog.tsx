@@ -92,7 +92,7 @@ export function CreateFolderDialog() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="w-full h-14 btn-gradient text-base">
+        <Button className="w-full h-14 btn-gradient text-base !text-neutral-900">
           <Plus className="w-5 h-5 mr-2" />
           Nova Pasta
         </Button>
