@@ -102,13 +102,14 @@ export function BibleVerseToolbar({
       role="toolbar"
       aria-label="Ações do versículo"
       className={cn(
-        'fixed z-50 flex items-center gap-1 rounded-2xl border border-border/60 bg-popover/95 px-2 py-1.5 shadow-xl backdrop-blur-md',
+        'fixed z-50 flex flex-wrap items-center justify-center gap-1 rounded-2xl border border-border/60 bg-popover/95 px-2 py-1.5 shadow-xl backdrop-blur-md',
         'animate-in fade-in zoom-in-95 duration-200 ease-out'
       )}
       style={{
         top,
         left: '50%',
         transform: 'translateX(-50%)',
+        maxWidth: 'calc(100vw - 16px)',
         pointerEvents: isApplying ? 'none' : 'auto',
         opacity: isApplying ? 0.7 : 1,
       }}
@@ -121,12 +122,12 @@ export function BibleVerseToolbar({
           onClick={() => onPickColor(c.value)}
           aria-label={`Grifar em ${c.label}`}
           title={c.label}
-          className="h-7 w-7 rounded-full border border-border/60 transition-transform hover:scale-110 active:scale-95"
+          className="h-6 w-6 sm:h-7 sm:w-7 rounded-full border border-border/60 transition-transform hover:scale-110 active:scale-95"
           style={{ backgroundColor: c.value }}
         />
       ))}
 
-      <span className="mx-1 h-6 w-px bg-border/70" aria-hidden />
+      <span className="mx-0.5 h-5 w-px bg-border/70" aria-hidden />
 
       <ToolbarIconButton label="Copiar" onClick={onCopy}>
         <Copy className="h-4 w-4" />
@@ -147,7 +148,7 @@ export function BibleVerseToolbar({
       <span
         aria-hidden
         className={cn(
-          'absolute h-2 w-2 rotate-45 bg-popover border-border/60',
+          'absolute h-2 w-2 bg-popover border-border/60',
           placeAbove ? '-bottom-1 border-b border-r' : '-top-1 border-t border-l'
         )}
         style={{
