@@ -23,7 +23,8 @@ import {
 import { useGallery, GalleryFolder } from '@/hooks/useGallery';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { Edit, Upload, X, Trash2 } from 'lucide-react';
+import { Edit, Trash2 } from 'lucide-react';
+import { MediaUpload } from '@/components/ui/media-upload';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 
