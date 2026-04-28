@@ -220,7 +220,7 @@ const Bible = () => {
                     </div>
                   )}
 
-                  <h2 className="text-lg font-semibold mb-3 text-neon-red">Navegar</h2>
+                  <h2 className="text-lg font-semibold mb-3 text-neon-white">Navegar</h2>
                   <BibleBookList
                     books={books}
                     isLoading={booksLoading}
