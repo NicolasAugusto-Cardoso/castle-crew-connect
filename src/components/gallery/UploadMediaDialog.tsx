@@ -10,6 +10,7 @@ import {
 } from '@/components/ui/dialog';
 import { supabase } from '@/integrations/supabase/client';
 import { Upload } from 'lucide-react';
+import { MediaUpload } from '@/components/ui/media-upload';
 import { toast } from 'sonner';
 import { useQueryClient } from '@tanstack/react-query';
 import { Progress } from '@/components/ui/progress';
