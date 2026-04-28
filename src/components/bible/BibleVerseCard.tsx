@@ -1,4 +1,5 @@
-import { Fragment, useRef, useState, useCallback } from 'react';
+import { Fragment, memo, useCallback, useEffect, useRef, useState } from 'react';
+import { Eye, EyeOff } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { BibleHighlight } from '@/hooks/useBibleAnnotations';
 import { BibleVerseToolbar } from './BibleVerseToolbar';
@@ -8,15 +9,14 @@ interface BibleVerseCardProps {
   text: string;
   bookName: string;
   chapter: number;
-  isHighlighted?: boolean; // navigation highlight (came from "saved" / search)
-  isFocused?: boolean; // user-set focus mark
+  isHighlighted?: boolean;
+  isFocused?: boolean;
   hasNote?: boolean;
   highlights?: BibleHighlight[];
   onCopy: () => void;
   onShare: () => void;
   onOpenNote: () => void;
   onToggleFocus: () => void;
-  /** Apply highlight to the entire verse text. */
   onAddHighlight: (
     color: string,
     startOffset: number,
@@ -29,19 +29,7 @@ interface BibleVerseCardProps {
   highlightRef?: React.RefObject<HTMLDivElement>;
 }
 
-/**
- * Immersive verse component (Apple Books / YouVersion style).
- *
- * Interaction model:
- *  - Single tap: select verse → soft background highlight + floating toolbar.
- *  - Toolbar color tap: apply highlight to the whole verse instantly.
- *  - Double tap: toggle focus mark.
- *  - Tap on existing colored span: remove that highlight (with confirm).
- *
- * No yellow card, no "Selecione o texto" tooltip — the verse text is never
- * covered.
- */
-export function BibleVerseCard({
+function BibleVerseCardImpl({
   verseNumber,
   text,
   isHighlighted,
@@ -59,6 +47,8 @@ export function BibleVerseCard({
 }: BibleVerseCardProps) {
   const [selected, setSelected] = useState(false);
   const [applying, setApplying] = useState(false);
+  const [readingMode, setReadingMode] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
   const verseRef = useRef<HTMLDivElement>(null);
   const lastTapRef = useRef(0);
 
@@ -66,7 +56,6 @@ export function BibleVerseCard({
     const now = Date.now();
     const DOUBLE_TAP_DELAY = 280;
     if (now - lastTapRef.current < DOUBLE_TAP_DELAY) {
-      // Double tap → focus toggle
       lastTapRef.current = 0;
       setSelected(false);
       onToggleFocus();
@@ -76,22 +65,47 @@ export function BibleVerseCard({
     setSelected(prev => !prev);
   }, [onToggleFocus]);
 
-  const handlePickColor = async (color: string) => {
-    setApplying(true);
-    try {
-      await onAddHighlight(color, 0, text.length, text);
-    } finally {
-      setApplying(false);
-      setSelected(false);
-    }
-  };
+  const handlePickColor = useCallback(
+    async (color: string) => {
+      setApplying(true);
+      try {
+        await onAddHighlight(color, 0, text.length, text);
+      } finally {
+        setApplying(false);
+        setSelected(false);
+      }
+    },
+    [onAddHighlight, text]
+  );
 
-  const handleClearHighlights = async () => {
+  const handleClearHighlights = useCallback(async () => {
     await onRemoveAllHighlights();
     setSelected(false);
-  };
+  }, [onRemoveAllHighlights]);
 
-  // Render text, painting saved highlight ranges inline.
+  const toggleReadingMode = useCallback((e: React.MouseEvent | React.PointerEvent) => {
+    e.stopPropagation();
+    setReadingMode(prev => !prev);
+  }, []);
+
+  // Disable reading mode when clicking outside the verse container.
+  useEffect(() => {
+    if (!readingMode) return;
+    const handler = (e: PointerEvent) => {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        setReadingMode(false);
+      }
+    };
+    // small delay to avoid catching the same tap that enabled it
+    const t = setTimeout(() => {
+      document.addEventListener('pointerdown', handler, true);
+    }, 0);
+    return () => {
+      clearTimeout(t);
+      document.removeEventListener('pointerdown', handler, true);
+    };
+  }, [readingMode]);
+
   const renderText = () => {
     if (highlights.length === 0) return text;
 
@@ -110,7 +124,10 @@ export function BibleVerseCard({
         <span
           key={`h-${h.id}`}
           className="rounded-sm px-0.5 transition-opacity hover:opacity-80"
-          style={{ backgroundColor: h.color }}
+          style={{
+            backgroundColor: h.color,
+            color: readingMode ? '#000000' : undefined,
+          }}
           onClick={e => {
             e.stopPropagation();
             if (window.confirm('Remover este grifo?')) {
@@ -136,14 +153,25 @@ export function BibleVerseCard({
   return (
     <>
       <div
-        ref={highlightRef}
+        ref={node => {
+          containerRef.current = node;
+          if (highlightRef) {
+            (highlightRef as React.MutableRefObject<HTMLDivElement | null>).current = node;
+          }
+        }}
         id={`verse-${verseNumber}`}
         className={cn(
-          'group relative rounded-lg px-2 py-1.5 transition-colors duration-200 cursor-pointer select-none',
-          isHighlighted && 'bg-primary/10 ring-1 ring-primary/30',
-          isFocused && !isHighlighted && 'bg-primary/5',
-          selected && !isHighlighted && 'bg-secondary'
+          'group relative rounded-lg pl-2 pr-12 py-1.5 cursor-pointer select-none',
+          !readingMode && 'transition-colors duration-200',
+          !readingMode && isHighlighted && 'bg-primary/10 ring-1 ring-primary/30',
+          !readingMode && isFocused && !isHighlighted && 'bg-primary/5',
+          !readingMode && selected && !isHighlighted && 'bg-secondary'
         )}
+        style={
+          readingMode
+            ? { backgroundColor: '#FFFFFF', color: '#000000' }
+            : undefined
+        }
         onClick={handleTap}
       >
         {hasNote && (
@@ -153,8 +181,35 @@ export function BibleVerseCard({
           />
         )}
 
-        <div ref={verseRef} className="leading-relaxed text-base sm:text-lg text-foreground">
-          <sup className="mr-1.5 text-xs font-bold text-primary align-baseline">
+        {/* Reading-mode toggle — 44x44 hit area, always visible on mobile */}
+        <button
+          type="button"
+          aria-label={readingMode ? 'Desativar modo de leitura' : 'Ativar modo de leitura'}
+          aria-pressed={readingMode}
+          onClick={toggleReadingMode}
+          className={cn(
+            'absolute right-0 top-1/2 -translate-y-1/2 inline-flex h-11 w-11 items-center justify-center rounded-lg',
+            'text-foreground/60 hover:text-foreground hover:bg-secondary active:scale-95'
+          )}
+          style={readingMode ? { color: '#000000' } : undefined}
+        >
+          {readingMode ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+        </button>
+
+        <div
+          ref={verseRef}
+          className={cn(
+            'leading-relaxed text-base sm:text-lg',
+            !readingMode && 'text-foreground'
+          )}
+        >
+          <sup
+            className={cn(
+              'mr-1.5 text-xs font-bold align-baseline',
+              !readingMode && 'text-primary'
+            )}
+            style={readingMode ? { color: '#000000' } : undefined}
+          >
             {verseNumber}
           </sup>
           {renderText()}
@@ -187,3 +242,5 @@ export function BibleVerseCard({
     </>
   );
 }
+
+export const BibleVerseCard = memo(BibleVerseCardImpl);
