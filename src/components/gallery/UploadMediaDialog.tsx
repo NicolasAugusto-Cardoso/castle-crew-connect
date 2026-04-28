@@ -40,7 +40,7 @@ export function UploadMediaDialog({ folderId, compact = false }: UploadMediaDial
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Não autenticado');
 
-      const fileArray = Array.from(files);
+      const fileArray = files;
       setUploadProgress({ current: 0, total: fileArray.length });
 
       // Função para fazer upload de um arquivo
