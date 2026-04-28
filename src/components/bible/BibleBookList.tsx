@@ -49,14 +49,14 @@ export const BibleBookList = ({ books, isLoading, onSelectBook }: BibleBookListP
   return (
     <div className="space-y-4">
       {/* Testament Pills — tema neon vermelho (herda --page-primary) */}
-      <div className="flex gap-1 p-1 bg-[hsl(var(--neon-card))] rounded-2xl border border-[hsl(var(--page-primary,var(--neon-red))/0.30)]">
+      <div className="flex gap-1 p-1 bg-[hsl(var(--neon-card))] rounded-2xl border border-[hsl(var(--page-primary,var(--neon-white))/0.30)]">
         <button
           onClick={() => setTestament('old')}
           className={cn(
             "flex-1 py-2.5 px-4 rounded-xl text-sm font-medium transition-all min-h-[40px]",
             testament === 'old'
-              ? "border border-[hsl(var(--page-primary,var(--neon-red))/0.55)] bg-[hsl(var(--page-primary,var(--neon-red))/0.12)] text-[hsl(var(--page-primary,var(--neon-red)))] shadow-[0_0_10px_-6px_hsl(var(--page-primary,var(--neon-red))/0.35)]"
-              : "text-slate-400 hover:bg-[hsl(var(--page-primary,var(--neon-red))/0.08)] hover:text-[hsl(var(--page-primary,var(--neon-red)))]"
+              ? "border border-[hsl(var(--page-primary,var(--neon-white))/0.55)] bg-[hsl(var(--page-primary,var(--neon-white))/0.12)] text-[hsl(var(--page-primary,var(--neon-white)))] shadow-[0_0_10px_-6px_hsl(var(--page-primary,var(--neon-white))/0.35)]"
+              : "text-slate-400 hover:bg-[hsl(var(--page-primary,var(--neon-white))/0.08)] hover:text-[hsl(var(--page-primary,var(--neon-white)))]"
           )}
         >
           Antigo Testamento
@@ -66,8 +66,8 @@ export const BibleBookList = ({ books, isLoading, onSelectBook }: BibleBookListP
           className={cn(
             "flex-1 py-2.5 px-4 rounded-xl text-sm font-medium transition-all min-h-[40px]",
             testament === 'new'
-              ? "border border-[hsl(var(--page-primary,var(--neon-red))/0.55)] bg-[hsl(var(--page-primary,var(--neon-red))/0.12)] text-[hsl(var(--page-primary,var(--neon-red)))] shadow-[0_0_10px_-6px_hsl(var(--page-primary,var(--neon-red))/0.35)]"
-              : "text-slate-400 hover:bg-[hsl(var(--page-primary,var(--neon-red))/0.08)] hover:text-[hsl(var(--page-primary,var(--neon-red)))]"
+              ? "border border-[hsl(var(--page-primary,var(--neon-white))/0.55)] bg-[hsl(var(--page-primary,var(--neon-white))/0.12)] text-[hsl(var(--page-primary,var(--neon-white)))] shadow-[0_0_10px_-6px_hsl(var(--page-primary,var(--neon-white))/0.35)]"
+              : "text-slate-400 hover:bg-[hsl(var(--page-primary,var(--neon-white))/0.08)] hover:text-[hsl(var(--page-primary,var(--neon-white)))]"
           )}
         >
           Novo Testamento
@@ -76,12 +76,12 @@ export const BibleBookList = ({ books, isLoading, onSelectBook }: BibleBookListP
 
       {/* Pesquisar livros — borda vermelha sutil */}
       <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[hsl(var(--page-primary,var(--neon-red)))] opacity-80" />
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[hsl(var(--page-primary,var(--neon-white)))] opacity-80" />
         <Input
           placeholder="Pesquisar livro..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="pl-10 bg-[hsl(var(--neon-card))] border-[hsl(var(--page-primary,var(--neon-red))/0.45)] text-foreground placeholder:text-slate-500 rounded-xl focus-visible:ring-[hsl(var(--page-primary,var(--neon-red)))] focus-visible:border-[hsl(var(--page-primary,var(--neon-red)))]"
+          className="pl-10 bg-[hsl(var(--neon-card))] border-[hsl(var(--page-primary,var(--neon-white))/0.45)] text-foreground placeholder:text-slate-500 rounded-xl focus-visible:ring-[hsl(var(--page-primary,var(--neon-white)))] focus-visible:border-[hsl(var(--page-primary,var(--neon-white)))]"
         />
       </div>
 
