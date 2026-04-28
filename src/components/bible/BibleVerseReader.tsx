@@ -214,7 +214,7 @@ export const BibleVerseReader = ({
   const selectedNote = selectedVerseForNote !== null ? getNote(selectedVerseForNote) : undefined;
 
   return (
-    <div className="flex flex-col h-full min-h-0">
+    <div className="flex flex-col">
       {/* Sticky Header - Clean white with subtle border */}
       <div className="flex items-center justify-between gap-2 pb-4 border-b border-border bg-background sticky top-0 z-10">
         <div className="flex items-center gap-2 min-w-0 flex-1">
