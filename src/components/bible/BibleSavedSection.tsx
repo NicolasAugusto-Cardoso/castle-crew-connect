@@ -109,14 +109,14 @@ export function BibleSavedSection({ onNavigateToVerse }: BibleSavedSectionProps)
   }
 
   return (
-    <div className="bg-[hsl(var(--neon-card))] rounded-xl border border-[hsl(var(--page-primary,var(--neon-red))/0.45)] shadow-[0_0_10px_-8px_hsl(var(--page-primary,var(--neon-red))/0.30)] overflow-hidden">
+    <div className="bg-[hsl(var(--neon-card))] rounded-xl border border-[hsl(var(--page-primary,var(--neon-white))/0.45)] shadow-[0_0_10px_-8px_hsl(var(--page-primary,var(--neon-white))/0.30)] overflow-hidden">
       <Tabs defaultValue="notes" className="w-full">
         <TabsList className="w-full grid grid-cols-2 gap-1 h-auto p-1">
           <TabsTrigger value="notes" className="gap-2">
             <FileText className="w-4 h-4" />
             Anotações
             {notes.length > 0 && (
-              <span className="text-xs bg-[hsl(var(--page-primary,var(--neon-red))/0.15)] text-[hsl(var(--page-primary,var(--neon-red)))] px-1.5 rounded-full">
+              <span className="text-xs bg-[hsl(var(--page-primary,var(--neon-white))/0.15)] text-[hsl(var(--page-primary,var(--neon-white)))] px-1.5 rounded-full">
                 {notes.length}
               </span>
             )}
@@ -125,7 +125,7 @@ export function BibleSavedSection({ onNavigateToVerse }: BibleSavedSectionProps)
             <Highlighter className="w-4 h-4" />
             Grifos
             {highlights.length > 0 && (
-              <span className="text-xs bg-[hsl(var(--page-primary,var(--neon-red))/0.15)] text-[hsl(var(--page-primary,var(--neon-red)))] px-1.5 rounded-full">
+              <span className="text-xs bg-[hsl(var(--page-primary,var(--neon-white))/0.15)] text-[hsl(var(--page-primary,var(--neon-white)))] px-1.5 rounded-full">
                 {highlights.length}
               </span>
             )}
