@@ -271,16 +271,16 @@ export default function Events() {
                       className={cn(
                         'aspect-square flex flex-col items-center justify-center rounded-lg text-sm transition-all duration-300 relative border border-transparent',
                         isToday(day) && 'bg-neon-yellow/10 text-neon-yellow border-neon-yellow/50 font-semibold shadow-[0_0_12px_-7px_hsl(var(--neon-yellow))]',
-                        isSelected && 'bg-neon-green/20 text-neon-white border-neon-green/70 shadow-[0_0_16px_-6px_hsl(var(--neon-white)/0.75)]',
-                        !isSelected && hasEvents && 'bg-neon-green/10 text-neon-white border-neon-green/40',
-                        !isSelected && !hasEvents && 'hover:bg-neon-green/10 hover:text-neon-white hover:border-neon-green/40'
+                        isSelected && 'bg-neon-white/20 text-neon-white border-neon-white/70 shadow-[0_0_16px_-6px_hsl(var(--neon-white)/0.75)]',
+                        !isSelected && hasEvents && 'bg-neon-white/10 text-neon-white border-neon-white/40',
+                        !isSelected && !hasEvents && 'hover:bg-neon-white/10 hover:text-neon-white hover:border-neon-white/40'
                       )}
                     >
                       {format(day, 'd')}
                       {hasEvents && !isSelected && (
                         <div className="absolute bottom-1 flex gap-0.5">
                           {dayEvents.slice(0, 3).map((_, i) => (
-                            <div key={i} className="w-1 h-1 rounded-full bg-neon-green shadow-[0_0_6px_hsl(var(--neon-white))]" />
+                            <div key={i} className="w-1 h-1 rounded-full bg-neon-white shadow-[0_0_6px_hsl(var(--neon-white))]" />
                           ))}
                         </div>
                       )}
