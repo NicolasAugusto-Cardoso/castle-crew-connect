@@ -11,7 +11,7 @@ export default {
     },
     {
       pattern:
-        /(bg|border|text|ring|focus-visible:ring|hover:bg|hover:border|hover:shadow|hover:text)-neon-(blue|purple|green|yellow|red)(\/(?:10|18|20|30|40|45|55|70))?/,
+        /(bg|border|text|ring|focus-visible:ring|hover:bg|hover:border|hover:shadow|hover:text)-neon-(blue|purple|green|yellow|red|orange|white)(\/(?:08|10|12|18|20|30|40|45|55|70))?/,
     },
   ],
   prefix: "",
@@ -43,6 +43,8 @@ export default {
           green: "hsl(var(--neon-green) / <alpha-value>)",
           yellow: "hsl(var(--neon-yellow) / <alpha-value>)",
           red: "hsl(var(--neon-red) / <alpha-value>)",
+          orange: "hsl(var(--neon-orange) / <alpha-value>)",
+          white: "hsl(var(--neon-white) / <alpha-value>)",
         },
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
