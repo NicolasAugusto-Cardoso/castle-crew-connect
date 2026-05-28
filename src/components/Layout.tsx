@@ -159,7 +159,8 @@ export const Layout = () => {
                     'w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 border',
                     isActive
                       ? ['bg-[hsl(var(--neon-card))]', t.accent, t.border, t.hoverShadow]
-                      : ['text-slate-400 border-transparent hover:bg-white/[0.04]', t.hoverBorder, t.accent],
+                      : ['text-muted-foreground border-transparent hover:bg-secondary', t.hoverBorder, t.accent],
+
                   )}
               >
                 <div className="relative">
