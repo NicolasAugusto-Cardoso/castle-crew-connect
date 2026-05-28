@@ -152,8 +152,7 @@ All colors MUST be HSL.
 
 @layer base {
   * {
-@layer base {
-  * {
+
     border-color: hsl(var(--border));
   }
 
