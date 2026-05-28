@@ -69,16 +69,17 @@ export function getColorTheme(index: number): ColorTheme {
  * mas o mapeamento de seção sempre retorna "white".
  */
 const SECTION_THEME_MAP: Record<string, ColorTheme> = {
-  home: "white",
-  events: "white",
-  donations: "white",
-  gallery: "white",
-  testimonials: "white",
-  bible: "white",
-  contact: "white",
-  discipleship: "white",
-  collaborators: "white",
+  home: "blue",
+  events: "blue",
+  donations: "blue",
+  gallery: "blue",
+  testimonials: "blue",
+  bible: "blue",
+  contact: "blue",
+  discipleship: "blue",
+  collaborators: "blue",
 };
+
 
 export function getSectionTheme(section: string): ColorTheme {
   return SECTION_THEME_MAP[section] ?? "blue";
