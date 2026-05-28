@@ -152,13 +152,13 @@ All colors MUST be HSL.
 
 @layer base {
   * {
-    /* REFACTOR: borda padrão usa rgba prata sutil */
-    border-color: rgba(255, 255, 255, 0.08);
+@layer base {
+  * {
+    border-color: hsl(var(--border));
   }
 
   body {
     @apply text-foreground;
-    /* REFACTOR: fundo preto puro (substitui gradiente azul) */
     background: hsl(var(--background));
     min-height: 100dvh;
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
@@ -167,7 +167,7 @@ All colors MUST be HSL.
     width: 100%;
     max-width: 100vw;
     overscroll-behavior: none;
-    color-scheme: dark;
+    color-scheme: light;
   }
 
   html {
@@ -217,16 +217,12 @@ All colors MUST be HSL.
 }
 
 @layer components {
-  /* ============================================
-     VARIANTE B (Destaque): gradiente prata/branco
-     Texto escuro #121212 — contraste perfeito
-     Substitui .btn-gradient e .btn-accent
-     ============================================ */
+  /* Botão premium — gradiente azul corporativo */
   .btn-premium {
     background: var(--gradient-primary);
-    color: #121212;
+    color: hsl(var(--primary-foreground));
     font-weight: 600;
-    border: 1px solid rgba(255, 255, 255, 0.12);
+    border: 1px solid hsl(var(--primary) / 0.4);
     transition: var(--transition-smooth);
   }
   .btn-premium:hover {
@@ -235,27 +231,25 @@ All colors MUST be HSL.
     filter: brightness(1.05);
   }
 
-  /* ============================================
-     VARIANTE A (Clean): preto + borda prata sutil
-     ============================================ */
+  /* Botão clean — branco com borda azul sutil */
   .btn-clean {
     background: hsl(var(--background));
     color: hsl(var(--foreground));
-    border: 1px solid rgba(255, 255, 255, 0.12);
+    border: 1px solid hsl(var(--border));
     font-weight: 500;
     transition: var(--transition-smooth);
   }
   .btn-clean:hover {
-    background: rgba(255, 255, 255, 0.04);
-    border-color: rgba(255, 255, 255, 0.24);
+    background: hsl(var(--secondary));
+    border-color: hsl(var(--primary) / 0.4);
   }
 
-  /* Aliases legados — apontam para btn-premium para não quebrar referências antigas */
+  /* Aliases legados */
   .btn-gradient {
     background: var(--gradient-primary);
-    color: #121212;
+    color: hsl(var(--primary-foreground));
     font-weight: 600;
-    border: 1px solid rgba(255, 255, 255, 0.12);
+    border: 1px solid hsl(var(--primary) / 0.4);
     transition: var(--transition-smooth);
   }
   .btn-gradient:hover {
@@ -265,31 +259,29 @@ All colors MUST be HSL.
   }
 
   .btn-accent {
-    background: hsl(var(--background));
-    color: hsl(var(--foreground));
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    font-weight: 500;
+    background: hsl(var(--accent));
+    color: hsl(var(--accent-foreground));
+    border: 1px solid hsl(var(--accent) / 0.4);
+    font-weight: 600;
     transition: var(--transition-smooth);
   }
   .btn-accent:hover {
-    background: rgba(255, 255, 255, 0.04);
-    border-color: rgba(255, 255, 255, 0.24);
+    filter: brightness(1.05);
+    box-shadow: 0 8px 24px -8px hsl(var(--accent) / 0.45);
   }
 
-  /* ============================================
-     Card elevado: borda fina em vez de sombra pesada
-     ============================================ */
+  /* Card elevado */
   .card-elevated {
     background: hsl(var(--card));
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    box-shadow: none;
+    border: 1px solid hsl(var(--border));
+    box-shadow: var(--shadow-card);
     transition: var(--transition-smooth);
   }
   .card-elevated:hover {
-    border-color: rgba(255, 255, 255, 0.14);
+    border-color: hsl(var(--primary) / 0.4);
+    box-shadow: 0 4px 12px -4px hsl(var(--primary) / 0.15);
   }
 
-  /* Texto com gradiente prata/branco */
   .gradient-text {
     background: var(--gradient-primary);
     -webkit-background-clip: text;
@@ -311,7 +303,6 @@ All colors MUST be HSL.
   }
 }
 
-/* Custom styles for Mapbox popups */
 .mapboxgl-popup-content {
   padding: 0 !important;
   box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
