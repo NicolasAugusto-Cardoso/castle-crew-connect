@@ -216,7 +216,7 @@ export const Layout = () => {
                 onClick={() => navigate(item.path)}
                 className={cn(
                   'flex items-center justify-center px-3 py-2.5 transition-all duration-300 relative min-w-[44px] min-h-[44px]',
-                  isActive ? t.accent : 'text-slate-400',
+                  isActive ? t.accent : 'text-muted-foreground',
                 )}
               >
                 <div className="relative">
