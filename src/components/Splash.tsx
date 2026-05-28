@@ -10,14 +10,12 @@ interface SplashProps {
  * - Cruz minimalista no lugar do "t" que vira dourada (#D4AF37)
  * - Palavra "unicristo" revelada por uma linha luminosa branca
  * - Subtítulo "TORNANDO JESUS MAIS CONHECIDO"
- * - Responsivo (mobile / tablet / desktop)
- * - Duração total ~3.1s (com fade-out final)
  */
 export const Splash: React.FC<SplashProps> = ({ onComplete }) => {
   useEffect(() => {
     const timer = setTimeout(() => {
       onComplete();
-    }, 3100);
+    }, 3000);
 
     return () => clearTimeout(timer);
   }, [onComplete]);
@@ -28,11 +26,9 @@ export const Splash: React.FC<SplashProps> = ({ onComplete }) => {
       style={{
         backgroundColor: '#000000',
         fontFamily: "'Montserrat', system-ui, sans-serif",
-        animation: 'uc_splashFadeOut 200ms ease-out 2900ms forwards',
       }}
     >
       <style>{`
-        /* ===== KEYFRAMES ===== */
         @keyframes uc_revealText {
           0%   { clip-path: inset(0 100% 0 0); }
           100% { clip-path: inset(0 0 0 0); }
@@ -53,24 +49,18 @@ export const Splash: React.FC<SplashProps> = ({ onComplete }) => {
           0%   { opacity: 0; transform: translateY(-5px); }
           100% { opacity: 1; transform: translateY(0); }
         }
-        @keyframes uc_splashFadeOut {
-          0%   { opacity: 1; }
-          100% { opacity: 0; }
-        }
 
-        /* ===== ESTRUTURA ===== */
         .uc-splash-container {
           display: flex;
           flex-direction: column;
           align-items: center;
           justify-content: center;
-          width: 100%;
         }
 
         .uc-logo-container {
           position: relative;
           display: inline-block;
-          padding-right: 8px; /* compensa o letter-spacing final */
+          padding-right: 8px;
         }
 
         .uc-word-wrapper {
@@ -99,14 +89,14 @@ export const Splash: React.FC<SplashProps> = ({ onComplete }) => {
           z-index: 5;
         }
 
-        /* Cruz minimalista (substitui o "t") */
         .uc-cross {
           position: relative;
-          width: 16px;
-          height: 34px;
+          width: 14px;
+          height: 38px;
           margin-right: 8px;
           display: inline-block;
-          transform: translateY(-2px);
+          vertical-align: middle;
+          transform: translateY(-3px);
         }
         .uc-cross::before {
           content: '';
@@ -122,7 +112,7 @@ export const Splash: React.FC<SplashProps> = ({ onComplete }) => {
         .uc-cross::after {
           content: '';
           position: absolute;
-          top: 30%;
+          top: 28%;
           left: 0;
           width: 100%;
           height: 2px;
@@ -139,52 +129,6 @@ export const Splash: React.FC<SplashProps> = ({ onComplete }) => {
           opacity: 0;
           text-align: center;
           animation: uc_fadeSubtitle 0.8s ease-in-out 2.3s forwards;
-        }
-
-        /* ===== RESPONSIVO ===== */
-        /* Smartphones (até 767px) */
-        @media (max-width: 767px) {
-          .uc-word-wrapper {
-            font-size: 24px;
-            letter-spacing: 5px;
-          }
-          .uc-logo-container {
-            padding-right: 5px;
-          }
-          .uc-cross {
-            width: 10px;
-            height: 22px;
-            margin-right: 5px;
-            transform: translateY(-1px);
-          }
-          .uc-subtitle {
-            font-size: 8px;
-            letter-spacing: 3px;
-            margin-top: 10px;
-            padding: 0 15px;
-          }
-        }
-
-        /* Desktops grandes (1200px+) */
-        @media (min-width: 1200px) {
-          .uc-word-wrapper {
-            font-size: 52px;
-            letter-spacing: 12px;
-          }
-          .uc-logo-container {
-            padding-right: 12px;
-          }
-          .uc-cross {
-            width: 22px;
-            height: 46px;
-            margin-right: 12px;
-            transform: translateY(-3px);
-          }
-          .uc-subtitle {
-            font-size: 14px;
-            letter-spacing: 8px;
-            margin-top: 20px;
-          }
         }
       `}</style>
 
