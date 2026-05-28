@@ -72,8 +72,9 @@ export const Layout = () => {
       style={{ ['--page-primary' as any]: `var(${pageVar})` }}
     >
       
-      {/* Header — REFACTOR Dark: fundo preto + borda prata sutil em vez de sombra branca */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-background border-b border-white/[0.08] backdrop-blur-sm pt-safe">
+      {/* Header — branco com borda sutil */}
+      <header className="fixed top-0 left-0 right-0 z-50 bg-background border-b border-border backdrop-blur-sm pt-safe">
+
         <div className="w-full h-[60px] px-2 xs:px-3 sm:px-4 flex items-center justify-between md:px-8 relative">
           {/* Logo centralizada com position absolute */}
           <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
@@ -158,7 +159,8 @@ export const Layout = () => {
                     'w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 border',
                     isActive
                       ? ['bg-[hsl(var(--neon-card))]', t.accent, t.border, t.hoverShadow]
-                      : ['text-slate-400 border-transparent hover:bg-white/[0.04]', t.hoverBorder, t.accent],
+                      : ['text-muted-foreground border-transparent hover:bg-secondary', t.hoverBorder, t.accent],
+
                   )}
               >
                 <div className="relative">
@@ -201,9 +203,9 @@ export const Layout = () => {
           </div>
         </div>
       </main>
+      {/* Bottom Navigation (Mobile) */}
+      <nav className="fixed bottom-0 left-0 right-0 bg-card border-t border-border md:hidden z-40 pb-safe-nav backdrop-blur-sm">
 
-      {/* Bottom Navigation (Mobile) — REFACTOR Dark: card escuro + borda prata em vez de gradiente azul */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-card border-t border-white/[0.08] md:hidden z-40 pb-safe-nav backdrop-blur-sm">
         <div className="flex justify-around items-center py-2">
           {visibleNavItems.map((item, index) => {
             const isActive = location.pathname === item.path;
@@ -214,7 +216,7 @@ export const Layout = () => {
                 onClick={() => navigate(item.path)}
                 className={cn(
                   'flex items-center justify-center px-3 py-2.5 transition-all duration-300 relative min-w-[44px] min-h-[44px]',
-                  isActive ? t.accent : 'text-slate-400',
+                  isActive ? t.accent : 'text-muted-foreground',
                 )}
               >
                 <div className="relative">
