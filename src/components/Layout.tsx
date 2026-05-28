@@ -72,8 +72,9 @@ export const Layout = () => {
       style={{ ['--page-primary' as any]: `var(${pageVar})` }}
     >
       
-      {/* Header — REFACTOR Dark: fundo preto + borda prata sutil em vez de sombra branca */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-background border-b border-white/[0.08] backdrop-blur-sm pt-safe">
+      {/* Header — branco com borda sutil */}
+      <header className="fixed top-0 left-0 right-0 z-50 bg-background border-b border-border backdrop-blur-sm pt-safe">
+
         <div className="w-full h-[60px] px-2 xs:px-3 sm:px-4 flex items-center justify-between md:px-8 relative">
           {/* Logo centralizada com position absolute */}
           <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
